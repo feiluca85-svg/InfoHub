@@ -1171,3 +1171,57 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* WP8 Bottom App Bar for Start View */
+.wp8-app-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: #1f1f1f;
+  border-top: 1px solid #333333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+  z-index: 99;
+}
+
+.wp8-bar-circle-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background: transparent;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.wp8-bar-circle-btn:active {
+  background: #ffffff;
+  color: #000000;
+  transform: scale(0.92);
+}
+
+/* Calculator Buttons */
+.calc-btn {
+  padding: 16px;
+  background: #252526;
+  border: 1px solid #383838;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.calc-btn.primary {
+  background: #0078d7;
+}
+
+.calc-btn.danger {
+  background: #ef4444;
+}

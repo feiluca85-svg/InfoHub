@@ -1113,7 +1113,7 @@ function renderStartScreenTiles() {
     `;
   }).join('');
 
-  // Setup click & contextmenu (long press) handlers for tiles
+  // Setup click & contextmenu/touch long-press handlers for tiles
   container.querySelectorAll('.metro-tile').forEach(tileEl => {
     const tileId = tileEl.getAttribute('data-id');
     const tileObj = METRO_TILES.find(t => t.id === tileId);
@@ -1126,6 +1126,17 @@ function renderStartScreenTiles() {
       e.preventDefault();
       openTileEditModal(tileObj);
     });
+
+    let tileTouchTimer = null;
+    tileEl.addEventListener('touchstart', () => {
+      tileTouchTimer = setTimeout(() => {
+        openTileEditModal(tileObj);
+      }, 450);
+    }, { passive: true });
+
+    tileEl.addEventListener('touchend', () => clearTimeout(tileTouchTimer), { passive: true });
+    tileEl.addEventListener('touchmove', () => clearTimeout(tileTouchTimer), { passive: true });
+    tileEl.addEventListener('touchcancel', () => clearTimeout(tileTouchTimer), { passive: true });
   });
 
   // Enable SortableJS Drag & Drop on tiles grid
@@ -1224,20 +1235,38 @@ function renderTileInnerContent(tile) {
 function handleTileClick(tile) {
   if (!tile) return;
   if (tile.type === 'weather') {
-    switchTabTo('weatherView');
+    switchTabToId('weatherView');
   } else if (tile.type === 'news') {
-    switchTabTo('feedView');
+    switchTabToId('feedView');
   } else if (tile.type === 'clock' || tile.type === 'calendar') {
     const now = new Date();
     alert(`📅 ${now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}\n⏰ ${now.toLocaleTimeString('it-IT')}`);
   } else if (tile.action) {
-    if (tile.action === 'mailto:' || tile.id === 'mail' || tile.title === 'email') {
-      window.location.href = 'mailto:';
-    } else if (tile.action.startsWith('http://') || tile.action.startsWith('https://') || tile.action.startsWith('tel:') || tile.action.startsWith('sms:')) {
-      window.open(tile.action, '_blank');
-    } else {
-      switchTabToId(tile.action);
+    handleAppAction(tile.action);
+  }
+}
+
+function handleAppAction(action) {
+  if (!action) return;
+  if (action === 'mailto:') {
+    window.location.href = 'mailto:';
+  } else if (action === 'calculator') {
+    const calcModal = document.getElementById('calculatorModal');
+    if (calcModal) calcModal.showModal();
+  } else if (action === 'contacts' || action === 'people') {
+    const contactsModal = document.getElementById('contactsModal');
+    if (contactsModal) contactsModal.showModal();
+  } else if (action === 'settings') {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar && overlay) {
+      sidebar.classList.add('open');
+      overlay.classList.remove('hidden');
     }
+  } else if (action.startsWith('http://') || action.startsWith('https://') || action.startsWith('tel:') || action.startsWith('sms:')) {
+    window.open(action, '_blank');
+  } else {
+    switchTabToId(action);
   }
 }
 
@@ -1409,13 +1438,7 @@ function renderAppListView() {
         return;
       }
       const action = row.getAttribute('data-action');
-      if (action === 'mailto:') {
-        window.location.href = 'mailto:';
-      } else if (action.startsWith('http://') || action.startsWith('https://') || action.startsWith('tel:') || action.startsWith('sms:')) {
-        window.open(action, '_blank');
-      } else {
-        switchTabToId(action);
-      }
+      handleAppAction(action);
     });
 
     // Right-click / Contextmenu to pin app to Start
@@ -1779,6 +1802,61 @@ function setupTileEditModalListeners() {
         renderStartScreenTiles();
       }
     });
+  }
+
+  // WP8 App Bar Listeners
+  const appBarAddTileBtn = document.getElementById('appBarAddTileBtn');
+  const appBarCustomizeBtn = document.getElementById('appBarCustomizeBtn');
+  const appBarAppsBtn = document.getElementById('appBarAppsBtn');
+
+  if (appBarAddTileBtn && addShortcutModal) {
+    appBarAddTileBtn.addEventListener('click', () => addShortcutModal.showModal());
+  }
+  if (appBarCustomizeBtn) {
+    appBarCustomizeBtn.addEventListener('click', () => {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      if (sidebar && overlay) {
+        sidebar.classList.add('open');
+        overlay.classList.remove('hidden');
+      }
+    });
+  }
+  if (appBarAppsBtn) {
+    appBarAppsBtn.addEventListener('click', () => switchTabToId('appListView'));
+  }
+
+  // Close buttons for built-in modals
+  const closeCalc = document.getElementById('closeCalculatorBtn');
+  if (closeCalc) closeCalc.addEventListener('click', () => document.getElementById('calculatorModal').close());
+  const closeContacts = document.getElementById('closeContactsBtn');
+  if (closeContacts) closeContacts.addEventListener('click', () => document.getElementById('contactsModal').close());
+}
+
+/* Calculator Engine Functions */
+let calcExpression = '';
+function calcInput(val) {
+  const display = document.getElementById('calcDisplay');
+  if (!display) return;
+  if (display.innerText === '0' || display.innerText === 'Errore') display.innerText = '';
+  calcExpression += val;
+  display.innerText = calcExpression;
+}
+function calcClear() {
+  calcExpression = '';
+  const display = document.getElementById('calcDisplay');
+  if (display) display.innerText = '0';
+}
+function calcEquals() {
+  const display = document.getElementById('calcDisplay');
+  if (!display || !calcExpression) return;
+  try {
+    const res = eval(calcExpression);
+    display.innerText = res;
+    calcExpression = String(res);
+  } catch (e) {
+    display.innerText = 'Errore';
+    calcExpression = '';
   }
 }
 

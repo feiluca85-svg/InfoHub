@@ -108,6 +108,19 @@
           <div id="metroGrid" class="metro-tiles-grid">
             <!-- Dynamically generated Live Tiles -->
           </div>
+
+          <!-- Authentic WP8 App Bar at bottom of Start view -->
+          <div class="wp8-app-bar" id="startViewAppBar">
+            <button id="appBarAddTileBtn" class="wp8-bar-circle-btn" title="Aggiungi Tile">
+              <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <button id="appBarCustomizeBtn" class="wp8-bar-circle-btn" title="Personalizza Start">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+            <button id="appBarAppsBtn" class="wp8-bar-circle-btn" title="Tutte le App A-Z">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+          </div>
         </section>
 
         <!-- Tab 1: News Feed View -->
@@ -321,5 +334,63 @@
       });
     }
   </script>
+
+    <!-- Built-in WP8 Calculator App Modal -->
+    <dialog id="calculatorModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <h2 style="font-weight:300;">calcolatrice</h2>
+          <button id="closeCalculatorBtn" class="close-modal-btn">&times;</button>
+        </header>
+        <div style="padding: 20px; text-align: center;">
+          <div id="calcDisplay" style="background:#111; border:1px solid #333; padding:15px; font-size:2rem; text-align:right; margin-bottom:15px; min-height:60px;">0</div>
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;">
+            <button class="calc-btn" onclick="calcInput('7')">7</button>
+            <button class="calc-btn" onclick="calcInput('8')">8</button>
+            <button class="calc-btn" onclick="calcInput('9')">9</button>
+            <button class="calc-btn primary" onclick="calcInput('/')">/</button>
+            <button class="calc-btn" onclick="calcInput('4')">4</button>
+            <button class="calc-btn" onclick="calcInput('5')">5</button>
+            <button class="calc-btn" onclick="calcInput('6')">6</button>
+            <button class="calc-btn primary" onclick="calcInput('*')">&times;</button>
+            <button class="calc-btn" onclick="calcInput('1')">1</button>
+            <button class="calc-btn" onclick="calcInput('2')">2</button>
+            <button class="calc-btn" onclick="calcInput('3')">3</button>
+            <button class="calc-btn primary" onclick="calcInput('-')">-</button>
+            <button class="calc-btn danger" onclick="calcClear()">C</button>
+            <button class="calc-btn" onclick="calcInput('0')">0</button>
+            <button class="calc-btn primary" onclick="calcEquals()">=</button>
+            <button class="calc-btn primary" onclick="calcInput('+')">+</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Built-in WP8 Contacts App Modal -->
+    <dialog id="contactsModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <h2 style="font-weight:300;">contatti</h2>
+          <button id="closeContactsBtn" class="close-modal-btn">&times;</button>
+        </header>
+        <div class="reader-scroll-body" style="padding: 20px;">
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; align-items:center; gap:15px; padding:10px; background:#1e1e1e;">
+              <div style="width:40px; height:40px; background:#0078d7; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold;">A</div>
+              <div><strong style="display:block;">Alessandro Rossi</strong><span style="font-size:0.8rem; color:#aaa;">+39 333 1234567</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:15px; padding:10px; background:#1e1e1e;">
+              <div style="width:40px; height:40px; background:#107c41; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold;">M</div>
+              <div><strong style="display:block;">Marco Bianchi</strong><span style="font-size:0.8rem; color:#aaa;">+39 347 9876543</span></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:15px; padding:10px; background:#1e1e1e;">
+              <div style="width:40px; height:40px; background:#e3a21a; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold;">S</div>
+              <div><strong style="display:block;">Sara Verdi</strong><span style="font-size:0.8rem; color:#aaa;">+39 320 5554433</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  </div>
 </body>
 </html>
