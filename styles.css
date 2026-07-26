@@ -852,12 +852,47 @@ body {
 .accent-blue { background-color: #0078d7 !important; color: #ffffff !important; }
 .accent-green { background-color: #107c41 !important; color: #ffffff !important; }
 .accent-orange { background-color: #d83b01 !important; color: #ffffff !important; }
+.accent-ochre { background-color: #e3a21a !important; color: #ffffff !important; }
 .accent-purple { background-color: #881798 !important; color: #ffffff !important; }
 .accent-red { background-color: #e81123 !important; color: #ffffff !important; }
 .accent-teal { background-color: #008272 !important; color: #ffffff !important; }
 .accent-magenta { background-color: #e3008c !important; color: #ffffff !important; }
 .accent-yellow { background-color: #d8a000 !important; color: #ffffff !important; }
 .accent-dark { background-color: #252526 !important; color: #ffffff !important; }
+
+/* City List Minus Button for Deletion */
+.weather-city-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.city-minus-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  line-height: 1;
+  border: none;
+  cursor: pointer;
+  margin-left: 10px;
+  animation: popIn 0.2s ease;
+}
+
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 
 /* Tile Inner Elements */
 .tile-icon-container {

@@ -65,20 +65,44 @@ function saveWeatherCities() {
   localStorage.setItem('infohub_weather_cities', JSON.stringify(WEATHER_CITIES));
 }
 
-// WP8 Metro Start Screen Tiles Config
+// WP8 Metro Start Screen Tiles Config with authentic SVG icons & Ochre Accent option
 const DEFAULT_METRO_TILES = [
   { id: 'clock', type: 'clock', title: 'orologio', size: 'tile-wide', color: 'accent-orange' },
   { id: 'calendar', type: 'calendar', title: 'calendario', size: 'tile-medium', color: 'accent-green' },
   { id: 'weather', type: 'weather', title: 'meteo', size: 'tile-medium', color: 'accent-blue' },
   { id: 'news', type: 'news', title: 'ultime notizie', size: 'tile-wide', color: 'accent-purple' },
-  { id: 'phone', type: 'shortcut', title: 'telefono', icon: '📞', action: 'tel:', size: 'tile-medium', color: 'accent-blue' },
-  { id: 'messages', type: 'shortcut', title: 'messaggi', icon: '💬', action: 'sms:', size: 'tile-medium', color: 'accent-green' },
-  { id: 'photos', type: 'shortcut', title: 'foto', icon: '🖼️', action: 'photos', size: 'tile-medium', color: 'accent-yellow' },
-  { id: 'people', type: 'shortcut', title: 'contatti', icon: '👥', action: 'people', size: 'tile-medium', color: 'accent-magenta' },
-  { id: 'browser', type: 'shortcut', title: 'internet', icon: '🌐', action: 'https://www.google.com', size: 'tile-medium', color: 'accent-teal' },
-  { id: 'mail', type: 'shortcut', title: 'email', icon: '✉️', action: 'mailto:', size: 'tile-medium', color: 'accent-blue' },
-  { id: 'camera', type: 'shortcut', title: 'fotocamera', icon: '📷', action: 'camera', size: 'tile-small', color: 'accent-dark' },
-  { id: 'settings', type: 'shortcut', title: 'impostazioni', icon: '⚙️', action: 'settings', size: 'tile-small', color: 'accent-dark' }
+  { 
+    id: 'phone', type: 'shortcut', title: 'telefono', action: 'tel:', size: 'tile-medium', color: 'accent-blue',
+    iconSvg: `<svg viewBox="0 0 24 24" width="38" height="38" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>`
+  },
+  { 
+    id: 'messages', type: 'shortcut', title: 'messaggi', action: 'sms:', size: 'tile-medium', color: 'accent-ochre',
+    iconSvg: `<svg viewBox="0 0 24 24" width="38" height="38" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`
+  },
+  { 
+    id: 'photos', type: 'shortcut', title: 'foto', action: 'photos', size: 'tile-medium', color: 'accent-yellow',
+    iconSvg: `<svg viewBox="0 0 24 24" width="38" height="38" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`
+  },
+  { 
+    id: 'people', type: 'shortcut', title: 'contatti', action: 'people', size: 'tile-medium', color: 'accent-magenta',
+    iconSvg: `<svg viewBox="0 0 24 24" width="38" height="38" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`
+  },
+  { 
+    id: 'browser', type: 'shortcut', title: 'internet', action: 'https://www.google.com', size: 'tile-medium', color: 'accent-teal',
+    iconSvg: `<svg viewBox="0 0 24 24" width="38" height="38" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`
+  },
+  { 
+    id: 'mail', type: 'shortcut', title: 'email', action: 'mailto:', size: 'tile-medium', color: 'accent-blue',
+    iconSvg: `<svg viewBox="0 0 24 24" width="38" height="38" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>`
+  },
+  { 
+    id: 'camera', type: 'shortcut', title: 'fotocamera', action: 'camera', size: 'tile-small', color: 'accent-dark',
+    iconSvg: `<svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>`
+  },
+  { 
+    id: 'settings', type: 'shortcut', title: 'impostazioni', action: 'settings', size: 'tile-small', color: 'accent-dark',
+    iconSvg: `<svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`
+  }
 ];
 
 let METRO_TILES = JSON.parse(localStorage.getItem('GLANCE_TILES_CONFIG')) || DEFAULT_METRO_TILES;
@@ -368,6 +392,8 @@ function setupWeatherCityManagement() {
   }
 }
 
+let deletingCitiesMode = false;
+
 function renderWeatherCitiesList() {
   const container = document.getElementById('citiesListContainer');
   const currentCityEl = document.getElementById('currentWeatherCity');
@@ -379,33 +405,41 @@ function renderWeatherCitiesList() {
     .map(city => `
     <div class="weather-city-item ${city.id === activeWeatherCity.id ? 'active-city' : ''}" data-id="${city.id}">
       <span>${city.name}</span>
+      ${deletingCitiesMode ? `<button class="city-minus-btn" data-delete-id="${city.id}" title="Elimina città">&minus;</button>` : ''}
     </div>
   `).join('');
 
-  // Switch city or delete on long press
+  // Switch city or delete via minus button
   container.querySelectorAll('.weather-city-item').forEach(el => {
     el.addEventListener('click', (e) => {
-      activeWeatherCity = WEATHER_CITIES.find(c => c.id == el.dataset.id);
-      renderWeatherCitiesList();
-      loadWeather(true);
-    });
-    
-    // Long press / right click to delete
-    el.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      if (WEATHER_CITIES.length <= 1) {
-        alert("Non puoi eliminare l'unica città salvata.");
-        return;
-      }
-      if (confirm(`Vuoi eliminare ${el.innerText.trim()} dalle città salvate?`)) {
-        WEATHER_CITIES = WEATHER_CITIES.filter(c => c.id != el.dataset.id);
-        if (activeWeatherCity.id == el.dataset.id) {
+      const deleteBtn = e.target.closest('.city-minus-btn');
+      if (deleteBtn) {
+        e.stopPropagation();
+        const deleteId = deleteBtn.getAttribute('data-delete-id');
+        if (WEATHER_CITIES.length <= 1) {
+          alert("Non puoi eliminare l'unica città salvata.");
+          return;
+        }
+        WEATHER_CITIES = WEATHER_CITIES.filter(c => c.id != deleteId);
+        if (activeWeatherCity.id == deleteId) {
           activeWeatherCity = WEATHER_CITIES[0];
         }
         saveWeatherCities();
         renderWeatherCitiesList();
         loadWeather(true);
+        return;
       }
+
+      activeWeatherCity = WEATHER_CITIES.find(c => c.id == el.dataset.id);
+      renderWeatherCitiesList();
+      loadWeather(true);
+    });
+    
+    // Long press / right click toggles minus buttons for deletion
+    el.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      deletingCitiesMode = !deletingCitiesMode;
+      renderWeatherCitiesList();
     });
   });
 
@@ -1001,9 +1035,15 @@ function getFallbackImage(category) {
 
 function cleanHtmlContent(html) {
   if (!html) return '';
-  // Remove script tags, iframe ads, and unwanted tracking
+  // Comprehensive Ad-Block & Tracker removal
   let doc = new DOMParser().parseFromString(html, 'text/html');
-  doc.querySelectorAll('script, iframe, ins, .ad-container, .advertisement').forEach(el => el.remove());
+  const adSelectors = [
+    'script', 'iframe', 'ins', 'embed', 'object',
+    '.ad', '.ads', '.ad-container', '.advertisement', '.banner-ad',
+    '.social-share', '.cookie-banner', '.newsletter-signup', '.outbrain',
+    '[id*="google_ads"]', '[class*="sponsored"]', '[class*="advert"]'
+  ];
+  doc.querySelectorAll(adSelectors.join(', ')).forEach(el => el.remove());
   return doc.body.innerHTML;
 }
 
@@ -1122,9 +1162,10 @@ function renderTileInnerContent(tile) {
   }
 
   // Generic shortcut tile
+  const iconContent = tile.iconSvg || `<span class="tile-icon-huge">${tile.icon || '📱'}</span>`;
   return `
     <div class="tile-icon-container">
-      <span class="tile-icon-huge">${tile.icon || '📱'}</span>
+      ${iconContent}
     </div>
     <div class="tile-label">${tile.title}</div>
   `;
