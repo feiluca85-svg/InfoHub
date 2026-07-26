@@ -179,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
   startLiveTileIntervals();
   renderSiteChips();
   setupEventListeners();
+  setupSidebarListeners();
   setupSwipeNavigation();
   setupTileEditModalListeners();
   setupGoogleSiteSearch();
@@ -223,38 +224,41 @@ function setupEventListeners() {
       updateSidebarContent(tabId);
     });
   });
+}
 
-  function updateSidebarContent(tabId) {
-    const sidebarTitle = document.getElementById('sidebarTitle');
-    const startOptionsContainer = document.getElementById('startOptionsContainer');
-    const siteChipsContainer = document.getElementById('siteChipsContainer');
-    const addSiteBtn = document.getElementById('addSiteBtn');
-    const citiesListContainer = document.getElementById('citiesListContainer');
-    const addCityBtn = document.getElementById('addCityBtn');
-    
-    if (tabId === 'startView') {
-      if (sidebarTitle) sidebarTitle.textContent = 'personalizza start';
-      if (startOptionsContainer) startOptionsContainer.classList.remove('hidden');
-      if (siteChipsContainer) siteChipsContainer.classList.add('hidden');
-      if (addSiteBtn) addSiteBtn.classList.add('hidden');
-      if (citiesListContainer) citiesListContainer.classList.add('hidden');
-      if (addCityBtn) addCityBtn.classList.add('hidden');
-    } else if (tabId === 'weatherView') {
-      if (sidebarTitle) sidebarTitle.textContent = 'città salvate';
-      if (startOptionsContainer) startOptionsContainer.classList.add('hidden');
-      if (siteChipsContainer) siteChipsContainer.classList.add('hidden');
-      if (addSiteBtn) addSiteBtn.classList.add('hidden');
-      if (citiesListContainer) citiesListContainer.classList.remove('hidden');
-      if (addCityBtn) addCityBtn.classList.remove('hidden');
-    } else {
-      if (sidebarTitle) sidebarTitle.textContent = 'filtri siti';
-      if (startOptionsContainer) startOptionsContainer.classList.add('hidden');
-      if (siteChipsContainer) siteChipsContainer.classList.remove('hidden');
-      if (addSiteBtn) addSiteBtn.classList.remove('hidden');
-      if (citiesListContainer) citiesListContainer.classList.add('hidden');
-      if (addCityBtn) addCityBtn.classList.add('hidden');
-    }
+function updateSidebarContent(tabId) {
+  const sidebarTitle = document.getElementById('sidebarTitle');
+  const startOptionsContainer = document.getElementById('startOptionsContainer');
+  const siteChipsContainer = document.getElementById('siteChipsContainer');
+  const addSiteBtn = document.getElementById('addSiteBtn');
+  const citiesListContainer = document.getElementById('citiesListContainer');
+  const addCityBtn = document.getElementById('addCityBtn');
+  
+  if (tabId === 'startView') {
+    if (sidebarTitle) sidebarTitle.textContent = 'personalizza start';
+    if (startOptionsContainer) startOptionsContainer.classList.remove('hidden');
+    if (siteChipsContainer) siteChipsContainer.classList.add('hidden');
+    if (addSiteBtn) addSiteBtn.classList.add('hidden');
+    if (citiesListContainer) citiesListContainer.classList.add('hidden');
+    if (addCityBtn) addCityBtn.classList.add('hidden');
+  } else if (tabId === 'weatherView') {
+    if (sidebarTitle) sidebarTitle.textContent = 'città salvate';
+    if (startOptionsContainer) startOptionsContainer.classList.add('hidden');
+    if (siteChipsContainer) siteChipsContainer.classList.add('hidden');
+    if (addSiteBtn) addSiteBtn.classList.add('hidden');
+    if (citiesListContainer) citiesListContainer.classList.remove('hidden');
+    if (addCityBtn) addCityBtn.classList.remove('hidden');
+  } else {
+    if (sidebarTitle) sidebarTitle.textContent = 'filtri siti';
+    if (startOptionsContainer) startOptionsContainer.classList.add('hidden');
+    if (siteChipsContainer) siteChipsContainer.classList.remove('hidden');
+    if (addSiteBtn) addSiteBtn.classList.remove('hidden');
+    if (citiesListContainer) citiesListContainer.classList.add('hidden');
+    if (addCityBtn) addCityBtn.classList.add('hidden');
   }
+}
+
+function setupSidebarListeners() {
   // Sidebar Controls
   const sidebar = document.getElementById('sidebar');
   const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -889,6 +893,7 @@ function applyFilters() {
 
 // Render Feed Grid
 function renderFeedGrid() {
+  const articleCountEl = document.getElementById('articleCount');
   if (articleCountEl) {
     articleCountEl.textContent = `${filteredArticles.length} articoli`;
   }
