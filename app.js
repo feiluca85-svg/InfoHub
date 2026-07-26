@@ -105,11 +105,45 @@ const DEFAULT_METRO_TILES = [
   }
 ];
 
-let METRO_TILES = JSON.parse(localStorage.getItem('GLANCE_TILES_CONFIG')) || DEFAULT_METRO_TILES;
+// Custom Group Pages State
+const DEFAULT_CUSTOM_GROUPS = [
+  { id: 'group_tech', name: 'tech', category: 'tech' }
+];
 
-function saveMetroTilesConfig() {
-  localStorage.setItem('GLANCE_TILES_CONFIG', JSON.stringify(METRO_TILES));
+let METRO_TILES = JSON.parse(localStorage.getItem('GLANCE_TILES_CONFIG'));
+if (!METRO_TILES || !Array.isArray(METRO_TILES) || METRO_TILES.length === 0) {
+  METRO_TILES = DEFAULT_METRO_TILES;
 }
+
+let CUSTOM_GROUPS = JSON.parse(localStorage.getItem('GLANCE_CUSTOM_GROUPS')) || DEFAULT_CUSTOM_GROUPS;
+
+function saveCustomGroupsConfig() {
+  localStorage.setItem('GLANCE_CUSTOM_GROUPS', JSON.stringify(CUSTOM_GROUPS));
+}
+
+// WP8 Alphabetical Installed Apps List
+const WP8_INSTALLED_APPS = [
+  { name: 'Amazon', action: 'https://www.amazon.it', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>` },
+  { name: 'Calcolatrice', action: 'calculator', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg>` },
+  { name: 'Calendario', action: 'calendar', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>` },
+  { name: 'Chrome / Web', action: 'https://www.google.com', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>` },
+  { name: 'Contatti', action: 'people', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>` },
+  { name: 'Email', action: 'mailto:', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>` },
+  { name: 'Facebook', action: 'https://www.facebook.com', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>` },
+  { name: 'Fotocamera', action: 'camera', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>` },
+  { name: 'Galleria Foto', action: 'photos', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>` },
+  { name: 'Impostazioni', action: 'settings', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>` },
+  { name: 'Instagram', action: 'https://www.instagram.com', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>` },
+  { name: 'Mappe', action: 'https://maps.google.com', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><polygon points="1 6 1 22 8 18 15 22 22 18 22 2 15 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="15" y1="6" x2="15" y2="22"></line></svg>` },
+  { name: 'Messaggi', action: 'sms:', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>` },
+  { name: 'Meteo Glance', action: 'weatherView', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>` },
+  { name: 'Notizie Glance', action: 'feedView', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><path d="M18 14h-8"></path><path d="M18 18h-8"></path><path d="M18 10h-8"></path></svg>` },
+  { name: 'Outlook / Mail', action: 'mailto:', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>` },
+  { name: 'Spotify', action: 'https://open.spotify.com', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="12" cy="12" r="10"></circle><path d="M8 11.5c2.5-1 5.5-1 8 .5"></path><path d="M7 14.5c3-1.2 6.5-1 9.5 .8"></path><path d="M9 8.5c2-1 4.5-1 6.5 0"></path></svg>` },
+  { name: 'Telefono', action: 'tel:', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>` },
+  { name: 'WhatsApp', action: 'https://web.whatsapp.com', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>` },
+  { name: 'YouTube', action: 'https://www.youtube.com', iconSvg: `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>` }
+];
 
 // App State
 let allArticles = [];
@@ -140,14 +174,17 @@ const refreshBtn = document.getElementById('refreshBtn');
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
   renderStartScreenTiles();
+  renderAppListView();
+  renderCustomGroupTabsAndViews();
   startLiveTileIntervals();
   renderSiteChips();
   setupEventListeners();
   setupSwipeNavigation();
   setupTileEditModalListeners();
+  setupGoogleSiteSearch();
   loadAllFeeds();
   loadWeather(false);
-  updateSidebarContent('startView');
+  switchTabToId('startView');
 });
 
 // Setup Event Listeners
@@ -159,10 +196,21 @@ function setupEventListeners() {
       document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
       btn.classList.add('active');
       const tabId = btn.getAttribute('data-tab');
-      document.getElementById(tabId).classList.add('active');
+      const tabView = document.getElementById(tabId);
+      if (tabView) tabView.classList.add('active');
       
+      const pivotHeader = document.getElementById('pivotHeader');
+      if (pivotHeader) {
+        // Clean fullscreen on startView: hide pivotHeader
+        if (tabId === 'startView') {
+          pivotHeader.classList.add('hidden');
+        } else {
+          pivotHeader.classList.remove('hidden');
+        }
+      }
+
       const searchContainer = document.querySelector('.search-container');
-      if (tabId === 'feedView') {
+      if (tabId === 'feedView' || tabId.startsWith('groupView_')) {
         if (searchContainer) searchContainer.classList.remove('hidden');
       } else {
         if (searchContainer) searchContainer.classList.add('hidden');
@@ -1221,10 +1269,14 @@ function startLiveTileIntervals() {
 }
 
 /* ==========================================================================
-   HORIZONTAL SWIPE NAVIGATION (Start <-> Meteo <-> Feed News)
+   HORIZONTAL SWIPE NAVIGATION (App List <-> Start <-> Meteo <-> News <-> Groups)
    ========================================================================== */
+function getAllTabsSequence() {
+  const customTabIds = CUSTOM_GROUPS.map(g => `groupView_${g.id}`);
+  return ['appListView', 'startView', 'weatherView', 'feedView', ...customTabIds];
+}
+
 function setupSwipeNavigation() {
-  const tabsOrder = ['startView', 'weatherView', 'feedView'];
   let touchStartX = 0;
   let touchStartY = 0;
 
@@ -1245,20 +1297,330 @@ function setupSwipeNavigation() {
 
     // Horizontality check
     if (Math.abs(diffX) > 60 && Math.abs(diffY) < 50) {
-      const activeBtn = document.querySelector('.pivot-btn.active');
-      if (!activeBtn) return;
-      const currentTabId = activeBtn.getAttribute('data-tab');
-      let currentIndex = tabsOrder.indexOf(currentTabId);
+      const tabsSequence = getAllTabsSequence();
+      const activeView = document.querySelector('.tab-view.active');
+      if (!activeView) return;
+      const currentTabId = activeView.id;
+      let currentIndex = tabsSequence.indexOf(currentTabId);
+      if (currentIndex === -1) currentIndex = 1; // Default to startView
 
-      if (diffX < 0 && currentIndex < tabsOrder.length - 1) {
+      if (diffX < 0 && currentIndex < tabsSequence.length - 1) {
         // Swiped Left -> Move Right
-        switchTabTo(tabsOrder[currentIndex + 1]);
+        switchTabToId(tabsSequence[currentIndex + 1]);
       } else if (diffX > 0 && currentIndex > 0) {
         // Swiped Right -> Move Left
-        switchTabTo(tabsOrder[currentIndex - 1]);
+        switchTabToId(tabsSequence[currentIndex - 1]);
       }
     }
   }, { passive: true });
+}
+
+function switchTabToId(tabId) {
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.pivot-btn').forEach(b => b.classList.remove('active'));
+  
+  const targetView = document.getElementById(tabId);
+  if (targetView) targetView.classList.add('active');
+
+  const pivotBtn = document.querySelector(`.pivot-btn[data-tab="${tabId}"]`);
+  if (pivotBtn) pivotBtn.classList.add('active');
+
+  const pivotHeader = document.getElementById('pivotHeader');
+  if (pivotHeader) {
+    if (tabId === 'startView') {
+      pivotHeader.classList.add('hidden');
+    } else {
+      pivotHeader.classList.remove('hidden');
+    }
+  }
+
+  const searchContainer = document.querySelector('.search-container');
+  if (tabId === 'feedView' || tabId.startsWith('groupView_')) {
+    if (searchContainer) searchContainer.classList.remove('hidden');
+  } else {
+    if (searchContainer) searchContainer.classList.add('hidden');
+  }
+
+  if (tabId === 'weatherView') {
+    renderWeatherCitiesList();
+    loadWeather();
+  }
+
+  updateSidebarContent(tabId);
+}
+
+/* ==========================================================================
+   WP8 ALPHABETICAL APP LIST MENU ENGINE
+   ========================================================================== */
+function renderAppListView() {
+  const container = document.getElementById('appListContainer');
+  const searchInput = document.getElementById('appListSearchInput');
+  if (!container) return;
+
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  // Sort apps alphabetically
+  const sortedApps = [...WP8_INSTALLED_APPS].sort((a, b) => a.name.localeCompare(b.name, 'it'));
+
+  const filtered = query
+    ? sortedApps.filter(app => app.name.toLowerCase().includes(query))
+    : sortedApps;
+
+  // Group by first letter
+  const grouped = {};
+  filtered.forEach(app => {
+    const letter = app.name.charAt(0).toUpperCase();
+    if (!grouped[letter]) grouped[letter] = [];
+    grouped[letter].push(app);
+  });
+
+  let html = '';
+  Object.keys(grouped).sort().forEach(letter => {
+    html += `
+      <div class="app-letter-section">
+        <div class="app-letter-badge">${letter}</div>
+        ${grouped[letter].map(app => `
+          <div class="app-list-row" data-action="${escapeHtml(app.action)}" data-name="${escapeHtml(app.name)}">
+            <div class="app-list-icon">${app.iconSvg}</div>
+            <div class="app-list-name">${escapeHtml(app.name)}</div>
+            <button class="app-pin-btn" title="Aggiungi a Start">+ pin</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  });
+
+  container.innerHTML = html || '<p style="color:#aaa; padding:20px; text-align:center;">Nessuna app trovata.</p>';
+
+  // Attach event listeners for app rows and pin buttons
+  container.querySelectorAll('.app-list-row').forEach(row => {
+    row.addEventListener('click', (e) => {
+      const pinBtn = e.target.closest('.app-pin-btn');
+      if (pinBtn) {
+        e.stopPropagation();
+        const appName = row.getAttribute('data-name');
+        const appAction = row.getAttribute('data-action');
+        pinAppToStart(appName, appAction);
+        return;
+      }
+      const action = row.getAttribute('data-action');
+      if (action.startsWith('http://') || action.startsWith('https://') || action.startsWith('tel:') || action.startsWith('sms:') || action.startsWith('mailto:')) {
+        window.open(action, '_blank');
+      } else {
+        switchTabToId(action);
+      }
+    });
+  });
+
+  if (searchInput && !searchInput.dataset.initialized) {
+    searchInput.dataset.initialized = 'true';
+    searchInput.addEventListener('input', () => renderAppListView());
+  }
+}
+
+function pinAppToStart(name, action) {
+  const existing = METRO_TILES.find(t => t.title.toLowerCase() === name.toLowerCase());
+  if (existing) {
+    alert(`${name} è già presente nella Start Screen.`);
+    return;
+  }
+  const appObj = WP8_INSTALLED_APPS.find(a => a.name === name);
+  const newTile = {
+    id: 'tile_' + Date.now(),
+    type: 'shortcut',
+    title: name.toLowerCase(),
+    iconSvg: appObj ? appObj.iconSvg : null,
+    action: action,
+    size: 'tile-medium',
+    color: 'accent-blue'
+  };
+  METRO_TILES.push(newTile);
+  saveMetroTilesConfig();
+  renderStartScreenTiles();
+  alert(`📌 ${name} aggiunta alla Start Screen!`);
+}
+
+/* ==========================================================================
+   CUSTOM GROUP PAGES ENGINE
+   ========================================================================== */
+function renderCustomGroupTabsAndViews() {
+  const pivotTabs = document.getElementById('pivotTabs');
+  const mainContent = document.getElementById('mainContent');
+  if (!pivotTabs || !mainContent) return;
+
+  // Remove old custom group tabs and views
+  document.querySelectorAll('.custom-group-pivot-btn').forEach(b => b.remove());
+  document.querySelectorAll('.custom-group-view').forEach(v => v.remove());
+
+  CUSTOM_GROUPS.forEach(group => {
+    // 1. Render Pivot Button
+    const btn = document.createElement('button');
+    btn.className = 'pivot-btn custom-group-pivot-btn';
+    btn.setAttribute('data-tab', `groupView_${group.id}`);
+    btn.textContent = group.name.toLowerCase();
+    btn.addEventListener('click', () => switchTabToId(`groupView_${group.id}`));
+    pivotTabs.appendChild(btn);
+
+    // 2. Render Group Section View
+    const section = document.createElement('section');
+    section.id = `groupView_${group.id}`;
+    section.className = 'tab-view custom-group-view';
+    section.innerHTML = `
+      <div class="group-header" style="padding: 10px 0; display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="font-weight:300; font-size:1.8rem;">${escapeHtml(group.name)}</h2>
+        <button class="delete-group-btn danger-btn" data-group-id="${group.id}" style="padding:6px 12px; font-size:0.8rem; background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444; cursor:pointer;">Elimina Gruppo</button>
+      </div>
+      <div id="grid_${group.id}" class="feed-grid"></div>
+    `;
+    mainContent.appendChild(section);
+
+    // Delete group handler
+    section.querySelector('.delete-group-btn').addEventListener('click', () => {
+      if (confirm(`Vuoi eliminare la pagina gruppo "${group.name}"?`)) {
+        CUSTOM_GROUPS = CUSTOM_GROUPS.filter(g => g.id !== group.id);
+        saveCustomGroupsConfig();
+        renderCustomGroupTabsAndViews();
+        switchTabToId('feedView');
+      }
+    });
+  });
+
+  // Sidebar add group button listener
+  const addGroupBtn = document.getElementById('addGroupBtn');
+  const addGroupModal = document.getElementById('addGroupModal');
+  const closeAddGroupBtn = document.getElementById('closeAddGroupBtn');
+  const saveNewGroupBtn = document.getElementById('saveNewGroupBtn');
+
+  if (addGroupBtn && addGroupModal) {
+    addGroupBtn.addEventListener('click', () => addGroupModal.showModal());
+  }
+  if (closeAddGroupBtn && addGroupModal) {
+    closeAddGroupBtn.addEventListener('click', () => addGroupModal.close());
+  }
+  if (saveNewGroupBtn) {
+    saveNewGroupBtn.addEventListener('click', () => {
+      const name = document.getElementById('newGroupName').value.trim();
+      if (!name) {
+        alert('Inserisci un nome per il gruppo.');
+        return;
+      }
+      const newGroup = {
+        id: 'group_' + Date.now(),
+        name: name,
+        category: name.toLowerCase()
+      };
+      CUSTOM_GROUPS.push(newGroup);
+      saveCustomGroupsConfig();
+      renderCustomGroupTabsAndViews();
+      document.getElementById('newGroupName').value = '';
+      addGroupModal.close();
+      switchTabToId(`groupView_${newGroup.id}`);
+    });
+  }
+
+  // Populate articles into custom group grids
+  populateCustomGroupGrids();
+}
+
+function populateCustomGroupGrids() {
+  CUSTOM_GROUPS.forEach(group => {
+    const grid = document.getElementById(`grid_${group.id}`);
+    if (!grid) return;
+
+    // Filter articles for this group
+    const groupArticles = allArticles.filter(a => 
+      a.category === group.category || 
+      a.title.toLowerCase().includes(group.name.toLowerCase()) ||
+      a.siteName.toLowerCase().includes(group.name.toLowerCase())
+    );
+
+    if (groupArticles.length === 0) {
+      grid.innerHTML = `<p style="color:#888; text-align:center; padding:30px; grid-column:span 2;">Nessun articolo per il gruppo "${escapeHtml(group.name)}". Aggiungi siti dedicati da + aggiungi sito.</p>`;
+      return;
+    }
+
+    grid.innerHTML = groupArticles.map(article => `
+      <article class="article-card" onclick="openReaderModal('${escapeHtml(article.link)}')">
+        <div class="card-img-wrapper">
+          <img class="card-img" src="${article.imageUrl || getFallbackImage(article.category)}" alt="" loading="lazy" onerror="this.src='${getFallbackImage(article.category)}'">
+        </div>
+        <div class="card-content">
+          <span class="source-badge" style="color: ${article.siteColor};">${article.siteName}</span>
+          <h3 class="card-title">${escapeHtml(article.title)}</h3>
+          <p class="card-snippet">${escapeHtml(article.snippet)}</p>
+          <div class="card-footer">
+            <span>${formatDate(article.pubDate)}</span>
+          </div>
+        </div>
+      </article>
+    `).join('');
+  });
+}
+
+/* ==========================================================================
+   GOOGLE SEARCH SITE FINDER ENGINE
+   ========================================================================== */
+function setupGoogleSiteSearch() {
+  const searchBtn = document.getElementById('googleSiteSearchBtn');
+  const searchInput = document.getElementById('googleSiteSearchInput');
+  const resultsContainer = document.getElementById('googleSiteSearchResults');
+  const addSiteModal = document.getElementById('addSiteModal');
+
+  if (!searchBtn || !searchInput || !resultsContainer) return;
+
+  searchBtn.addEventListener('click', async () => {
+    const query = searchInput.value.trim();
+    if (!query) {
+      alert('Inserisci il nome di un sito da cercare.');
+      return;
+    }
+
+    resultsContainer.innerHTML = '<p style="color:#38bdf8; text-align:center;">🔍 Ricerca in corso per "' + escapeHtml(query) + '"...</p>';
+
+    // Build intelligent website candidates based on search query
+    const cleanQuery = query.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const candidates = [
+      { name: query, url: `https://www.${cleanQuery}.it`, feed: `https://www.${cleanQuery}.it/feed` },
+      { name: query + ' (.com)', url: `https://www.${cleanQuery}.com`, feed: `https://www.${cleanQuery}.com/rss` },
+      { name: query + ' News', url: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=it&gl=IT&ceid=IT:it`, feed: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=it&gl=IT&ceid=IT:it` }
+    ];
+
+    resultsContainer.innerHTML = candidates.map(c => `
+      <div class="google-search-result-item">
+        <div class="google-result-info">
+          <div class="google-result-title">${escapeHtml(c.name)}</div>
+          <div class="google-result-url">${escapeHtml(c.url)}</div>
+        </div>
+        <button class="action-btn primary add-google-site-btn" data-name="${escapeHtml(c.name)}" data-url="${escapeHtml(c.url)}" data-feed="${escapeHtml(c.feed)}" style="padding:6px 14px; font-size:0.85rem;">+ Aggiungi</button>
+      </div>
+    `).join('');
+
+    // Attach click listeners to + Aggiungi buttons
+    resultsContainer.querySelectorAll('.add-google-site-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const siteName = btn.getAttribute('data-name');
+        const siteUrl = btn.getAttribute('data-url');
+        const feedUrl = btn.getAttribute('data-feed');
+
+        const newSite = {
+          id: 'site_' + Date.now(),
+          name: siteName,
+          category: 'general',
+          feedUrl: feedUrl,
+          siteUrl: siteUrl,
+          color: '#38bdf8',
+          icon: siteName.charAt(0).toUpperCase()
+        };
+
+        SITES_CONFIG.push(newSite);
+        saveSitesConfig();
+        renderSiteChips();
+        loadAllFeeds();
+        if (addSiteModal) addSiteModal.close();
+        alert(`✅ Sito "${siteName}" aggiunto con successo!`);
+      });
+    });
+  });
 }
 
 /* ==========================================================================

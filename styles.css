@@ -455,6 +455,10 @@ body {
   overflow-y: auto;
 }
 
+#pivotHeader.hidden ~ .content-area {
+  height: 100vh;
+}
+
 .tab-view {
   display: none;
   padding: 0 20px 20px 20px;
@@ -1054,4 +1058,116 @@ body {
   flex-direction: column;
   gap: 10px;
   padding: 10px 0;
+}
+
+/* ==========================================================================
+   WP8 ALPHABETICAL APP LIST MENU STYLES
+   ========================================================================== */
+.wp8-app-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 5px 30px 5px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.app-letter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.app-letter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: #0078d7;
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.app-list-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.app-list-row:hover, .app-list-row:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.app-list-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #252526;
+  color: #0078d7;
+}
+
+.app-list-name {
+  font-size: 1.1rem;
+  font-weight: 400;
+  flex: 1;
+  color: #ffffff;
+}
+
+.app-pin-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #aaaaaa;
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.app-pin-btn:hover {
+  background: #0078d7;
+  color: white;
+  border-color: #0078d7;
+}
+
+/* Google Search Finder Results */
+.google-search-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  margin-bottom: 8px;
+}
+
+.google-result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.google-result-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #38bdf8;
+}
+
+.google-result-url {
+  font-size: 0.75rem;
+  color: #888888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

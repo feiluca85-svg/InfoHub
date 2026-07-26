@@ -26,8 +26,8 @@
 </head>
 <body class="dark-mode">
   <div id="app">
-    <!-- Metro Pivot Header -->
-    <header class="pivot-header">
+    <!-- Metro Pivot Header (Hidden in startView for clean full screen) -->
+    <header id="pivotHeader" class="pivot-header hidden">
       <button id="sidebarToggleBtn" class="metro-icon-btn" title="Apri menu filtri" aria-label="Menu">
         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -36,8 +36,7 @@
         </svg>
       </button>
       <h1 class="app-title">glance</h1>
-      <div class="pivot-tabs">
-        <button class="pivot-btn active" data-tab="startView">start</button>
+      <div class="pivot-tabs" id="pivotTabs">
         <button class="pivot-btn" data-tab="weatherView">meteo</button>
         <button class="pivot-btn" data-tab="feedView">feed news</button>
       </div>
@@ -81,13 +80,30 @@
       <div class="sidebar-footer">
         <button id="addSiteBtn" class="metro-list-btn hidden">+ aggiungi sito</button>
         <button id="addCityBtn" class="metro-list-btn hidden">+ aggiungi città</button>
+        <button id="addGroupBtn" class="metro-list-btn">+ crea nuova pagina gruppo</button>
       </div>
     </aside>
 
     <!-- Main Content Area -->
     <main class="content-area" id="mainContent">
         
-        <!-- Tab 0: Windows Phone 8 Start Screen (Live Tiles Launcher) -->
+        <!-- Tab -1: WP8 Alphabetical App List Menu (Swipe Left from Start) -->
+        <section id="appListView" class="tab-view">
+          <div class="app-list-header">
+            <div class="search-box" style="margin-bottom: 15px;">
+              <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="appListSearchInput" placeholder="Cerca app..." autocomplete="off">
+            </div>
+          </div>
+          <div id="appListContainer" class="wp8-app-list-container">
+            <!-- Dynamically populated WP8 A-Z app list -->
+          </div>
+        </section>
+
+        <!-- Tab 0: Windows Phone 8 Start Screen (Clean Fullscreen Live Tiles Launcher) -->
         <section id="startView" class="tab-view active">
           <div id="metroGrid" class="metro-tiles-grid">
             <!-- Dynamically generated Live Tiles -->
@@ -138,16 +154,42 @@
         </section>
     </main>
 
-    <!-- Add Site Dialog -->
+    <!-- Add Site Dialog (With Google Search Finder) -->
     <dialog id="addSiteModal" class="reader-dialog">
       <div class="reader-dialog-content">
         <header class="reader-header">
-          <h2 style="font-weight:300;">aggiungi sito</h2>
+          <h2 style="font-weight:300;">trova e aggiungi sito</h2>
           <button id="closeAddSiteBtn" class="close-modal-btn">&times;</button>
         </header>
         <div class="reader-scroll-body" style="padding: 20px;">
-          <input type="url" id="newSiteUrl" placeholder="Es: https://www.dday.it/rss" style="width:100%; padding:15px; background:#222; border:1px solid #444; color:white; font-size:1rem; outline:none; margin-bottom:20px;">
-          <button id="saveNewSiteBtn" class="action-btn" style="width:100%; justify-content:center;">Salva</button>
+          <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.9rem;">Cerca il nome del sito su Google:</label>
+          <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <input type="text" id="googleSiteSearchInput" placeholder="Es: La Repubblica, TechCrunch, Gazzetta..." autocomplete="off" style="flex:1; padding:14px; background:#222; border:1px solid #444; color:white; font-size:1rem; outline:none;">
+            <button id="googleSiteSearchBtn" class="action-btn primary" style="flex:0 0 auto; padding:0 20px;">Cerca</button>
+          </div>
+
+          <div id="googleSiteSearchResults" class="google-search-results" style="margin-bottom: 20px;"></div>
+
+          <div style="border-top: 1px solid #333; padding-top: 15px; margin-top: 15px;">
+            <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.85rem;">Oppure inserisci il link web/RSS manualmente:</label>
+            <input type="url" id="newSiteUrl" placeholder="Es: https://www.repubblica.it" style="width:100%; padding:14px; background:#222; border:1px solid #444; color:white; font-size:0.95rem; outline:none; margin-bottom:12px;">
+            <button id="saveNewSiteBtn" class="action-btn" style="width:100%; justify-content:center;">Salva Sito</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Create Custom Group Page Dialog -->
+    <dialog id="addGroupModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <h2 style="font-weight:300;">nuova pagina gruppo</h2>
+          <button id="closeAddGroupBtn" class="close-modal-btn">&times;</button>
+        </header>
+        <div class="reader-scroll-body" style="padding: 20px;">
+          <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.9rem;">Nome del Gruppo (es: Sport, Tecnologia, Lavoro):</label>
+          <input type="text" id="newGroupName" placeholder="Es: Sport" autocomplete="off" style="width:100%; padding:15px; background:#222; border:1px solid #444; color:white; font-size:1rem; outline:none; margin-bottom:20px;">
+          <button id="saveNewGroupBtn" class="action-btn primary" style="width:100%; justify-content:center;">Crea Pagina</button>
         </div>
       </div>
     </dialog>
