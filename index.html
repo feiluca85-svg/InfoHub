@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0f172a">
-  <meta name="description" content="InfoHub - Il tuo aggregatore personalizzato di notizie senza pubblicità">
-  <title>InfoHub - Le tue notizie in un'unica app</title>
+  <meta name="description" content="Glance - Il tuo aggregatore personalizzato di notizie senza pubblicità">
+  <title>Glance - Le tue notizie in un'unica app</title>
   
   <!-- PWA Meta Tags -->
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="InfoHub">
+  <meta name="apple-mobile-web-app-title" content="Glance">
   <link rel="icon" href="data:,">
 
   <!-- Fonts & Icons -->
@@ -37,8 +37,9 @@
       </button>
       <h1 class="app-title">glance</h1>
       <div class="pivot-tabs">
-        <button class="pivot-btn active" data-tab="feedView">feed news</button>
+        <button class="pivot-btn active" data-tab="startView">start</button>
         <button class="pivot-btn" data-tab="weatherView">meteo</button>
+        <button class="pivot-btn" data-tab="feedView">feed news</button>
       </div>
       <button id="refreshBtn" class="metro-icon-btn" title="Aggiorna notizie" aria-label="Aggiorna notizie">
         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -49,8 +50,8 @@
       </button>
     </header>
 
-    <!-- Search Bar -->
-    <div class="search-container">
+    <!-- Search Bar (Visible in feed news view) -->
+    <div class="search-container hidden">
       <div class="search-box">
         <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
           <circle cx="11" cy="11" r="8"></circle>
@@ -65,16 +66,20 @@
     <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
     <aside id="sidebar" class="metro-sidebar">
       <div class="sidebar-header">
-        <h2 id="sidebarTitle">Filtri Siti</h2>
+        <h2 id="sidebarTitle">Personalizza Start</h2>
       </div>
-      <div class="site-chips-bar" id="siteChipsContainer">
+      <div id="startOptionsContainer" class="start-options-container">
+        <button id="addTileBtn" class="metro-list-btn">+ aggiungi scorciatoia</button>
+        <button id="resetTilesBtn" class="metro-list-btn danger-btn">ripristina tile predefinite</button>
+      </div>
+      <div class="site-chips-bar hidden" id="siteChipsContainer">
         <!-- Generated dynamically by app.js -->
       </div>
       <div id="citiesListContainer" class="cities-list-container hidden">
         <!-- Rendered via JS -->
       </div>
       <div class="sidebar-footer">
-        <button id="addSiteBtn" class="metro-list-btn">+ aggiungi sito</button>
+        <button id="addSiteBtn" class="metro-list-btn hidden">+ aggiungi sito</button>
         <button id="addCityBtn" class="metro-list-btn hidden">+ aggiungi città</button>
       </div>
     </aside>
@@ -82,8 +87,15 @@
     <!-- Main Content Area -->
     <main class="content-area" id="mainContent">
         
+        <!-- Tab 0: Windows Phone 8 Start Screen (Live Tiles Launcher) -->
+        <section id="startView" class="tab-view active">
+          <div id="metroGrid" class="metro-tiles-grid">
+            <!-- Dynamically generated Live Tiles -->
+          </div>
+        </section>
+
         <!-- Tab 1: News Feed View -->
-        <section id="feedView" class="tab-view active">
+        <section id="feedView" class="tab-view">
           <div id="loadingState" class="loading-spinner-container">
             <div class="spinner"></div>
             <p>Caricamento notizie in corso da tutte le fonti...</p>
@@ -158,7 +170,56 @@
       </div>
     </dialog>
 
-    <!-- (Bottom Navigation Bar removed for Metro UI) -->
+    <!-- Edit Tile Dialog -->
+    <dialog id="tileEditModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <h2 style="font-weight:300;">personalizza tile</h2>
+          <button id="closeEditTileBtn" class="close-modal-btn">&times;</button>
+        </header>
+        <div class="reader-scroll-body" style="padding: 20px;">
+          <input type="hidden" id="editTileId">
+          <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.9rem;">Dimensione Tile:</label>
+          <div class="tile-size-selector" style="display:flex; gap:10px; margin-bottom:20px;">
+            <button class="size-opt-btn" data-size="small">Piccola (1x1)</button>
+            <button class="size-opt-btn" data-size="medium">Media (2x2)</button>
+            <button class="size-opt-btn" data-size="wide">Larga (4x2)</button>
+          </div>
+
+          <label style="display:block; margin-bottom:8px; color:#aaa; font-size:0.9rem;">Colore D'Accento:</label>
+          <div class="tile-color-selector" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-bottom:25px;">
+            <button class="color-opt-btn accent-blue" data-color="accent-blue" title="Blu"></button>
+            <button class="color-opt-btn accent-green" data-color="accent-green" title="Verde"></button>
+            <button class="color-opt-btn accent-orange" data-color="accent-orange" title="Arancione"></button>
+            <button class="color-opt-btn accent-purple" data-color="accent-purple" title="Viola"></button>
+            <button class="color-opt-btn accent-red" data-color="accent-red" title="Rosso"></button>
+            <button class="color-opt-btn accent-teal" data-color="accent-teal" title="Teal"></button>
+            <button class="color-opt-btn accent-magenta" data-color="accent-magenta" title="Magenta"></button>
+            <button class="color-opt-btn accent-dark" data-color="accent-dark" title="Scuro"></button>
+          </div>
+
+          <div style="display:flex; gap:10px;">
+            <button id="saveTileEditBtn" class="action-btn primary" style="flex:1; justify-content:center;">Salva</button>
+            <button id="deleteTileBtn" class="action-btn danger-btn" style="flex:1; justify-content:center; background:#ef4444; color:white;">Elimina</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Add Shortcut Tile Dialog -->
+    <dialog id="addShortcutModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <h2 style="font-weight:300;">nuova scorciatoia</h2>
+          <button id="closeAddShortcutBtn" class="close-modal-btn">&times;</button>
+        </header>
+        <div class="reader-scroll-body" style="padding: 20px;">
+          <input type="text" id="shortcutTitle" placeholder="Nome (es: WhatsApp, YouTube)" style="width:100%; padding:15px; background:#222; border:1px solid #444; color:white; font-size:1rem; outline:none; margin-bottom:12px;">
+          <input type="url" id="shortcutUrl" placeholder="URL web o intent (es: https://youtube.com)" style="width:100%; padding:15px; background:#222; border:1px solid #444; color:white; font-size:1rem; outline:none; margin-bottom:20px;">
+          <button id="saveShortcutBtn" class="action-btn primary" style="width:100%; justify-content:center;">Crea Tile</button>
+        </div>
+      </div>
+    </dialog>
 
     <!-- Reader Dialog Modal (Distraction-Free Reading, No Ads) -->
     <dialog id="readerModal" class="reader-dialog">

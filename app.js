@@ -65,6 +65,28 @@ function saveWeatherCities() {
   localStorage.setItem('infohub_weather_cities', JSON.stringify(WEATHER_CITIES));
 }
 
+// WP8 Metro Start Screen Tiles Config
+const DEFAULT_METRO_TILES = [
+  { id: 'clock', type: 'clock', title: 'orologio', size: 'tile-wide', color: 'accent-orange' },
+  { id: 'calendar', type: 'calendar', title: 'calendario', size: 'tile-medium', color: 'accent-green' },
+  { id: 'weather', type: 'weather', title: 'meteo', size: 'tile-medium', color: 'accent-blue' },
+  { id: 'news', type: 'news', title: 'ultime notizie', size: 'tile-wide', color: 'accent-purple' },
+  { id: 'phone', type: 'shortcut', title: 'telefono', icon: '📞', action: 'tel:', size: 'tile-medium', color: 'accent-blue' },
+  { id: 'messages', type: 'shortcut', title: 'messaggi', icon: '💬', action: 'sms:', size: 'tile-medium', color: 'accent-green' },
+  { id: 'photos', type: 'shortcut', title: 'foto', icon: '🖼️', action: 'photos', size: 'tile-medium', color: 'accent-yellow' },
+  { id: 'people', type: 'shortcut', title: 'contatti', icon: '👥', action: 'people', size: 'tile-medium', color: 'accent-magenta' },
+  { id: 'browser', type: 'shortcut', title: 'internet', icon: '🌐', action: 'https://www.google.com', size: 'tile-medium', color: 'accent-teal' },
+  { id: 'mail', type: 'shortcut', title: 'email', icon: '✉️', action: 'mailto:', size: 'tile-medium', color: 'accent-blue' },
+  { id: 'camera', type: 'shortcut', title: 'fotocamera', icon: '📷', action: 'camera', size: 'tile-small', color: 'accent-dark' },
+  { id: 'settings', type: 'shortcut', title: 'impostazioni', icon: '⚙️', action: 'settings', size: 'tile-small', color: 'accent-dark' }
+];
+
+let METRO_TILES = JSON.parse(localStorage.getItem('GLANCE_TILES_CONFIG')) || DEFAULT_METRO_TILES;
+
+function saveMetroTilesConfig() {
+  localStorage.setItem('GLANCE_TILES_CONFIG', JSON.stringify(METRO_TILES));
+}
+
 // App State
 let allArticles = [];
 let filteredArticles = [];
@@ -73,6 +95,7 @@ let activeCategory = 'all';
 let activeSiteFilter = 'all';
 let currentSearchQuery = '';
 let currentOpenedArticle = null;
+let currentNewsTileIndex = 0;
 
 // CORS Proxies for robust browser fetching
 const PROXIES = [
@@ -84,22 +107,23 @@ const PROXIES = [
 const feedGrid = document.getElementById('feedGrid');
 const loadingState = document.getElementById('loadingState');
 const emptyState = document.getElementById('emptyState');
-const articleCountEl = document.getElementById('articleCount');
 const searchInput = document.getElementById('searchInput');
 const clearSearchBtn = document.getElementById('clearSearchBtn');
 const siteChipsContainer = document.getElementById('siteChipsContainer');
-const sitesGrid = document.getElementById('sitesGrid');
 const readerModal = document.getElementById('readerModal');
 const refreshBtn = document.getElementById('refreshBtn');
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
+  renderStartScreenTiles();
+  startLiveTileIntervals();
   renderSiteChips();
   setupEventListeners();
+  setupSwipeNavigation();
+  setupTileEditModalListeners();
   loadAllFeeds();
-  document.getElementById('sidebarTitle').textContent = 'filtri siti';
-  document.getElementById('citiesListContainer').classList.add('hidden');
-  document.getElementById('addCityBtn').classList.add('hidden');
+  loadWeather(false);
+  updateSidebarContent('startView');
 });
 
 // Setup Event Listeners
@@ -114,12 +138,15 @@ function setupEventListeners() {
       document.getElementById(tabId).classList.add('active');
       
       const searchContainer = document.querySelector('.search-container');
-      if (tabId === 'weatherView') {
+      if (tabId === 'feedView') {
+        if (searchContainer) searchContainer.classList.remove('hidden');
+      } else {
         if (searchContainer) searchContainer.classList.add('hidden');
+      }
+
+      if (tabId === 'weatherView') {
         renderWeatherCitiesList();
         loadWeather();
-      } else {
-        if (searchContainer) searchContainer.classList.remove('hidden');
       }
       updateSidebarContent(tabId);
     });
@@ -127,23 +154,33 @@ function setupEventListeners() {
 
   function updateSidebarContent(tabId) {
     const sidebarTitle = document.getElementById('sidebarTitle');
+    const startOptionsContainer = document.getElementById('startOptionsContainer');
     const siteChipsContainer = document.getElementById('siteChipsContainer');
     const addSiteBtn = document.getElementById('addSiteBtn');
     const citiesListContainer = document.getElementById('citiesListContainer');
     const addCityBtn = document.getElementById('addCityBtn');
     
-    if (tabId === 'weatherView') {
-      sidebarTitle.textContent = 'città salvate';
-      siteChipsContainer.classList.add('hidden');
-      addSiteBtn.classList.add('hidden');
-      citiesListContainer.classList.remove('hidden');
-      addCityBtn.classList.remove('hidden');
+    if (tabId === 'startView') {
+      if (sidebarTitle) sidebarTitle.textContent = 'personalizza start';
+      if (startOptionsContainer) startOptionsContainer.classList.remove('hidden');
+      if (siteChipsContainer) siteChipsContainer.classList.add('hidden');
+      if (addSiteBtn) addSiteBtn.classList.add('hidden');
+      if (citiesListContainer) citiesListContainer.classList.add('hidden');
+      if (addCityBtn) addCityBtn.classList.add('hidden');
+    } else if (tabId === 'weatherView') {
+      if (sidebarTitle) sidebarTitle.textContent = 'città salvate';
+      if (startOptionsContainer) startOptionsContainer.classList.add('hidden');
+      if (siteChipsContainer) siteChipsContainer.classList.add('hidden');
+      if (addSiteBtn) addSiteBtn.classList.add('hidden');
+      if (citiesListContainer) citiesListContainer.classList.remove('hidden');
+      if (addCityBtn) addCityBtn.classList.remove('hidden');
     } else {
-      sidebarTitle.textContent = 'filtri siti';
-      siteChipsContainer.classList.remove('hidden');
-      addSiteBtn.classList.remove('hidden');
-      citiesListContainer.classList.add('hidden');
-      addCityBtn.classList.add('hidden');
+      if (sidebarTitle) sidebarTitle.textContent = 'filtri siti';
+      if (startOptionsContainer) startOptionsContainer.classList.add('hidden');
+      if (siteChipsContainer) siteChipsContainer.classList.remove('hidden');
+      if (addSiteBtn) addSiteBtn.classList.remove('hidden');
+      if (citiesListContainer) citiesListContainer.classList.add('hidden');
+      if (addCityBtn) addCityBtn.classList.add('hidden');
     }
   }
   // Sidebar Controls
@@ -968,6 +1005,348 @@ function cleanHtmlContent(html) {
   let doc = new DOMParser().parseFromString(html, 'text/html');
   doc.querySelectorAll('script, iframe, ins, .ad-container, .advertisement').forEach(el => el.remove());
   return doc.body.innerHTML;
+}
+
+/* ==========================================================================
+   WP8 METRO START SCREEN & LIVE TILES ENGINE
+   ========================================================================== */
+
+function renderStartScreenTiles() {
+  const container = document.getElementById('metroGrid');
+  if (!container) return;
+
+  container.innerHTML = METRO_TILES.map(tile => {
+    return `
+      <div class="metro-tile ${tile.size} ${tile.color}" data-id="${tile.id}" data-type="${tile.type}">
+        ${renderTileInnerContent(tile)}
+      </div>
+    `;
+  }).join('');
+
+  // Setup click & contextmenu (long press) handlers for tiles
+  container.querySelectorAll('.metro-tile').forEach(tileEl => {
+    const tileId = tileEl.getAttribute('data-id');
+    const tileObj = METRO_TILES.find(t => t.id === tileId);
+
+    tileEl.addEventListener('click', () => {
+      handleTileClick(tileObj);
+    });
+
+    tileEl.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      openTileEditModal(tileObj);
+    });
+  });
+
+  // Enable SortableJS Drag & Drop on tiles grid
+  if (typeof Sortable !== 'undefined') {
+    if (window.metroGridSortable) window.metroGridSortable.destroy();
+    window.metroGridSortable = new Sortable(container, {
+      animation: 150,
+      delay: 200,
+      delayOnTouchOnly: true,
+      onEnd: function () {
+        const newTilesOrder = [];
+        container.querySelectorAll('.metro-tile').forEach(el => {
+          const id = el.getAttribute('data-id');
+          const tile = METRO_TILES.find(t => t.id === id);
+          if (tile) newTilesOrder.push(tile);
+        });
+        if (newTilesOrder.length === METRO_TILES.length) {
+          METRO_TILES = newTilesOrder;
+          saveMetroTilesConfig();
+        }
+      }
+    });
+  }
+}
+
+function renderTileInnerContent(tile) {
+  if (tile.type === 'clock') {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = now.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+    return `
+      <div class="clock-tile-content">
+        <div class="clock-tile-time" id="tileClockTime">${timeStr}</div>
+        <div class="clock-tile-date" id="tileClockDate">${dateStr}</div>
+      </div>
+      <div class="tile-label">${tile.title}</div>
+    `;
+  }
+
+  if (tile.type === 'calendar') {
+    const now = new Date();
+    const dayNum = now.getDate();
+    const monthStr = now.toLocaleDateString('it-IT', { month: 'short' });
+    return `
+      <div class="calendar-tile-content">
+        <div class="calendar-tile-day">${dayNum}</div>
+        <div class="calendar-tile-month">${monthStr}</div>
+      </div>
+      <div class="tile-label">${tile.title}</div>
+    `;
+  }
+
+  if (tile.type === 'weather') {
+    const temp = window.currentWeatherTemp || '--°';
+    const icon = window.currentWeatherIcon || '☀️';
+    const city = activeWeatherCity ? activeWeatherCity.name : 'Meteo';
+    return `
+      <div class="weather-tile-content">
+        <div>
+          <div class="weather-tile-temp" id="tileWeatherTemp">${temp}</div>
+          <div class="weather-tile-city" id="tileWeatherCity">${city}</div>
+        </div>
+        <div class="weather-tile-icon" id="tileWeatherIcon">${icon}</div>
+      </div>
+      <div class="tile-label">${tile.title}</div>
+    `;
+  }
+
+  if (tile.type === 'news') {
+    let headline = 'Caricamento ultime notizie...';
+    let source = 'Glance';
+    if (allArticles.length > 0) {
+      const art = allArticles[currentNewsTileIndex % allArticles.length];
+      headline = art.title;
+      source = art.source;
+    }
+    return `
+      <div class="news-tile-content">
+        <div class="news-tile-headline" id="tileNewsHeadline">${headline}</div>
+        <div class="news-tile-source" id="tileNewsSource">${source}</div>
+      </div>
+      <div class="tile-label">${tile.title}</div>
+    `;
+  }
+
+  // Generic shortcut tile
+  return `
+    <div class="tile-icon-container">
+      <span class="tile-icon-huge">${tile.icon || '📱'}</span>
+    </div>
+    <div class="tile-label">${tile.title}</div>
+  `;
+}
+
+function handleTileClick(tile) {
+  if (!tile) return;
+  if (tile.type === 'weather') {
+    switchTabTo('weatherView');
+  } else if (tile.type === 'news') {
+    switchTabTo('feedView');
+  } else if (tile.type === 'clock' || tile.type === 'calendar') {
+    const now = new Date();
+    alert(`📅 ${now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}\n⏰ ${now.toLocaleTimeString('it-IT')}`);
+  } else if (tile.action) {
+    if (tile.action.startsWith('http://') || tile.action.startsWith('https://') || tile.action.startsWith('tel:') || tile.action.startsWith('sms:') || tile.action.startsWith('mailto:')) {
+      window.open(tile.action, '_blank');
+    } else {
+      alert(`Shortcut ${tile.title} avviata.`);
+    }
+  }
+}
+
+function switchTabTo(tabId) {
+  const btn = document.querySelector(`.pivot-btn[data-tab="${tabId}"]`);
+  if (btn) btn.click();
+}
+
+function startLiveTileIntervals() {
+  // Update Clock every second
+  setInterval(() => {
+    const timeEl = document.getElementById('tileClockTime');
+    const dateEl = document.getElementById('tileClockDate');
+    if (timeEl && dateEl) {
+      const now = new Date();
+      timeEl.innerText = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      dateEl.innerText = now.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+    }
+  }, 1000);
+
+  // Rotate News Tile headline every 6 seconds
+  setInterval(() => {
+    if (allArticles.length === 0) return;
+    currentNewsTileIndex = (currentNewsTileIndex + 1) % allArticles.length;
+    const headlineEl = document.getElementById('tileNewsHeadline');
+    const sourceEl = document.getElementById('tileNewsSource');
+    if (headlineEl && sourceEl) {
+      const art = allArticles[currentNewsTileIndex];
+      headlineEl.innerText = art.title;
+      sourceEl.innerText = art.source;
+    }
+  }, 6000);
+}
+
+/* ==========================================================================
+   HORIZONTAL SWIPE NAVIGATION (Start <-> Meteo <-> Feed News)
+   ========================================================================== */
+function setupSwipeNavigation() {
+  const tabsOrder = ['startView', 'weatherView', 'feedView'];
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  const mainContent = document.getElementById('mainContent');
+  if (!mainContent) return;
+
+  mainContent.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  mainContent.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchEndY = e.changedTouches[0].screenY;
+    
+    const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
+
+    // Horizontality check
+    if (Math.abs(diffX) > 60 && Math.abs(diffY) < 50) {
+      const activeBtn = document.querySelector('.pivot-btn.active');
+      if (!activeBtn) return;
+      const currentTabId = activeBtn.getAttribute('data-tab');
+      let currentIndex = tabsOrder.indexOf(currentTabId);
+
+      if (diffX < 0 && currentIndex < tabsOrder.length - 1) {
+        // Swiped Left -> Move Right
+        switchTabTo(tabsOrder[currentIndex + 1]);
+      } else if (diffX > 0 && currentIndex > 0) {
+        // Swiped Right -> Move Left
+        switchTabTo(tabsOrder[currentIndex - 1]);
+      }
+    }
+  }, { passive: true });
+}
+
+/* ==========================================================================
+   TILE CUSTOMIZATION MODAL ENGINE
+   ========================================================================== */
+let editingTileObj = null;
+
+function openTileEditModal(tile) {
+  editingTileObj = tile;
+  const modal = document.getElementById('tileEditModal');
+  if (!modal) return;
+
+  document.getElementById('editTileId').value = tile.id;
+
+  // Active size
+  document.querySelectorAll('.size-opt-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.size === tile.size.replace('tile-', ''));
+  });
+
+  // Active color
+  document.querySelectorAll('.color-opt-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.color === tile.color);
+  });
+
+  modal.showModal();
+}
+
+function setupTileEditModalListeners() {
+  const modal = document.getElementById('tileEditModal');
+  const closeBtn = document.getElementById('closeEditTileBtn');
+  const saveBtn = document.getElementById('saveTileEditBtn');
+  const deleteBtn = document.getElementById('deleteTileBtn');
+
+  if (closeBtn) closeBtn.addEventListener('click', () => modal.close());
+
+  // Size option selection
+  document.querySelectorAll('.size-opt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.size-opt-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Color option selection
+  document.querySelectorAll('.color-opt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.color-opt-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Save tile changes
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      if (!editingTileObj) return;
+      const selectedSizeBtn = document.querySelector('.size-opt-btn.active');
+      const selectedColorBtn = document.querySelector('.color-opt-btn.active');
+
+      if (selectedSizeBtn) {
+        const sizeKey = selectedSizeBtn.dataset.size;
+        editingTileObj.size = sizeKey === 'small' ? 'tile-small' : sizeKey === 'wide' ? 'tile-wide' : 'tile-medium';
+      }
+      if (selectedColorBtn) {
+        editingTileObj.color = selectedColorBtn.dataset.color;
+      }
+
+      saveMetroTilesConfig();
+      renderStartScreenTiles();
+      modal.close();
+    });
+  }
+
+  // Delete tile
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+      if (!editingTileObj) return;
+      METRO_TILES = METRO_TILES.filter(t => t.id !== editingTileObj.id);
+      saveMetroTilesConfig();
+      renderStartScreenTiles();
+      modal.close();
+    });
+  }
+
+  // Sidebar start options
+  const addTileBtn = document.getElementById('addTileBtn');
+  const resetTilesBtn = document.getElementById('resetTilesBtn');
+  const addShortcutModal = document.getElementById('addShortcutModal');
+  const closeAddShortcutBtn = document.getElementById('closeAddShortcutBtn');
+  const saveShortcutBtn = document.getElementById('saveShortcutBtn');
+
+  if (addTileBtn && addShortcutModal) {
+    addTileBtn.addEventListener('click', () => addShortcutModal.showModal());
+  }
+  if (closeAddShortcutBtn && addShortcutModal) {
+    closeAddShortcutBtn.addEventListener('click', () => addShortcutModal.close());
+  }
+  if (saveShortcutBtn) {
+    saveShortcutBtn.addEventListener('click', () => {
+      const title = document.getElementById('shortcutTitle').value.trim();
+      const url = document.getElementById('shortcutUrl').value.trim();
+      if (!title || !url) {
+        alert('Inserisci nome e URL/intent.');
+        return;
+      }
+      const newTile = {
+        id: 'tile_' + Date.now(),
+        type: 'shortcut',
+        title: title,
+        icon: '📌',
+        action: url,
+        size: 'tile-medium',
+        color: 'accent-blue'
+      };
+      METRO_TILES.push(newTile);
+      saveMetroTilesConfig();
+      renderStartScreenTiles();
+      addShortcutModal.close();
+    });
+  }
+
+  if (resetTilesBtn) {
+    resetTilesBtn.addEventListener('click', () => {
+      if (confirm('Vuoi ripristinare le Tile alle impostazioni predefinite?')) {
+        METRO_TILES = DEFAULT_METRO_TILES;
+        saveMetroTilesConfig();
+        renderStartScreenTiles();
+      }
+    });
+  }
 }
 
 function escapeHtml(str) {

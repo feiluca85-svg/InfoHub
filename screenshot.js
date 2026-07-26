@@ -4,16 +4,9 @@ const puppeteer = require('puppeteer');
   const page = await browser.newPage();
   
   await page.goto('http://localhost:8085', {waitUntil: 'networkidle2'});
-  
-  // click meteo tab
-  await page.click('button[data-tab="weatherView"]');
-  // wait 500ms
-  await new Promise(r => setTimeout(r, 500));
-  // click hamburger menu
-  await page.click('#sidebarToggleBtn');
-  // wait for sidebar transition
-  await new Promise(r => setTimeout(r, 500));
-  
+  await page.evaluate(() => localStorage.clear());
+  await page.reload({waitUntil: 'networkidle2'});
+  await new Promise(r => setTimeout(r, 1000));
   await page.screenshot({path: 'screenshot.png'});
   
   await browser.close();

@@ -784,3 +784,239 @@ body {
   background: white;
   color: black;
 }
+
+/* ==========================================================================
+   WP8 METRO START SCREEN & LIVE TILES STYLES
+   ========================================================================== */
+.start-screen-header {
+  padding: 10px 5px 15px 5px;
+}
+
+.start-title {
+  font-size: 2.2rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-transform: lowercase;
+  color: #ffffff;
+}
+
+.metro-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(70px, auto);
+  gap: 12px;
+  padding: 5px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Tile Dimensions */
+.metro-tile {
+  position: relative;
+  box-sizing: border-box;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.metro-tile:active {
+  transform: scale(0.96);
+}
+
+.tile-small {
+  grid-column: span 1;
+  grid-row: span 1;
+  min-height: 70px;
+}
+
+.tile-medium {
+  grid-column: span 2;
+  grid-row: span 2;
+  min-height: 150px;
+}
+
+.tile-wide {
+  grid-column: span 4;
+  grid-row: span 2;
+  min-height: 150px;
+}
+
+/* Metro Accent Colors */
+.accent-blue { background-color: #0078d7 !important; color: #ffffff !important; }
+.accent-green { background-color: #107c41 !important; color: #ffffff !important; }
+.accent-orange { background-color: #d83b01 !important; color: #ffffff !important; }
+.accent-purple { background-color: #881798 !important; color: #ffffff !important; }
+.accent-red { background-color: #e81123 !important; color: #ffffff !important; }
+.accent-teal { background-color: #008272 !important; color: #ffffff !important; }
+.accent-magenta { background-color: #e3008c !important; color: #ffffff !important; }
+.accent-yellow { background-color: #d8a000 !important; color: #ffffff !important; }
+.accent-dark { background-color: #252526 !important; color: #ffffff !important; }
+
+/* Tile Inner Elements */
+.tile-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.tile-icon-huge {
+  font-size: 2.8rem;
+  line-height: 1;
+}
+
+.tile-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  opacity: 0.95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: auto;
+}
+
+/* Clock Live Tile */
+.clock-tile-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.clock-tile-time {
+  font-size: 2.8rem;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.clock-tile-date {
+  font-size: 0.9rem;
+  font-weight: 400;
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+/* Calendar Live Tile */
+.calendar-tile-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.calendar-tile-day {
+  font-size: 3.2rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.calendar-tile-month {
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+/* Weather Live Tile */
+.weather-tile-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 5px 0;
+}
+
+.weather-tile-temp {
+  font-size: 2.5rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.weather-tile-icon {
+  font-size: 2.5rem;
+}
+
+.weather-tile-city {
+  font-size: 0.9rem;
+  font-weight: 400;
+  text-transform: capitalize;
+  opacity: 0.9;
+}
+
+/* News Live Tile */
+.news-tile-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  overflow: hidden;
+}
+
+.news-tile-headline {
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-tile-source {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+/* Edit Tile Modal Selectors */
+.size-opt-btn {
+  flex: 1;
+  padding: 10px;
+  background: #222;
+  border: 1px solid #444;
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.size-opt-btn.active {
+  border-color: #0078d7;
+  background: #0078d7;
+}
+
+.color-opt-btn {
+  height: 44px;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.color-opt-btn.active {
+  border-color: #ffffff;
+  transform: scale(1.05);
+}
+
+.danger-btn {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+  border: 1px solid #ef4444 !important;
+}
+
+/* Start Options Sidebar */
+.start-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+}

@@ -1,6 +1,6 @@
 {
-  "name": "InfoHub - News & WebApps",
-  "short_name": "InfoHub",
+  "name": "Glance",
+  "short_name": "Glance",
   "description": "Il tuo aggregatore di notizie e hub di siti web preferiti in un'unica app pulita e senza pubblicità.",
   "start_url": "./index.html",
   "display": "standalone",
