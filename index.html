@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="InfoHub - Il tuo aggregatore personalizzato di notizie senza pubblicità">
+  <title>InfoHub - Le tue notizie in un'unica app</title>
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="InfoHub">
+  <link rel="icon" href="data:,">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- SortableJS for drag and drop tiles -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+</head>
+<body class="dark-mode">
+  <div id="app">
+    <!-- Metro Pivot Header -->
+    <header class="pivot-header">
+      <button id="sidebarToggleBtn" class="metro-icon-btn" title="Apri menu filtri" aria-label="Menu">
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      <h1 class="app-title">glance</h1>
+      <div class="pivot-tabs">
+        <button class="pivot-btn active" data-tab="feedView">feed news</button>
+        <button class="pivot-btn" data-tab="weatherView">meteo</button>
+      </div>
+      <button id="refreshBtn" class="metro-icon-btn" title="Aggiorna notizie" aria-label="Aggiorna notizie">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6"></path>
+          <path d="M1 20v-6h6"></path>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Cerca tra le ultime notizie..." autocomplete="off">
+        <button id="clearSearchBtn" class="clear-btn hidden">&times;</button>
+      </div>
+    </div>
+
+    <!-- Sidebar Overlay & Container -->
+    <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
+    <aside id="sidebar" class="metro-sidebar">
+      <div class="sidebar-header">
+        <h2 id="sidebarTitle">Filtri Siti</h2>
+      </div>
+      <div class="site-chips-bar" id="siteChipsContainer">
+        <!-- Generated dynamically by app.js -->
+      </div>
+      <div id="citiesListContainer" class="cities-list-container hidden">
+        <!-- Rendered via JS -->
+      </div>
+      <div class="sidebar-footer">
+        <button id="addSiteBtn" class="metro-list-btn">+ aggiungi sito</button>
+        <button id="addCityBtn" class="metro-list-btn hidden">+ aggiungi città</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content-area" id="mainContent">
+        
+        <!-- Tab 1: News Feed View -->
+        <section id="feedView" class="tab-view active">
+          <div id="loadingState" class="loading-spinner-container">
+            <div class="spinner"></div>
+            <p>Caricamento notizie in corso da tutte le fonti...</p>
+          </div>
+
+          <div id="emptyState" class="empty-state hidden">
+            <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <h3>Nessun articolo trovato</h3>
+            <p>Prova a cambiare i filtri o la ricerca.</p>
+          </div>
+
+          <div id="feedGrid" class="feed-grid"></div>
+        </section>
+
+        <!-- Tab 2: Weather View (Metro Style) -->
+        <section id="weatherView" class="tab-view">
+          <div class="weather-container">
+            
+            <!-- City Selection Header -->
+            <div class="weather-cities-header">
+              <h2 id="currentWeatherCity" class="weather-city">Roma</h2>
+            </div>
+
+            <!-- Current Weather -->
+            <div class="weather-temp-container">
+              <div id="weatherIcon" class="weather-main-icon">☀️</div>
+              <div id="weatherTemp" class="weather-huge-temp">--&deg;</div>
+            </div>
+            <p id="weatherDesc" class="weather-desc">Caricamento meteo...</p>
+            
+            <!-- 7 Day Forecast List -->
+            <div class="forecast-list" id="forecastList">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </section>
+    </main>
+
+    <!-- Add Site Dialog -->
+    <dialog id="addSiteModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <h2 style="font-weight:300;">aggiungi sito</h2>
+          <button id="closeAddSiteBtn" class="close-modal-btn">&times;</button>
+        </header>
+        <div class="reader-scroll-body" style="padding: 20px;">
+          <input type="url" id="newSiteUrl" placeholder="Es: https://www.dday.it/rss" style="width:100%; padding:15px; background:#222; border:1px solid #444; color:white; font-size:1rem; outline:none; margin-bottom:20px;">
+          <button id="saveNewSiteBtn" class="action-btn" style="width:100%; justify-content:center;">Salva</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Add City Dialog -->
+    <dialog id="addCityModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <h2 style="font-weight:300;">cerca città</h2>
+          <button id="closeAddCityBtn" class="close-modal-btn">&times;</button>
+        </header>
+        <div class="reader-scroll-body" style="padding: 20px;">
+          <input type="text" id="newCityName" placeholder="Es: Milano" autocomplete="off" style="width:100%; padding:15px; background:#222; border:1px solid #444; color:white; font-size:1rem; outline:none; margin-bottom:10px;">
+          <button id="searchCityBtn" class="action-btn" style="width:100%; justify-content:center; margin-bottom: 20px;">Cerca</button>
+          
+          <div id="citySearchResults" class="city-search-results">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- (Bottom Navigation Bar removed for Metro UI) -->
+
+    <!-- Reader Dialog Modal (Distraction-Free Reading, No Ads) -->
+    <dialog id="readerModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <div class="reader-meta">
+            <span id="modalSource" class="source-badge">Sito</span>
+            <span id="modalDate" class="modal-date">Data</span>
+          </div>
+          <button id="closeModalBtn" class="close-modal-btn" aria-label="Chiudi">&times;</button>
+        </header>
+        
+        <div class="reader-scroll-body">
+          <h1 id="modalTitle">Titolo Articolo</h1>
+          
+          <div id="modalImageContainer" class="modal-img-box hidden">
+            <img id="modalImage" src="" alt="Immagine articolo">
+          </div>
+
+          <div id="modalBody" class="modal-text-content">
+            <!-- Article snippet / full text -->
+          </div>
+        </div>
+
+        <footer class="reader-footer">
+          <button id="bookmarkModalBtn" class="action-btn">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span id="bookmarkBtnText">Salva</span>
+          </button>
+          <a id="originalLinkBtn" href="#" target="_blank" rel="noopener noreferrer" class="action-btn primary">
+            <span>Apri nel sito originale</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+        </footer>
+      </div>
+    </dialog>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister();
+        }
+      });
+      caches.keys().then(function(names) {
+        for (let name of names) caches.delete(name);
+      });
+    }
+  </script>
+</body>
+</html>

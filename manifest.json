@@ -1,0 +1,17 @@
+{
+  "name": "InfoHub - News & WebApps",
+  "short_name": "InfoHub",
+  "description": "Il tuo aggregatore di notizie e hub di siti web preferiti in un'unica app pulita e senza pubblicità.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "./icon.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
