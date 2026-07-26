@@ -346,6 +346,8 @@ function setupEventListeners() {
       SITES_CONFIG.push(newSite);
       saveSitesConfig();
       renderSiteChips();
+      loadAllFeeds();
+      switchTabToId('feedView');
       addSiteModal.close();
       newSiteUrlInput.value = '';
       
@@ -1229,10 +1231,12 @@ function handleTileClick(tile) {
     const now = new Date();
     alert(`📅 ${now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}\n⏰ ${now.toLocaleTimeString('it-IT')}`);
   } else if (tile.action) {
-    if (tile.action.startsWith('http://') || tile.action.startsWith('https://') || tile.action.startsWith('tel:') || tile.action.startsWith('sms:') || tile.action.startsWith('mailto:')) {
+    if (tile.action === 'mailto:' || tile.id === 'mail' || tile.title === 'email') {
+      window.location.href = 'mailto:';
+    } else if (tile.action.startsWith('http://') || tile.action.startsWith('https://') || tile.action.startsWith('tel:') || tile.action.startsWith('sms:')) {
       window.open(tile.action, '_blank');
     } else {
-      alert(`Shortcut ${tile.title} avviata.`);
+      switchTabToId(tile.action);
     }
   }
 }
@@ -1392,8 +1396,9 @@ function renderAppListView() {
 
   container.innerHTML = html || '<p style="color:#aaa; padding:20px; text-align:center;">Nessuna app trovata.</p>';
 
-  // Attach event listeners for app rows and pin buttons
+  // Attach event listeners for app rows (click, long-press, contextmenu)
   container.querySelectorAll('.app-list-row').forEach(row => {
+    // Click handler
     row.addEventListener('click', (e) => {
       const pinBtn = e.target.closest('.app-pin-btn');
       if (pinBtn) {
@@ -1404,12 +1409,36 @@ function renderAppListView() {
         return;
       }
       const action = row.getAttribute('data-action');
-      if (action.startsWith('http://') || action.startsWith('https://') || action.startsWith('tel:') || action.startsWith('sms:') || action.startsWith('mailto:')) {
+      if (action === 'mailto:') {
+        window.location.href = 'mailto:';
+      } else if (action.startsWith('http://') || action.startsWith('https://') || action.startsWith('tel:') || action.startsWith('sms:')) {
         window.open(action, '_blank');
       } else {
         switchTabToId(action);
       }
     });
+
+    // Right-click / Contextmenu to pin app to Start
+    row.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      const appName = row.getAttribute('data-name');
+      const appAction = row.getAttribute('data-action');
+      pinAppToStart(appName, appAction);
+    });
+
+    // Touch long-press (500ms) for mobile touch hold
+    let touchHoldTimer = null;
+    row.addEventListener('touchstart', () => {
+      touchHoldTimer = setTimeout(() => {
+        const appName = row.getAttribute('data-name');
+        const appAction = row.getAttribute('data-action');
+        pinAppToStart(appName, appAction);
+      }, 500);
+    }, { passive: true });
+
+    row.addEventListener('touchend', () => clearTimeout(touchHoldTimer), { passive: true });
+    row.addEventListener('touchmove', () => clearTimeout(touchHoldTimer), { passive: true });
+    row.addEventListener('touchcancel', () => clearTimeout(touchHoldTimer), { passive: true });
   });
 
   if (searchInput && !searchInput.dataset.initialized) {
@@ -1616,6 +1645,7 @@ function setupGoogleSiteSearch() {
         saveSitesConfig();
         renderSiteChips();
         loadAllFeeds();
+        switchTabToId('feedView');
         if (addSiteModal) addSiteModal.close();
         alert(`✅ Sito "${siteName}" aggiunto con successo!`);
       });
