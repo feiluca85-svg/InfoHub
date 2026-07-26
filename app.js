@@ -115,6 +115,10 @@ if (!METRO_TILES || !Array.isArray(METRO_TILES) || METRO_TILES.length === 0) {
   METRO_TILES = DEFAULT_METRO_TILES;
 }
 
+function saveMetroTilesConfig() {
+  localStorage.setItem('GLANCE_TILES_CONFIG', JSON.stringify(METRO_TILES));
+}
+
 let CUSTOM_GROUPS = JSON.parse(localStorage.getItem('GLANCE_CUSTOM_GROUPS')) || DEFAULT_CUSTOM_GROUPS;
 
 function saveCustomGroupsConfig() {
