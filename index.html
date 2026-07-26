@@ -321,19 +321,9 @@
     </dialog>
   </div>
 
-  <script src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-          registration.unregister();
-        }
-      });
-      caches.keys().then(function(names) {
-        for (let name of names) caches.delete(name);
-      });
-    }
-  </script>
+      </div>
+    </dialog>
+  </div>
 
     <!-- Built-in WP8 Calculator App Modal -->
     <dialog id="calculatorModal" class="reader-dialog">
@@ -392,5 +382,6 @@
       </div>
     </dialog>
   </div>
+  <script src="app.js?v=20260726_v5"></script>
 </body>
 </html>
