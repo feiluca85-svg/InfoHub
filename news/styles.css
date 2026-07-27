@@ -27,36 +27,28 @@ body {
 
 /* Header */
 .news-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding: 20px 20px 8px 20px;
+  padding: 16px 20px 8px 20px;
   background: #000000;
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1px solid #1a1a1a;
+  user-select: none;
 }
 
-.news-title-group {
+.news-top-bar {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
 }
 
 .news-sub-title {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: lowercase;
-  color: var(--accent-blue);
-  letter-spacing: 1.5px;
-}
-
-.news-category-title {
-  font-size: 1.8rem;
-  font-weight: 300;
-  text-transform: lowercase;
-  color: var(--text-primary);
-  line-height: 1.1;
-  margin-top: 2px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #888888;
+  letter-spacing: 2px;
 }
 
 .news-header-actions {
@@ -68,8 +60,8 @@ body {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #ffffff;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -92,10 +84,11 @@ body {
 
 /* Search Banner */
 .search-banner {
-  padding: 10px 20px;
+  padding: 10px 0;
   background: #111111;
   border-bottom: 1px solid #222;
   transition: all 0.3s ease;
+  margin-bottom: 8px;
 }
 
 .search-banner.hidden {
@@ -128,22 +121,21 @@ body {
   cursor: pointer;
 }
 
-/* Authentic Windows Phone 8 Metro Pivot Panorama Header */
+/* Authentic Windows Phone 8 Metro Panorama Title Header */
 .wp8-pivot-header-bar {
   background: #000000;
-  position: sticky;
-  top: 60px;
-  z-index: 90;
   padding-top: 4px;
 }
 
 .wp8-pivot-container {
   display: flex;
-  gap: 26px;
-  padding: 4px 20px 10px 20px;
+  gap: 28px;
+  padding: 2px 0 6px 0;
   overflow-x: auto;
   scrollbar-width: none;
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  align-items: baseline;
 }
 
 .wp8-pivot-container::-webkit-scrollbar {
@@ -155,25 +147,25 @@ body {
   color: rgba(255, 255, 255, 0.35);
   border: none;
   font-family: var(--font-family);
-  font-size: 2.1rem;
-  font-weight: 300;
+  font-size: 3.2rem; /* GIANT Metro Title Typography like 'people' & 'profile' */
+  font-weight: 200;
   text-transform: lowercase;
-  letter-spacing: -0.5px;
+  letter-spacing: -1.5px;
   cursor: pointer;
   white-space: nowrap;
   padding: 0;
   margin: 0;
-  line-height: 1.1;
-  transition: color 0.2s ease, transform 0.2s ease;
+  line-height: 1.0;
+  transition: all 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 .wp8-pivot-title.active {
   color: #ffffff;
-  font-weight: 400;
+  font-weight: 300;
 }
 
 .wp8-pivot-title:hover {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .wp8-pivot-accent-line {

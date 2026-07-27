@@ -30,61 +30,59 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260727_v400">
+  <link rel="stylesheet" href="styles.css?v=20260727_v500">
 </head>
 <body>
   <div id="newsApp">
-    <!-- Header -->
+    <!-- Authentic WP8 Metro Panorama Header -->
     <header class="news-header">
-      <div class="news-title-group">
-        <span class="news-sub-title">news</span>
-        <h1 id="newsCategoryTitle" class="news-category-title">prima pagina</h1>
+      <div class="news-top-bar">
+        <span class="news-sub-title">glance news</span>
+        <div class="news-header-actions">
+          <button id="searchToggleBtn" class="metro-icon-btn" title="Cerca notizie" aria-label="Cerca">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+          <button id="sidebarToggleBtn" class="metro-icon-btn" title="Fonti notizie RSS" aria-label="Fonti notizie">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <button id="refreshNewsBtn" class="metro-icon-btn" title="Aggiorna notizie" aria-label="Aggiorna">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+              <path d="M23 4v6h-6"></path>
+              <path d="M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+        </div>
       </div>
-      <div class="news-header-actions">
-        <button id="searchToggleBtn" class="metro-icon-btn" title="Cerca notizie" aria-label="Cerca">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-        </button>
-        <button id="sidebarToggleBtn" class="metro-icon-btn" title="Fonti notizie RSS" aria-label="Fonti notizie">
-          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-        <button id="refreshNewsBtn" class="metro-icon-btn" title="Aggiorna notizie" aria-label="Aggiorna">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
-            <path d="M23 4v6h-6"></path>
-            <path d="M1 20v-6h6"></path>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-          </svg>
-        </button>
+
+      <!-- Search Bar Banner (Collapsible) -->
+      <div id="searchBanner" class="search-banner hidden">
+        <div class="search-input-wrapper">
+          <input type="text" id="searchInput" placeholder="Cerca notizia, parola chiave o tema..." autocomplete="off">
+          <button id="clearSearchBtn" class="clear-btn">&times;</button>
+        </div>
       </div>
+
+      <!-- Authentic WP8 Metro Panorama Sliding Title Bar -->
+      <nav class="wp8-pivot-header-bar">
+        <div class="wp8-pivot-container">
+          <button class="wp8-pivot-title active" data-category="tutti">tutti</button>
+          <button class="wp8-pivot-title" data-category="prima-pagina">prima pagina</button>
+          <button class="wp8-pivot-title" data-category="italia">italia</button>
+          <button class="wp8-pivot-title" data-category="mondo">mondo</button>
+          <button class="wp8-pivot-title" data-category="economia">economia</button>
+          <button class="wp8-pivot-title" data-category="tecnologia">tecnologia</button>
+          <button class="wp8-pivot-title" data-category="sport">sport</button>
+        </div>
+      </nav>
     </header>
-
-    <!-- Search Bar Banner (Collapsible) -->
-    <div id="searchBanner" class="search-banner hidden">
-      <div class="search-input-wrapper">
-        <input type="text" id="searchInput" placeholder="Cerca notizia, parola chiave o tema..." autocomplete="off">
-        <button id="clearSearchBtn" class="clear-btn">&times;</button>
-      </div>
-    </div>
-
-    <!-- Authentic WP8 Metro Pivot Panorama Header -->
-    <nav class="wp8-pivot-header-bar">
-      <div class="wp8-pivot-container">
-        <button class="wp8-pivot-title active" data-category="tutti">tutti</button>
-        <button class="wp8-pivot-title" data-category="prima-pagina">prima pagina</button>
-        <button class="wp8-pivot-title" data-category="italia">italia</button>
-        <button class="wp8-pivot-title" data-category="mondo">mondo</button>
-        <button class="wp8-pivot-title" data-category="economia">economia</button>
-        <button class="wp8-pivot-title" data-category="tecnologia">tecnologia</button>
-        <button class="wp8-pivot-title" data-category="sport">sport</button>
-      </div>
-      <div class="wp8-pivot-accent-line"></div>
-    </nav>
 
     <!-- Main Vertical Scrollable Body -->
     <main class="news-body">
@@ -177,6 +175,6 @@
     </dialog>
   </div>
 
-  <script src="app.js?v=20260727_v400"></script>
+  <script src="app.js?v=20260727_v500"></script>
 </body>
 </html>
