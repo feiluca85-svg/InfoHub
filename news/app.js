@@ -1,4 +1,4 @@
-/* Glance News - Application Logic (Ultra-fast RSS Parser, Reader Mode, Instant Startup, Feed Manager) */
+/* Glance News - Application Logic (WP8 Metro Pivot, Original App Site Search Finder, Reader Mode) */
 
 const DEFAULT_NEWS_FEEDS = [
   { id: 'ansa', name: 'ANSA Ultima Ora', url: 'https://www.ansa.it/sito/ansait_rss.xml', category: 'prima-pagina' },
@@ -43,15 +43,15 @@ function saveNewsFeeds() {
 }
 
 function setupEventListeners() {
-  // Category Chips
-  document.querySelectorAll('.category-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
+  // WP8 Metro Pivot Items
+  document.querySelectorAll('.wp8-pivot-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.wp8-pivot-item').forEach(c => c.classList.remove('active'));
+      item.classList.add('active');
 
-      activeCategory = chip.getAttribute('data-category');
+      activeCategory = item.getAttribute('data-category');
       const catTitle = document.getElementById('newsCategoryTitle');
-      if (catTitle) catTitle.innerText = chip.innerText.toLowerCase();
+      if (catTitle) catTitle.innerText = item.innerText.toLowerCase();
 
       renderArticles();
     });
@@ -152,15 +152,19 @@ function setupEventListeners() {
     });
   }
 
-  // Add Feed Modal & Preset Feeds
+  // Add Feed Modal & Original App Site Finder Search Logic
   const addFeedBtn = document.getElementById('addFeedBtn');
   const addFeedModal = document.getElementById('addFeedModal');
   const closeAddFeedBtn = document.getElementById('closeAddFeedBtn');
   const saveCustomFeedBtn = document.getElementById('saveCustomFeedBtn');
+  const siteSearchInput = document.getElementById('siteSearchInput');
+  const siteSearchBtn = document.getElementById('siteSearchBtn');
+  const siteSearchResults = document.getElementById('siteSearchResults');
 
   if (addFeedBtn && addFeedModal) {
     addFeedBtn.addEventListener('click', () => {
       renderPresetFeedsList();
+      if (siteSearchResults) siteSearchResults.innerHTML = '';
       addFeedModal.showModal();
     });
   }
@@ -168,6 +172,66 @@ function setupEventListeners() {
     closeAddFeedBtn.addEventListener('click', () => addFeedModal.close());
   }
 
+  // Site Finder Search (Exact logic from original app)
+  if (siteSearchBtn && siteSearchInput && siteSearchResults) {
+    const executeSiteSearch = () => {
+      const query = siteSearchInput.value.trim();
+      if (!query) {
+        alert('Inserisci il nome di un sito da cercare.');
+        return;
+      }
+
+      siteSearchResults.innerHTML = '<p style="color:#0078d7; text-align:center; padding:10px;">🔍 Ricerca in corso per "' + escapeHtml(query) + '"...</p>';
+
+      const cleanQuery = query.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const candidates = [
+        { name: query, url: `https://www.${cleanQuery}.it`, feed: `https://www.${cleanQuery}.it/feed` },
+        { name: query + ' (.com)', url: `https://www.${cleanQuery}.com`, feed: `https://www.${cleanQuery}.com/rss` },
+        { name: query + ' News (Google)', url: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=it&gl=IT&ceid=IT:it`, feed: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=it&gl=IT&ceid=IT:it` }
+      ];
+
+      siteSearchResults.innerHTML = candidates.map(c => `
+        <div class="site-search-candidate">
+          <div class="site-search-info">
+            <div class="site-search-title">${escapeHtml(c.name)}</div>
+            <div class="site-search-url">${escapeHtml(c.url)}</div>
+          </div>
+          <button class="site-add-btn" data-name="${escapeHtml(c.name)}" data-url="${escapeHtml(c.url)}" data-feed="${escapeHtml(c.feed)}">+ Aggiungi</button>
+        </div>
+      `).join('');
+
+      siteSearchResults.querySelectorAll('.site-add-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const siteName = btn.getAttribute('data-name');
+          const siteUrl = btn.getAttribute('data-url');
+          const feedUrl = btn.getAttribute('data-feed');
+
+          const newSite = {
+            id: 'site_' + Date.now(),
+            name: siteName,
+            url: feedUrl,
+            category: 'tutti'
+          };
+
+          NEWS_FEEDS.push(newSite);
+          saveNewsFeeds();
+          renderFeedsList();
+          loadAllFeeds();
+
+          if (addFeedModal) addFeedModal.close();
+          siteSearchInput.value = '';
+          siteSearchResults.innerHTML = '';
+        });
+      });
+    };
+
+    siteSearchBtn.addEventListener('click', executeSiteSearch);
+    siteSearchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') executeSiteSearch();
+    });
+  }
+
+  // Direct Custom URL Input
   if (saveCustomFeedBtn) {
     saveCustomFeedBtn.addEventListener('click', () => {
       const input = document.getElementById('customFeedUrlInput');
@@ -338,16 +402,14 @@ async function loadAllFeeds() {
   results.forEach(items => allArticles.push(...items));
 
   if (allArticles.length > 0) {
-    // Sort articles by publication date (newest first)
     allArticles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-    cachedArticles = allArticles.slice(0, 120); // Keep top 120 articles
+    cachedArticles = allArticles.slice(0, 120);
     localStorage.setItem('GLANCE_NEWS_CACHE', JSON.stringify(cachedArticles));
     renderArticles();
   }
 }
 
 async function fetchRssItems(feed) {
-  // Method 1: Local Proxy when on node server, or rss2json fallback
   let rawXml = null;
   const targetUrl = feed.url;
 
@@ -373,7 +435,6 @@ async function fetchRssItems(feed) {
     return parseRssXml(rawXml, feed);
   }
 
-  // Method 2: rss2json fallback
   try {
     const rss2jsonUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(targetUrl)}`;
     const res = await fetch(rss2jsonUrl);
@@ -483,7 +544,6 @@ function renderArticles() {
 
   if (!gridContainer) return;
 
-  // Filter articles
   let filtered = cachedArticles.filter(art => {
     const matchesCat = (activeCategory === 'tutti') || (art.category === activeCategory) || (activeCategory === 'prima-pagina' && art.category === 'tutti');
     const matchesFeed = (activeFeedId === 'tutti') || (NEWS_FEEDS.find(f => f.id === activeFeedId)?.name === art.source);
@@ -503,7 +563,6 @@ function renderArticles() {
     return;
   }
 
-  // Hero breaking news (first article)
   const hero = filtered[0];
   if (heroContainer && !searchQuery) {
     heroContainer.innerHTML = `
@@ -525,7 +584,6 @@ function renderArticles() {
     heroContainer.innerHTML = '';
   }
 
-  // Rest of articles in grid
   const restArticles = searchQuery ? filtered : filtered.slice(1);
   gridContainer.innerHTML = restArticles.map(art => `
     <div class="news-card" data-article-id="${escapeHtml(art.id)}">
@@ -551,14 +609,12 @@ function renderArticles() {
   });
 }
 
-// Distraction-Free Reader Mode Modal
 function openReaderModal(article) {
   const modal = document.getElementById('readerModal');
   const body = document.getElementById('readerArticleBody');
 
   if (!modal || !body) return;
 
-  // Format clean paragraphs
   let cleanContent = article.content || article.snippet;
   const paragraphs = cleanContent.split('\n').filter(p => p.trim().length > 0);
   const formattedParagraphs = paragraphs.length > 0 

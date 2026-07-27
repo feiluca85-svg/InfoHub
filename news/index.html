@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260727_v1">
+  <link rel="stylesheet" href="styles.css?v=20260727_v12">
 </head>
 <body>
   <div id="newsApp">
@@ -61,15 +61,15 @@
       </div>
     </div>
 
-    <!-- Horizontal Category Filter Bar -->
-    <nav class="category-bar">
-      <button class="category-chip active" data-category="tutti">TUTTI</button>
-      <button class="category-chip" data-category="prima-pagina">PRIMA PAGINA</button>
-      <button class="category-chip" data-category="italia">ITALIA</button>
-      <button class="category-chip" data-category="mondo">MONDO</button>
-      <button class="category-chip" data-category="economia">ECONOMIA</button>
-      <button class="category-chip" data-category="tecnologia">TECNOLOGIA</button>
-      <button class="category-chip" data-category="sport">SPORT</button>
+    <!-- WP8 Metro Pivot Navigation Bar -->
+    <nav class="wp8-pivot-bar">
+      <button class="wp8-pivot-item active" data-category="tutti">tutti</button>
+      <button class="wp8-pivot-item" data-category="prima-pagina">prima pagina</button>
+      <button class="wp8-pivot-item" data-category="italia">italia</button>
+      <button class="wp8-pivot-item" data-category="mondo">mondo</button>
+      <button class="wp8-pivot-item" data-category="economia">economia</button>
+      <button class="wp8-pivot-item" data-category="tecnologia">tecnologia</button>
+      <button class="wp8-pivot-item" data-category="sport">sport</button>
     </nav>
 
     <!-- Main Vertical Scrollable Body -->
@@ -125,21 +125,38 @@
       </div>
     </aside>
 
-    <!-- Add Feed Modal -->
+    <!-- Add Feed Modal with Original App Site Finder -->
     <dialog id="addFeedModal" class="reader-dialog">
       <div class="reader-dialog-content">
         <header class="reader-header">
-          <h2 style="font-weight:300;">aggiungi fonte rss</h2>
+          <h2 style="font-weight:300;">cerca e aggiungi siti</h2>
           <button id="closeAddFeedBtn" class="close-modal-btn">&times;</button>
         </header>
         <div style="padding: 20px;">
-          <!-- Custom RSS URL Input -->
-          <div style="display:flex; gap:10px; margin-bottom: 20px;">
-            <input type="url" id="customFeedUrlInput" placeholder="Inserisci URL RSS (es. https://sito.it/feed.xml)" autocomplete="off" style="flex:1; padding:14px; background:#222; border:1px solid #444; color:white; font-size:0.95rem; outline:none;">
-            <button id="saveCustomFeedBtn" class="metro-list-btn" style="flex:0 0 auto; width:auto; padding:0 18px;">Aggiungi</button>
+          <!-- 1. Original App Site Finder Search Box -->
+          <div style="margin-bottom: 20px;">
+            <label style="font-size:0.8rem; text-transform:uppercase; color:#888; display:block; margin-bottom:6px; font-weight:600;">Cerca Nome Sito o Tema</label>
+            <div style="display:flex; gap:10px;">
+              <input type="text" id="siteSearchInput" placeholder="Es. Ansa, Gazzetta, DDay, Fanpage..." autocomplete="off" style="flex:1; padding:14px; background:#222; border:1px solid #444; color:white; font-size:0.95rem; outline:none;">
+              <button id="siteSearchBtn" class="metro-list-btn" style="flex:0 0 auto; width:auto; padding:0 18px;">Cerca</button>
+            </div>
+            <div id="siteSearchResults" class="search-results-list" style="margin-top:12px;"></div>
           </div>
 
-          <h3 style="font-size:0.9rem; font-weight:600; text-transform:uppercase; color:#888; margin-bottom:12px;">Fonti Consigliate</h3>
+          <hr style="border:none; border-top:1px solid #222; margin:20px 0;">
+
+          <!-- 2. Direct RSS URL Input -->
+          <div style="margin-bottom: 20px;">
+            <label style="font-size:0.8rem; text-transform:uppercase; color:#888; display:block; margin-bottom:6px; font-weight:600;">Oppure inserisci URL RSS Diretto</label>
+            <div style="display:flex; gap:10px;">
+              <input type="url" id="customFeedUrlInput" placeholder="Es. https://sito.it/feed.xml" autocomplete="off" style="flex:1; padding:14px; background:#222; border:1px solid #444; color:white; font-size:0.95rem; outline:none;">
+              <button id="saveCustomFeedBtn" class="metro-list-btn" style="flex:0 0 auto; width:auto; padding:0 18px;">Aggiungi</button>
+            </div>
+          </div>
+
+          <hr style="border:none; border-top:1px solid #222; margin:20px 0;">
+
+          <h3 style="font-size:0.85rem; font-weight:600; text-transform:uppercase; color:#888; margin-bottom:12px;">Fonti Consigliate</h3>
           <div id="presetFeedsList" class="preset-feeds-list">
             <!-- Preset feeds dynamically listed -->
           </div>
@@ -148,6 +165,6 @@
     </dialog>
   </div>
 
-  <script src="app.js?v=20260727_v1"></script>
+  <script src="app.js?v=20260727_v12"></script>
 </body>
 </html>

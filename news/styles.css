@@ -1,4 +1,4 @@
-/* Glance News - Design System (WP8 Metro Dark Theme, Ultra-fast, Reader Mode) */
+/* Glance News - Design System (WP8 Metro Pivot Bar & Site Search Finder) */
 :root {
   --bg-color: #000000;
   --card-bg: #141414;
@@ -30,12 +30,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding: 20px 20px 14px 20px;
+  padding: 20px 20px 10px 20px;
   background: #000000;
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .news-title-group {
@@ -85,6 +84,12 @@ body {
   border-color: var(--accent-blue);
 }
 
+.metro-icon-btn.active-delete-mode {
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
 /* Search Banner */
 .search-banner {
   padding: 10px 20px;
@@ -123,38 +128,47 @@ body {
   cursor: pointer;
 }
 
-/* Category Navigation Bar */
-.category-bar {
+/* Authentic WP8 Pivot Navigation Bar */
+.wp8-pivot-bar {
   display: flex;
-  gap: 8px;
-  padding: 12px 20px;
+  gap: 18px;
+  padding: 8px 20px 12px 20px;
   overflow-x: auto;
   scrollbar-width: none;
   background: #000000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 70px;
+  z-index: 90;
 }
 
-.category-bar::-webkit-scrollbar {
+.wp8-pivot-bar::-webkit-scrollbar {
   display: none;
 }
 
-.category-chip {
-  background: #141414;
-  color: var(--text-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 16px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 1px;
+.wp8-pivot-item {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  border: none;
+  font-family: var(--font-family);
+  font-size: 1.35rem;
+  font-weight: 300;
+  text-transform: lowercase;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  padding-bottom: 6px;
+  transition: color 0.2s ease, font-weight 0.2s ease;
+  border-bottom: 3px solid transparent;
 }
 
-.category-chip.active {
-  background: var(--accent-blue);
+.wp8-pivot-item.active {
   color: #ffffff;
-  border-color: var(--accent-blue);
+  font-weight: 600;
+  border-bottom-color: var(--accent-blue);
+}
+
+.wp8-pivot-item:hover {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Main News Body */
@@ -542,7 +556,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 280px;
+  max-height: 220px;
   overflow-y: auto;
 }
 
@@ -561,5 +575,47 @@ body {
   border: none;
   padding: 6px 12px;
   font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Site Search Finder Candidate Cards (From Original App) */
+.search-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.site-search-candidate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #1a1a1a;
+  border-left: 3px solid var(--accent-blue);
+}
+
+.site-search-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-search-title {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+.site-search-url {
+  font-size: 0.75rem;
+  color: #888888;
+}
+
+.site-add-btn {
+  background: var(--accent-blue);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
 }
