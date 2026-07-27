@@ -674,16 +674,18 @@ function renderArticles() {
   });
 }
 
-function openReaderModal(article) {
+const fullArticleCache = {};
+
+async function openReaderModal(article) {
   const modal = document.getElementById('readerModal');
   const body = document.getElementById('readerArticleBody');
 
   if (!modal || !body) return;
 
   let cleanContent = article.content || article.snippet;
-  const paragraphs = cleanContent.split('\n').filter(p => p.trim().length > 0);
-  const formattedParagraphs = paragraphs.length > 0 
-    ? paragraphs.map(p => `<p>${escapeHtml(p.replace(/<[^>]+>/g, ''))}</p>`).join('')
+  const initialParagraphs = cleanContent.split('\n').filter(p => p.trim().length > 0);
+  const formattedInitial = initialParagraphs.length > 0 
+    ? initialParagraphs.map(p => `<p>${escapeHtml(p.replace(/<[^>]+>/g, ''))}</p>`).join('')
     : `<p>${escapeHtml(article.snippet)}</p>`;
 
   body.innerHTML = `
@@ -692,16 +694,98 @@ function openReaderModal(article) {
       Fonte: <strong>${escapeHtml(article.source)}</strong> • Pubblicato: ${new Date(article.pubDate).toLocaleString('it-IT')}
     </div>
     ${article.image ? `<img src="${article.image}" class="reader-hero-img" alt="${escapeHtml(article.title)}" onerror="this.style.display='none'">` : ''}
-    <div class="reader-body-text">
-      ${formattedParagraphs}
+    
+    <div id="fullArticleLoader" style="display:flex; align-items:center; gap:8px; color:#0078d7; font-size:0.9rem; margin:16px 0; font-weight:500;">
+      <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" style="animation: spin 1s linear infinite;">
+        <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="10"></circle>
+      </svg>
+      Caricamento testo completo dell'articolo...
+    </div>
+
+    <div id="readerBodyText" class="reader-body-text">
+      ${formattedInitial}
     </div>
     <a href="${article.link}" target="_blank" rel="noopener" class="reader-original-link-btn">
-      Leggi articolo completo su ${escapeHtml(article.source)} &rarr;
+      Visita sito originale (${escapeHtml(article.source)}) &rarr;
     </a>
   `;
 
   modal.showModal();
   updateReaderFontSize();
+
+  // Asynchronously fetch full article text from original site
+  try {
+    const fullParagraphs = await fetchFullArticleText(article.link);
+    const loaderEl = document.getElementById('fullArticleLoader');
+    const textEl = document.getElementById('readerBodyText');
+
+    if (fullParagraphs && fullParagraphs.length > 1 && textEl) {
+      textEl.innerHTML = fullParagraphs.map(p => `<p>${escapeHtml(p)}</p>`).join('');
+      if (loaderEl) loaderEl.style.display = 'none';
+    } else if (loaderEl) {
+      loaderEl.style.display = 'none';
+    }
+  } catch (e) {
+    const loaderEl = document.getElementById('fullArticleLoader');
+    if (loaderEl) loaderEl.style.display = 'none';
+  }
+}
+
+async function fetchFullArticleText(url) {
+  if (fullArticleCache[url]) return fullArticleCache[url];
+
+  const targetProxies = [];
+  const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if (isLocal) {
+    targetProxies.push(`/api/proxy?url=${encodeURIComponent(url)}`);
+  }
+  targetProxies.push(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+  targetProxies.push(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`);
+
+  for (const proxyUrl of targetProxies) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 7000);
+      const res = await fetch(proxyUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const html = await res.text();
+        const paragraphs = extractParagraphsFromHtml(html);
+        if (paragraphs && paragraphs.length > 1) {
+          fullArticleCache[url] = paragraphs;
+          return paragraphs;
+        }
+      }
+    } catch (e) {}
+  }
+  return null;
+}
+
+function extractParagraphsFromHtml(htmlString) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+
+    // Remove scripts, styles, navs, footers, headers, ads
+    const elementsToRemove = doc.querySelectorAll('script, style, nav, footer, header, aside, .comments, .ad, .advertisement, .social-share, .cookie-banner');
+    elementsToRemove.forEach(el => el.remove());
+
+    const container = doc.querySelector('article, [class*="article-body"], [class*="entry-content"], [class*="post-content"], [class*="article-content"], [class*="content"], main') || doc.body;
+
+    const pNodes = container.querySelectorAll('p');
+    const validParagraphs = [];
+
+    pNodes.forEach(p => {
+      const text = p.textContent.trim();
+      if (text.length > 35 && !text.toLowerCase().includes('cookie') && !text.toLowerCase().includes('privacy policy') && !text.toLowerCase().includes('tutti i diritti riservati')) {
+        validParagraphs.push(text);
+      }
+    });
+
+    return validParagraphs;
+  } catch (e) {
+    return null;
+  }
 }
 
 function formatTimeAgo(dateStr) {
