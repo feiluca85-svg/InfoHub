@@ -192,36 +192,40 @@ body {
 .astro-tile {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.astro-row {
+.astro-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.astro-content {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .astro-icon-box {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: rgba(0, 120, 215, 0.2);
   color: #0078d7;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.astro-text-box {
-  display: flex;
-  flex-direction: column;
+  flex-shrink: 0;
 }
 
 .astro-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   color: var(--text-secondary);
+  text-transform: uppercase;
 }
 
 .astro-time {
@@ -438,22 +442,30 @@ body {
   background: #252526;
 }
 
+.metro-icon-btn.active-delete-mode {
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
 .city-minus-btn {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #ffffff;
   color: #000000;
-  font-weight: bold;
-  font-size: 1.3rem;
+  font-weight: 800;
+  font-size: 1.4rem;
   line-height: 1;
   border: none;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-  animation: popIn 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  margin-left: 8px;
+  flex-shrink: 0;
 }
 
 @keyframes popIn {

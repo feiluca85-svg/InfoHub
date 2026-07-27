@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260727_v10">
 </head>
 <body>
   <div id="meteoApp">
@@ -82,22 +82,24 @@
       <section class="metro-info-grid">
         <!-- Alba & Tramonto Stacked Metro Tile -->
         <div class="metro-info-tile astro-tile">
-          <div class="astro-row">
-            <div class="astro-icon-box">
-              <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="2" x2="12" y2="9"></line><polyline points="9 5 12 2 15 5"></polyline><line x1="2" y1="18" x2="22" y2="18"></line></svg>
-            </div>
-            <div class="astro-text-box">
-              <span class="astro-label">ALBA</span>
+          <!-- Top Alba Block -->
+          <div class="astro-block">
+            <span class="astro-label">ALBA</span>
+            <div class="astro-content">
+              <div class="astro-icon-box">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="2" x2="12" y2="9"></line><polyline points="9 5 12 2 15 5"></polyline><line x1="2" y1="18" x2="22" y2="18"></line></svg>
+              </div>
               <span id="sunriseTime" class="astro-time">--:--</span>
             </div>
           </div>
           <div class="astro-divider"></div>
-          <div class="astro-row">
-            <div class="astro-icon-box">
-              <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="9" x2="12" y2="16"></line><polyline points="9 13 12 16 15 13"></polyline><line x1="2" y1="18" x2="22" y2="18"></line></svg>
-            </div>
-            <div class="astro-text-box">
-              <span class="astro-label">TRAMONTO</span>
+          <!-- Bottom Tramonto Block -->
+          <div class="astro-block">
+            <span class="astro-label">TRAMONTO</span>
+            <div class="astro-content">
+              <div class="astro-icon-box">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="9" x2="12" y2="16"></line><polyline points="9 13 12 16 15 13"></polyline><line x1="2" y1="18" x2="22" y2="18"></line></svg>
+              </div>
               <span id="sunsetTime" class="astro-time">--:--</span>
             </div>
           </div>
@@ -137,7 +139,10 @@
     <aside id="sidebar" class="metro-sidebar">
       <div class="sidebar-header">
         <h2>città salvate</h2>
-        <button id="closeSidebarBtn" class="close-modal-btn">&times;</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="toggleDeleteCitiesBtn" class="metro-icon-btn" title="Elimina città" aria-label="Attiva modalità eliminazione" style="width:30px; height:30px; font-size:1.1rem; padding:0; display:flex; align-items:center; justify-content:center;">&minus;</button>
+          <button id="closeSidebarBtn" class="close-modal-btn">&times;</button>
+        </div>
       </div>
       <div id="citiesListContainer" class="cities-list-container">
         <!-- Generated dynamically -->
@@ -165,6 +170,6 @@
     </dialog>
   </div>
 
-  <script src="app.js?v=20260727_v3"></script>
+  <script src="app.js?v=20260727_v10"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* Glance Meteo - Application Logic (Instant Launch, GPS Geocoding, White Minus Delete, Active City Saver) */
+/* Glance Meteo - Application Logic (Instant Launch 0ms, Dedicated Delete Button, Long-Press Fix, Persistent City Saver) */
 
 const DEFAULT_METEO_CITIES = [
   { id: 'roma', name: 'Roma', lat: 41.9028, lon: 12.4964 },
@@ -10,7 +10,7 @@ const DEFAULT_METEO_CITIES = [
 
 let METEO_CITIES = JSON.parse(localStorage.getItem('GLANCE_METEO_CITIES')) || DEFAULT_METEO_CITIES;
 
-// 1. Remember and Restore Last Selected Active City
+// Remember and Restore Last Selected Active City
 let savedActiveCityId = localStorage.getItem('GLANCE_METEO_ACTIVE_CITY_ID');
 let savedGpsCity = JSON.parse(localStorage.getItem('GLANCE_METEO_GPS_CITY'));
 
@@ -19,14 +19,15 @@ let activeCity = (savedGpsCity && savedActiveCityId === savedGpsCity.id)
   : (METEO_CITIES.find(c => c.id === savedActiveCityId) || METEO_CITIES[0]);
 
 let deletingCitiesMode = false;
+let isLongPressPreventClick = false;
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Instant Render from Local Cache (Zero delay on launch)
+  // 1. Instant Launch: Render cached UI state immediately (0ms delay)
   renderCitiesList();
   renderCachedWeather();
   setupEventListeners();
 
-  // Background refresh for fresh weather data
+  // 2. Fast background update for fresh weather data
   loadAllWeatherData();
 });
 
@@ -43,7 +44,7 @@ function saveActiveCityState(city) {
 }
 
 function setupEventListeners() {
-  // 2. GPS Button: Reverse Geocode Actual City Name
+  // GPS Button: Reverse Geocode Actual City Name with Dual Fallback
   const gpsBtn = document.getElementById('gpsBtn');
   if (gpsBtn) {
     gpsBtn.addEventListener('click', () => {
@@ -64,7 +65,7 @@ function setupEventListeners() {
 
           let realCityName = 'Posizione Rilevata';
           try {
-            // Free Reverse Geocoding API for exact Italian city/locality name
+            // 1. BigDataCloud API
             const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=it`;
             const geoRes = await fetch(geoUrl);
             if (geoRes.ok) {
@@ -72,7 +73,23 @@ function setupEventListeners() {
               realCityName = geoData.city || geoData.locality || geoData.principalSubdivision || realCityName;
             }
           } catch (e) {
-            // Fallback lookup
+            // Fallback
+          }
+
+          if (realCityName === 'Posizione Rilevata') {
+            try {
+              // 2. Open-Meteo Reverse Geocoding API
+              const geoUrl2 = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=it`;
+              const res2 = await fetch(geoUrl2);
+              if (res2.ok) {
+                const data2 = await res2.json();
+                if (data2.results && data2.results[0]) {
+                  realCityName = data2.results[0].name;
+                }
+              }
+            } catch (e) {
+              // Fallback
+            }
           }
 
           const gpsCity = {
@@ -82,7 +99,6 @@ function setupEventListeners() {
             lon: lon
           };
 
-          // Save and set active GPS city
           saveActiveCityState(gpsCity);
           renderCitiesList();
           loadAllWeatherData();
@@ -96,11 +112,12 @@ function setupEventListeners() {
     });
   }
 
-  // Sidebar Toggle
+  // Sidebar Toggle & Close
   const sidebarBtn = document.getElementById('sidebarToggleBtn');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebarOverlay');
   const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+  const toggleDeleteBtn = document.getElementById('toggleDeleteCitiesBtn');
 
   if (sidebarBtn && sidebar && overlay) {
     sidebarBtn.addEventListener('click', () => {
@@ -110,13 +127,26 @@ function setupEventListeners() {
     overlay.addEventListener('click', () => {
       sidebar.classList.remove('open');
       overlay.classList.add('hidden');
+      deletingCitiesMode = false;
+      renderCitiesList();
     });
     if (closeSidebarBtn) {
       closeSidebarBtn.addEventListener('click', () => {
         sidebar.classList.remove('open');
         overlay.classList.add('hidden');
+        deletingCitiesMode = false;
+        renderCitiesList();
       });
     }
+  }
+
+  // Dedicated Delete Toggle Button in Sidebar Header
+  if (toggleDeleteBtn) {
+    toggleDeleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deletingCitiesMode = !deletingCitiesMode;
+      renderCitiesList();
+    });
   }
 
   // Refresh Weather
@@ -213,26 +243,62 @@ async function executeCitySearch() {
   }
 }
 
-// 3. White Minus Button & City List Renderer
+// Optimized City List Renderer with Fast Minus Button & Touch Long-Press Protection
 function renderCitiesList() {
   const container = document.getElementById('citiesListContainer');
   const headerCityName = document.getElementById('meteoCityName');
+  const toggleDeleteBtn = document.getElementById('toggleDeleteCitiesBtn');
+
   if (!container) return;
 
   if (headerCityName) headerCityName.innerText = activeCity.name;
+  if (toggleDeleteBtn) {
+    toggleDeleteBtn.classList.toggle('active-delete-mode', deletingCitiesMode);
+  }
 
   container.innerHTML = METEO_CITIES.map(city => `
     <div class="weather-city-item ${city.id === activeCity.id ? 'active-city' : ''}" data-id="${city.id}">
       <span>${escapeHtml(city.name)}</span>
-      ${deletingCitiesMode ? `<button class="city-minus-btn" data-delete-id="${city.id}" title="Elimina città">&minus;</button>` : ''}
+      ${deletingCitiesMode ? `<button class="city-minus-btn" data-delete-id="${city.id}" title="Elimina città" aria-label="Elimina">&minus;</button>` : ''}
     </div>
   `).join('');
 
   container.querySelectorAll('.weather-city-item').forEach(el => {
+    let cityTouchTimer = null;
+
+    // Long press on mobile touch devices
+    el.addEventListener('touchstart', () => {
+      isLongPressPreventClick = false;
+      cityTouchTimer = setTimeout(() => {
+        isLongPressPreventClick = true;
+        deletingCitiesMode = !deletingCitiesMode;
+        renderCitiesList();
+      }, 450);
+    }, { passive: true });
+
+    el.addEventListener('touchend', () => clearTimeout(cityTouchTimer), { passive: true });
+    el.addEventListener('touchmove', () => clearTimeout(cityTouchTimer), { passive: true });
+
+    // Right click on desktop
+    el.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      deletingCitiesMode = !deletingCitiesMode;
+      renderCitiesList();
+    });
+
+    // Click handler with long-press protection
     el.addEventListener('click', (e) => {
+      if (isLongPressPreventClick) {
+        isLongPressPreventClick = false;
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
       const deleteBtn = e.target.closest('.city-minus-btn');
       if (deleteBtn) {
         e.stopPropagation();
+        e.preventDefault();
         const deleteId = deleteBtn.getAttribute('data-delete-id');
         if (METEO_CITIES.length <= 1) {
           alert("Non puoi eliminare l'unica città salvata.");
@@ -262,28 +328,10 @@ function renderCitiesList() {
         overlay.classList.add('hidden');
       }
     });
-
-    // Right click or Long press toggles white minus delete buttons
-    el.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      deletingCitiesMode = !deletingCitiesMode;
-      renderCitiesList();
-    });
-
-    let cityTouchTimer = null;
-    el.addEventListener('touchstart', () => {
-      cityTouchTimer = setTimeout(() => {
-        deletingCitiesMode = !deletingCitiesMode;
-        renderCitiesList();
-      }, 450);
-    }, { passive: true });
-
-    el.addEventListener('touchend', () => clearTimeout(cityTouchTimer), { passive: true });
-    el.addEventListener('touchmove', () => clearTimeout(cityTouchTimer), { passive: true });
   });
 }
 
-// 4. Instant Launch: Cache last weather data
+// Instant Launch: Render cached weather data from local memory immediately
 function renderCachedWeather() {
   const cached = localStorage.getItem(`GLANCE_METEO_CACHE_${activeCity.id}`);
   if (!cached) return;
@@ -295,6 +343,7 @@ function renderCachedWeather() {
   }
 }
 
+// Fetch Weather & Air Quality in Parallel
 async function loadAllWeatherData() {
   try {
     const [weatherData, aqiData] = await Promise.all([
