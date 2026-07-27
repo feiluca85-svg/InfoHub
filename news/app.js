@@ -1,4 +1,4 @@
-/* Glance News - Application Logic (WP8 Metro Pivot, Original App Site Search Finder, Reader Mode) */
+/* Glance News - Application Logic (Authentic WP8 Metro Pivot, Google Site Search Engine & Multi-Tag RSS Image Parser) */
 
 const DEFAULT_NEWS_FEEDS = [
   { id: 'ansa', name: 'ANSA Ultima Ora', url: 'https://www.ansa.it/sito/ansait_rss.xml', category: 'prima-pagina' },
@@ -43,15 +43,18 @@ function saveNewsFeeds() {
 }
 
 function setupEventListeners() {
-  // WP8 Metro Pivot Items
-  document.querySelectorAll('.wp8-pivot-item').forEach(item => {
+  // WP8 Metro Pivot Titles
+  document.querySelectorAll('.wp8-pivot-title').forEach(item => {
     item.addEventListener('click', () => {
-      document.querySelectorAll('.wp8-pivot-item').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.wp8-pivot-title').forEach(c => c.classList.remove('active'));
       item.classList.add('active');
 
       activeCategory = item.getAttribute('data-category');
       const catTitle = document.getElementById('newsCategoryTitle');
       if (catTitle) catTitle.innerText = item.innerText.toLowerCase();
+
+      // Scroll pivot tab gently into view
+      item.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
 
       renderArticles();
     });
@@ -152,19 +155,19 @@ function setupEventListeners() {
     });
   }
 
-  // Add Feed Modal & Original App Site Finder Search Logic
+  // Add Feed Modal & Google Site Finder Engine (Identical to Original Mixed App)
   const addFeedBtn = document.getElementById('addFeedBtn');
   const addFeedModal = document.getElementById('addFeedModal');
   const closeAddFeedBtn = document.getElementById('closeAddFeedBtn');
   const saveCustomFeedBtn = document.getElementById('saveCustomFeedBtn');
-  const siteSearchInput = document.getElementById('siteSearchInput');
-  const siteSearchBtn = document.getElementById('siteSearchBtn');
-  const siteSearchResults = document.getElementById('siteSearchResults');
+  const googleSearchInput = document.getElementById('googleSiteSearchInput');
+  const googleSearchBtn = document.getElementById('googleSiteSearchBtn');
+  const googleSearchResults = document.getElementById('googleSiteSearchResults');
 
   if (addFeedBtn && addFeedModal) {
     addFeedBtn.addEventListener('click', () => {
       renderPresetFeedsList();
-      if (siteSearchResults) siteSearchResults.innerHTML = '';
+      if (googleSearchResults) googleSearchResults.innerHTML = '';
       addFeedModal.showModal();
     });
   }
@@ -172,16 +175,16 @@ function setupEventListeners() {
     closeAddFeedBtn.addEventListener('click', () => addFeedModal.close());
   }
 
-  // Site Finder Search (Exact logic from original app)
-  if (siteSearchBtn && siteSearchInput && siteSearchResults) {
-    const executeSiteSearch = () => {
-      const query = siteSearchInput.value.trim();
+  // Original App Google Search Site Finder Logic
+  if (googleSearchBtn && googleSearchInput && googleSearchResults) {
+    const executeGoogleSearch = () => {
+      const query = googleSearchInput.value.trim();
       if (!query) {
         alert('Inserisci il nome di un sito da cercare.');
         return;
       }
 
-      siteSearchResults.innerHTML = '<p style="color:#0078d7; text-align:center; padding:10px;">🔍 Ricerca in corso per "' + escapeHtml(query) + '"...</p>';
+      googleSearchResults.innerHTML = '<p style="color:#0078d7; text-align:center; padding:10px;">🔍 Ricerca in corso per "' + escapeHtml(query) + '"...</p>';
 
       const cleanQuery = query.toLowerCase().replace(/[^a-z0-9]/g, '');
       const candidates = [
@@ -190,17 +193,17 @@ function setupEventListeners() {
         { name: query + ' News (Google)', url: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=it&gl=IT&ceid=IT:it`, feed: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=it&gl=IT&ceid=IT:it` }
       ];
 
-      siteSearchResults.innerHTML = candidates.map(c => `
-        <div class="site-search-candidate">
-          <div class="site-search-info">
-            <div class="site-search-title">${escapeHtml(c.name)}</div>
-            <div class="site-search-url">${escapeHtml(c.url)}</div>
+      googleSearchResults.innerHTML = candidates.map(c => `
+        <div class="google-search-result-item">
+          <div class="google-result-info">
+            <div class="google-result-title">${escapeHtml(c.name)}</div>
+            <div class="google-result-url">${escapeHtml(c.url)}</div>
           </div>
-          <button class="site-add-btn" data-name="${escapeHtml(c.name)}" data-url="${escapeHtml(c.url)}" data-feed="${escapeHtml(c.feed)}">+ Aggiungi</button>
+          <button class="add-google-site-btn" data-name="${escapeHtml(c.name)}" data-url="${escapeHtml(c.url)}" data-feed="${escapeHtml(c.feed)}">+ Aggiungi</button>
         </div>
       `).join('');
 
-      siteSearchResults.querySelectorAll('.site-add-btn').forEach(btn => {
+      googleSearchResults.querySelectorAll('.add-google-site-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const siteName = btn.getAttribute('data-name');
           const siteUrl = btn.getAttribute('data-url');
@@ -219,15 +222,15 @@ function setupEventListeners() {
           loadAllFeeds();
 
           if (addFeedModal) addFeedModal.close();
-          siteSearchInput.value = '';
-          siteSearchResults.innerHTML = '';
+          googleSearchInput.value = '';
+          googleSearchResults.innerHTML = '';
         });
       });
     };
 
-    siteSearchBtn.addEventListener('click', executeSiteSearch);
-    siteSearchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') executeSiteSearch();
+    googleSearchBtn.addEventListener('click', executeGoogleSearch);
+    googleSearchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') executeGoogleSearch();
     });
   }
 
@@ -446,7 +449,7 @@ async function fetchRssItems(feed) {
           title: item.title,
           snippet: cleanSnippet(item.description),
           content: item.content || item.description,
-          image: item.thumbnail || extractImageFromHtml(item.description) || getCategoryFallbackImage(feed.category),
+          image: item.thumbnail || extractImageFromHtml(item.description) || extractImageFromHtml(item.content),
           link: item.link,
           source: feed.name,
           category: feed.category || 'tutti',
@@ -459,6 +462,7 @@ async function fetchRssItems(feed) {
   return [];
 }
 
+// Advanced Multi-Tag RSS XML Parser
 function parseRssXml(xmlString, feed) {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
@@ -468,16 +472,19 @@ function parseRssXml(xmlString, feed) {
   items.forEach(item => {
     const title = getXmlText(item, 'title');
     const link = getXmlLink(item);
-    const description = getXmlText(item, 'description') || getXmlText(item, 'content') || getXmlText(item, 'summary');
-    const pubDate = getXmlText(item, 'pubDate') || getXmlText(item, 'published') || getXmlText(item, 'dc:date') || new Date().toISOString();
-    const image = getXmlImage(item, description) || getCategoryFallbackImage(feed.category);
+    const description = getXmlText(item, 'description') || getXmlText(item, 'summary');
+    const contentEncoded = getXmlText(item, 'content\\:encoded') || getXmlText(item, 'encoded') || getXmlText(item, 'content');
+    const pubDate = getXmlText(item, 'pubDate') || getXmlText(item, 'published') || getXmlText(item, 'dc\\:date') || getXmlText(item, 'date') || new Date().toISOString();
+    
+    // Extract Image from all media tags or embedded HTML
+    const image = getXmlImage(item, description, contentEncoded);
 
     if (title && link) {
       articles.push({
         id: link,
         title: title,
-        snippet: cleanSnippet(description),
-        content: description,
+        snippet: cleanSnippet(description || contentEncoded),
+        content: contentEncoded || description,
         image: image,
         link: link,
         source: feed.name,
@@ -502,39 +509,72 @@ function getXmlLink(parent) {
   return linkEl.textContent.trim();
 }
 
-function getXmlImage(item, htmlContent) {
+function getXmlImage(item, htmlDescription, htmlContent) {
+  // 1. media:content
   const mediaContent = item.querySelector('media\\:content, content');
   if (mediaContent && mediaContent.getAttribute('url')) return mediaContent.getAttribute('url');
 
+  // 2. media:thumbnail
+  const mediaThumb = item.querySelector('media\\:thumbnail, thumbnail');
+  if (mediaThumb && mediaThumb.getAttribute('url')) return mediaThumb.getAttribute('url');
+
+  // 3. enclosure (image)
   const enclosure = item.querySelector('enclosure');
-  if (enclosure && enclosure.getAttribute('url') && enclosure.getAttribute('type')?.startsWith('image')) {
-    return enclosure.getAttribute('url');
+  if (enclosure && enclosure.getAttribute('url')) {
+    const type = enclosure.getAttribute('type') || '';
+    if (type.startsWith('image') || enclosure.getAttribute('url').match(/\.(jpg|jpeg|png|webp|gif)/i)) {
+      return enclosure.getAttribute('url');
+    }
   }
 
-  return extractImageFromHtml(htmlContent);
+  // 4. itunes:image
+  const itunesImage = item.querySelector('itunes\\:image, image');
+  if (itunesImage && (itunesImage.getAttribute('href') || itunesImage.getAttribute('url'))) {
+    return itunesImage.getAttribute('href') || itunesImage.getAttribute('url');
+  }
+
+  // 5. HTML img in description or content:encoded
+  const imgFromDesc = extractImageFromHtml(htmlDescription);
+  if (imgFromDesc) return imgFromDesc;
+
+  const imgFromContent = extractImageFromHtml(htmlContent);
+  if (imgFromContent) return imgFromContent;
+
+  return '';
 }
 
 function extractImageFromHtml(html) {
   if (!html) return '';
+  // Check img src
   const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-  return match ? match[1] : '';
+  if (match && match[1] && !match[1].includes('feedburner') && !match[1].includes('pixel')) {
+    return match[1];
+  }
+  // Check img srcset
+  const srcSetMatch = html.match(/srcset=["']([^"'\s]+)/i);
+  if (srcSetMatch && srcSetMatch[1]) return srcSetMatch[1];
+  return '';
 }
 
 function cleanSnippet(html) {
   if (!html) return '';
-  const text = html.replace(/<[^>]+>/g, '').trim();
+  const text = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
   return text.length > 160 ? text.substring(0, 160) + '...' : text;
 }
 
-function getCategoryFallbackImage(category) {
-  const fallbacks = {
-    'tecnologia': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80',
-    'economia': 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&auto=format&fit=crop&q=80',
-    'sport': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&auto=format&fit=crop&q=80',
-    'mondo': 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600&auto=format&fit=crop&q=80',
-    'prima-pagina': 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&auto=format&fit=crop&q=80'
-  };
-  return fallbacks[category] || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&auto=format&fit=crop&q=80';
+// Generate distinct color tile gradient for articles without specific images
+function generateDistinctMetroGradient(sourceName) {
+  const hash = sourceName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const colors = [
+    'linear-gradient(135deg, #0078d7 0%, #002050 100%)',
+    'linear-gradient(135deg, #d83b01 0%, #501000 100%)',
+    'linear-gradient(135deg, #107c41 0%, #003010 100%)',
+    'linear-gradient(135deg, #881798 0%, #300040 100%)',
+    'linear-gradient(135deg, #008272 0%, #003025 100%)',
+    'linear-gradient(135deg, #e3008c 0%, #500030 100%)',
+    'linear-gradient(135deg, #00bcf2 0%, #004060 100%)'
+  ];
+  return colors[hash % colors.length];
 }
 
 // Render News Grid & Hero Card
@@ -565,10 +605,16 @@ function renderArticles() {
 
   const hero = filtered[0];
   if (heroContainer && !searchQuery) {
+    const heroImgHtml = hero.image
+      ? `<img src="${hero.image}" alt="${escapeHtml(hero.title)}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\\'metro-fallback-thumb\\' style=\\'background:${generateDistinctMetroGradient(hero.source)}\\'><span>${escapeHtml(hero.source)}</span></div>'">`
+      : `<div class="metro-fallback-thumb" style="background:${generateDistinctMetroGradient(hero.source)}">
+           <span style="font-size:1.4rem; font-weight:700;">${escapeHtml(hero.source)}</span>
+         </div>`;
+
     heroContainer.innerHTML = `
       <div class="hero-news-card" data-article-id="${escapeHtml(hero.id)}">
         <div class="hero-image-wrapper">
-          <img src="${hero.image}" alt="${escapeHtml(hero.title)}" onerror="this.src='${getCategoryFallbackImage(hero.category)}'">
+          ${heroImgHtml}
         </div>
         <div class="hero-content">
           <span class="source-pill">${escapeHtml(hero.source)}</span>
@@ -585,20 +631,28 @@ function renderArticles() {
   }
 
   const restArticles = searchQuery ? filtered : filtered.slice(1);
-  gridContainer.innerHTML = restArticles.map(art => `
-    <div class="news-card" data-article-id="${escapeHtml(art.id)}">
-      <div class="news-thumb">
-        <img src="${art.image}" alt="${escapeHtml(art.title)}" onerror="this.src='${getCategoryFallbackImage(art.category)}'">
-      </div>
-      <div class="news-card-info">
-        <h3 class="news-card-title">${escapeHtml(art.title)}</h3>
-        <div class="news-card-footer">
-          <span class="source-name">${escapeHtml(art.source)}</span>
-          <span class="news-time">${formatTimeAgo(art.pubDate)}</span>
+  gridContainer.innerHTML = restArticles.map(art => {
+    const thumbHtml = art.image
+      ? `<img src="${art.image}" alt="${escapeHtml(art.title)}" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\\'metro-fallback-thumb\\' style=\\'background:${generateDistinctMetroGradient(art.source)}\\'><span>${escapeHtml(art.source.substring(0,3))}</span></div>'">`
+      : `<div class="metro-fallback-thumb" style="background:${generateDistinctMetroGradient(art.source)}">
+           <span>${escapeHtml(art.source.substring(0,6))}</span>
+         </div>`;
+
+    return `
+      <div class="news-card" data-article-id="${escapeHtml(art.id)}">
+        <div class="news-thumb">
+          ${thumbHtml}
+        </div>
+        <div class="news-card-info">
+          <h3 class="news-card-title">${escapeHtml(art.title)}</h3>
+          <div class="news-card-footer">
+            <span class="source-name">${escapeHtml(art.source)}</span>
+            <span class="news-time">${formatTimeAgo(art.pubDate)}</span>
+          </div>
         </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   gridContainer.querySelectorAll('.news-card').forEach(card => {
     card.addEventListener('click', () => {
