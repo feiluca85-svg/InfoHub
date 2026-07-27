@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0078d7">
+  <meta name="description" content="Glance News - Feed RSS, notizie dall'Italia e dal mondo con modalità lettura senza pubblicità in stile Windows Phone 8">
+  <title>Glance News</title>
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Glance News">
+  <link rel="icon" href="icon-192.png" type="image/png">
+
+  <!-- Fonts & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260727_v1">
+</head>
+<body>
+  <div id="newsApp">
+    <!-- Header -->
+    <header class="news-header">
+      <div class="news-title-group">
+        <span class="news-sub-title">glance news</span>
+        <h1 id="newsCategoryTitle" class="news-category-title">prima pagina</h1>
+      </div>
+      <div class="news-header-actions">
+        <button id="searchToggleBtn" class="metro-icon-btn" title="Cerca notizie" aria-label="Cerca">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+        <button id="sidebarToggleBtn" class="metro-icon-btn" title="Fonti notizie RSS" aria-label="Fonti notizie">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <button id="refreshNewsBtn" class="metro-icon-btn" title="Aggiorna notizie" aria-label="Aggiorna">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M23 4v6h-6"></path>
+            <path d="M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Search Bar Banner (Collapsible) -->
+    <div id="searchBanner" class="search-banner hidden">
+      <div class="search-input-wrapper">
+        <input type="text" id="searchInput" placeholder="Cerca notizia, parola chiave o tema..." autocomplete="off">
+        <button id="clearSearchBtn" class="clear-btn">&times;</button>
+      </div>
+    </div>
+
+    <!-- Horizontal Category Filter Bar -->
+    <nav class="category-bar">
+      <button class="category-chip active" data-category="tutti">TUTTI</button>
+      <button class="category-chip" data-category="prima-pagina">PRIMA PAGINA</button>
+      <button class="category-chip" data-category="italia">ITALIA</button>
+      <button class="category-chip" data-category="mondo">MONDO</button>
+      <button class="category-chip" data-category="economia">ECONOMIA</button>
+      <button class="category-chip" data-category="tecnologia">TECNOLOGIA</button>
+      <button class="category-chip" data-category="sport">SPORT</button>
+    </nav>
+
+    <!-- Main Vertical Scrollable Body -->
+    <main class="news-body">
+      <!-- Breaking News Hero Card -->
+      <section id="featuredNewsSection" class="featured-news-section">
+        <!-- Generated dynamically -->
+      </section>
+
+      <!-- News Articles Grid -->
+      <section class="news-grid-section">
+        <h2 class="section-label">ultime notizie</h2>
+        <div id="newsGrid" class="news-grid">
+          <!-- Generated dynamically -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Distraction-Free Reader Mode Dialog -->
+    <dialog id="readerModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <button id="closeReaderBtn" class="metro-icon-btn" title="Chiudi lettura" aria-label="Chiudi">
+            &larr; Indietro
+          </button>
+          <div class="reader-font-controls">
+            <button id="fontDecBtn" title="Testo più piccolo">A-</button>
+            <button id="fontIncBtn" title="Testo più grande">A+</button>
+          </div>
+        </header>
+
+        <article id="readerArticleBody" class="reader-article-container">
+          <!-- Article details inserted here dynamically -->
+        </article>
+      </div>
+    </dialog>
+
+    <!-- Feeds & Sources Manager Sidebar -->
+    <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
+    <aside id="sidebar" class="metro-sidebar">
+      <div class="sidebar-header">
+        <h2>fonti notizie</h2>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="toggleDeleteFeedsBtn" class="metro-icon-btn" title="Elimina fonti" aria-label="Modalità eliminazione" style="width:30px; height:30px; font-size:1.1rem; padding:0; display:flex; align-items:center; justify-content:center;">&minus;</button>
+          <button id="closeSidebarBtn" class="close-modal-btn">&times;</button>
+        </div>
+      </div>
+      <div id="feedsListContainer" class="feeds-list-container">
+        <!-- Generated dynamically -->
+      </div>
+      <div class="sidebar-footer">
+        <button id="addFeedBtn" class="metro-list-btn">+ aggiungi nuova fonte rss</button>
+      </div>
+    </aside>
+
+    <!-- Add Feed Modal -->
+    <dialog id="addFeedModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <h2 style="font-weight:300;">aggiungi fonte rss</h2>
+          <button id="closeAddFeedBtn" class="close-modal-btn">&times;</button>
+        </header>
+        <div style="padding: 20px;">
+          <!-- Custom RSS URL Input -->
+          <div style="display:flex; gap:10px; margin-bottom: 20px;">
+            <input type="url" id="customFeedUrlInput" placeholder="Inserisci URL RSS (es. https://sito.it/feed.xml)" autocomplete="off" style="flex:1; padding:14px; background:#222; border:1px solid #444; color:white; font-size:0.95rem; outline:none;">
+            <button id="saveCustomFeedBtn" class="metro-list-btn" style="flex:0 0 auto; width:auto; padding:0 18px;">Aggiungi</button>
+          </div>
+
+          <h3 style="font-size:0.9rem; font-weight:600; text-transform:uppercase; color:#888; margin-bottom:12px;">Fonti Consigliate</h3>
+          <div id="presetFeedsList" class="preset-feeds-list">
+            <!-- Preset feeds dynamically listed -->
+          </div>
+        </div>
+      </div>
+    </dialog>
+  </div>
+
+  <script src="app.js?v=20260727_v1"></script>
+</body>
+</html>

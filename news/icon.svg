@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#000000"/>
+  <rect x="32" y="32" width="448" height="448" rx="48" fill="#0078d7"/>
+  <!-- WP8 Newspaper / Feed Icon -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Newspaper border -->
+    <rect x="110" y="110" width="292" height="292" rx="16" stroke-width="24"/>
+    <!-- Top banner / image area -->
+    <rect x="150" y="150" width="100" height="90" rx="8" fill="#ffffff" stroke="none"/>
+    <!-- Lines of text -->
+    <line x1="275" y1="165" x2="360" y2="165" stroke-width="20"/>
+    <line x1="275" y1="210" x2="350" y2="210" stroke-width="20"/>
+    <line x1="150" y1="280" x2="360" y2="280" stroke-width="20"/>
+    <line x1="150" y1="325" x2="360" y2="325" stroke-width="20"/>
+    <line x1="150" y1="370" x2="280" y2="370" stroke-width="20"/>
+  </g>
+</svg>
