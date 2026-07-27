@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0078d7">
-  <meta name="description" content="Glance Meteo - Previsioni meteo veloci e senza pubblicità in stile Windows Phone 8">
+  <meta name="description" content="Glance Meteo - Previsioni meteo veloci, dettagliate e senza pubblicità in stile Windows Phone 8">
   <title>Glance Meteo</title>
 
   <!-- PWA Meta Tags -->
@@ -30,6 +30,11 @@
         <h1 id="meteoCityName" class="meteo-city-name">Roma</h1>
       </div>
       <div class="meteo-header-actions">
+        <button id="gpsBtn" class="metro-icon-btn" title="Posizione attuale GPS" aria-label="GPS">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <polygon points="12 2 19 21 12 17 5 21 12 2"></polygon>
+          </svg>
+        </button>
         <button id="sidebarToggleBtn" class="metro-icon-btn" title="Città salvate" aria-label="Menu città">
           <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -47,22 +52,62 @@
       </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- Extreme Weather Alert Banner -->
+    <div id="meteoAlertBanner" class="meteo-alert-banner hidden">
+      <span id="meteoAlertIcon">⚠️</span>
+      <span id="meteoAlertText">Allerta Meteo</span>
+    </div>
+
+    <!-- Main Vertical Scroll Body -->
     <main class="meteo-body">
-      <!-- Current Weather Hero Card -->
+      <!-- 1. Current Weather Hero Card -->
       <section class="weather-hero-card">
         <div class="weather-hero-top">
           <div id="weatherHeroTemp" class="weather-huge-temp">--&deg;</div>
           <div id="weatherHeroIcon" class="weather-hero-icon">☀️</div>
         </div>
         <div id="weatherHeroDesc" class="weather-hero-desc">Caricamento...</div>
-        <div id="weatherHeroDetails" class="weather-hero-details">Vento: -- km/h • Max: --° / Min: --°</div>
+        <div id="weatherHeroDetails" class="weather-hero-details">Vento: -- km/h • Umidità: --% • Max: --° / Min: --°</div>
       </section>
 
-      <!-- 7-Day Forecast -->
+      <!-- 2. Smart WP8 Tip Card -->
+      <section class="smart-tip-card">
+        <span class="smart-tip-badge">consiglio WP8</span>
+        <p id="smartTipText" class="smart-tip-text">Caricamento consiglio meteo...</p>
+      </section>
+
+      <!-- 3. Astro & Air Quality Grid -->
+      <section class="metro-info-grid">
+        <div class="metro-info-tile">
+          <div class="tile-icon">🌅</div>
+          <div class="tile-content">
+            <span class="tile-label">alba / tramonto</span>
+            <div id="astroText" class="tile-value">--:-- • --:--</div>
+          </div>
+        </div>
+        <div class="metro-info-tile">
+          <div class="tile-icon">🍃</div>
+          <div class="tile-content">
+            <span class="tile-label">qualità dell'aria</span>
+            <div id="aqiText" class="tile-value">In rilevamento...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Hourly Forecast Section (Vertical Scroll List) -->
+      <section class="forecast-section">
+        <h2 class="forecast-section-title">prossime 24 ore (orario)</h2>
+        <div id="hourlyList" class="hourly-list">
+          <!-- Generated dynamically -->
+        </div>
+      </section>
+
+      <!-- 5. 7-Day Forecast Section -->
       <section class="forecast-section">
         <h2 class="forecast-section-title">prossimi 7 giorni</h2>
-        <div id="forecastList" class="forecast-list"></div>
+        <div id="forecastList" class="forecast-list">
+          <!-- Generated dynamically -->
+        </div>
       </section>
     </main>
 
@@ -99,6 +144,6 @@
     </dialog>
   </div>
 
-  <script src="app.js?v=20260727"></script>
+  <script src="app.js?v=20260727_v2"></script>
 </body>
 </html>
