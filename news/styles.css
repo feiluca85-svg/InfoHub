@@ -147,15 +147,15 @@ body {
   color: rgba(255, 255, 255, 0.35);
   border: none;
   font-family: var(--font-family);
-  font-size: 3.2rem; /* GIANT Metro Title Typography like 'people' & 'profile' */
+  font-size: 3.8rem; /* Even larger GIANT Metro Title Typography */
   font-weight: 200;
   text-transform: lowercase;
-  letter-spacing: -1.5px;
+  letter-spacing: -2px;
   cursor: pointer;
   white-space: nowrap;
   padding: 0;
   margin: 0;
-  line-height: 1.0;
+  line-height: 0.95;
   transition: all 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
