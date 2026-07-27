@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0078d7">
+  <meta name="description" content="Glance Meteo - Previsioni meteo veloci e senza pubblicità in stile Windows Phone 8">
+  <title>Glance Meteo</title>
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Glance Meteo">
+  <link rel="icon" href="icon-192.png" type="image/png">
+
+  <!-- Fonts & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="meteoApp">
+    <!-- Header -->
+    <header class="meteo-header">
+      <div class="meteo-title-group">
+        <span class="meteo-sub-title">glance meteo</span>
+        <h1 id="meteoCityName" class="meteo-city-name">Roma</h1>
+      </div>
+      <div class="meteo-header-actions">
+        <button id="sidebarToggleBtn" class="metro-icon-btn" title="Città salvate" aria-label="Menu città">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <button id="refreshBtn" class="metro-icon-btn" title="Aggiorna meteo" aria-label="Aggiorna">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M23 4v6h-6"></path>
+            <path d="M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="meteo-body">
+      <!-- Current Weather Hero Card -->
+      <section class="weather-hero-card">
+        <div class="weather-hero-top">
+          <div id="weatherHeroTemp" class="weather-huge-temp">--&deg;</div>
+          <div id="weatherHeroIcon" class="weather-hero-icon">☀️</div>
+        </div>
+        <div id="weatherHeroDesc" class="weather-hero-desc">Caricamento...</div>
+        <div id="weatherHeroDetails" class="weather-hero-details">Vento: -- km/h • Max: --° / Min: --°</div>
+      </section>
+
+      <!-- 7-Day Forecast -->
+      <section class="forecast-section">
+        <h2 class="forecast-section-title">prossimi 7 giorni</h2>
+        <div id="forecastList" class="forecast-list"></div>
+      </section>
+    </main>
+
+    <!-- Sidebar Overlay & Cities List -->
+    <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
+    <aside id="sidebar" class="metro-sidebar">
+      <div class="sidebar-header">
+        <h2>città salvate</h2>
+        <button id="closeSidebarBtn" class="close-modal-btn">&times;</button>
+      </div>
+      <div id="citiesListContainer" class="cities-list-container">
+        <!-- Generated dynamically -->
+      </div>
+      <div class="sidebar-footer">
+        <button id="addCityBtn" class="metro-list-btn">+ cerca e aggiungi città</button>
+      </div>
+    </aside>
+
+    <!-- Add City Dialog -->
+    <dialog id="addCityModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <h2 style="font-weight:300;">cerca città</h2>
+          <button id="closeAddCityBtn" class="close-modal-btn">&times;</button>
+        </header>
+        <div style="padding: 20px;">
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="citySearchInput" placeholder="Es: Milano, Napoli, Parigi, Londra..." autocomplete="off" style="flex:1; padding:14px; background:#222; border:1px solid #444; color:white; font-size:1rem; outline:none;">
+            <button id="searchCityBtn" class="metro-list-btn" style="flex:0 0 auto; width:auto; padding:0 18px;">Cerca</button>
+          </div>
+          <div id="citySearchResults" class="search-results-list"></div>
+        </div>
+      </div>
+    </dialog>
+  </div>
+
+  <script src="app.js?v=20260727"></script>
+</body>
+</html>
