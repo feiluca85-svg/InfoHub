@@ -1,4 +1,4 @@
-/* Glance Meteo - Application Logic with WP8 Vector Icons & Refined Layout */
+/* Glance Meteo - Application Logic (Instant Launch, GPS Geocoding, White Minus Delete, Active City Saver) */
 
 const DEFAULT_METEO_CITIES = [
   { id: 'roma', name: 'Roma', lat: 41.9028, lon: 12.4964 },
@@ -9,12 +9,24 @@ const DEFAULT_METEO_CITIES = [
 ];
 
 let METEO_CITIES = JSON.parse(localStorage.getItem('GLANCE_METEO_CITIES')) || DEFAULT_METEO_CITIES;
-let activeCity = METEO_CITIES[0];
+
+// 1. Remember and Restore Last Selected Active City
+let savedActiveCityId = localStorage.getItem('GLANCE_METEO_ACTIVE_CITY_ID');
+let savedGpsCity = JSON.parse(localStorage.getItem('GLANCE_METEO_GPS_CITY'));
+
+let activeCity = (savedGpsCity && savedActiveCityId === savedGpsCity.id) 
+  ? savedGpsCity 
+  : (METEO_CITIES.find(c => c.id === savedActiveCityId) || METEO_CITIES[0]);
+
 let deletingCitiesMode = false;
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Instant Render from Local Cache (Zero delay on launch)
   renderCitiesList();
+  renderCachedWeather();
   setupEventListeners();
+
+  // Background refresh for fresh weather data
   loadAllWeatherData();
 });
 
@@ -22,8 +34,16 @@ function saveMeteoCities() {
   localStorage.setItem('GLANCE_METEO_CITIES', JSON.stringify(METEO_CITIES));
 }
 
+function saveActiveCityState(city) {
+  activeCity = city;
+  localStorage.setItem('GLANCE_METEO_ACTIVE_CITY_ID', city.id);
+  if (city.id.startsWith('gps_')) {
+    localStorage.setItem('GLANCE_METEO_GPS_CITY', JSON.stringify(city));
+  }
+}
+
 function setupEventListeners() {
-  // 1. GPS Button Listener
+  // 2. GPS Button: Reverse Geocode Actual City Name
   const gpsBtn = document.getElementById('gpsBtn');
   if (gpsBtn) {
     gpsBtn.addEventListener('click', () => {
@@ -34,40 +54,44 @@ function setupEventListeners() {
       gpsBtn.style.transform = 'scale(0.85)';
       setTimeout(() => gpsBtn.style.transform = 'none', 300);
 
+      const headerCityName = document.getElementById('meteoCityName');
+      if (headerCityName) headerCityName.innerText = 'Rilevamento GPS...';
+
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
 
-          let gpsCityName = 'Posizione Attuale';
+          let realCityName = 'Posizione Rilevata';
           try {
-            const revUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${lat},${lon}&count=1`;
-            const revRes = await fetch(revUrl);
-            if (revRes.ok) {
-              const revData = await revRes.json();
-              if (revData.results && revData.results[0]) {
-                gpsCityName = revData.results[0].name;
-              }
+            // Free Reverse Geocoding API for exact Italian city/locality name
+            const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=it`;
+            const geoRes = await fetch(geoUrl);
+            if (geoRes.ok) {
+              const geoData = await geoRes.json();
+              realCityName = geoData.city || geoData.locality || geoData.principalSubdivision || realCityName;
             }
           } catch (e) {
-            // Fallback
+            // Fallback lookup
           }
 
           const gpsCity = {
             id: 'gps_' + Date.now(),
-            name: `📍 ${gpsCityName}`,
+            name: realCityName,
             lat: lat,
             lon: lon
           };
 
-          activeCity = gpsCity;
+          // Save and set active GPS city
+          saveActiveCityState(gpsCity);
           renderCitiesList();
           loadAllWeatherData();
         },
         (error) => {
           alert('Impossibile rilevare la posizione GPS. Assicurati di aver dato i permessi di localizzazione.');
+          if (headerCityName) headerCityName.innerText = activeCity.name;
         },
-        { enableHighAccuracy: true, timeout: 8000 }
+        { enableHighAccuracy: true, timeout: 10000 }
       );
     });
   }
@@ -174,8 +198,8 @@ async function executeCitySearch() {
         };
 
         METEO_CITIES.push(newCity);
-        activeCity = newCity;
         saveMeteoCities();
+        saveActiveCityState(newCity);
         renderCitiesList();
         loadAllWeatherData();
 
@@ -189,6 +213,7 @@ async function executeCitySearch() {
   }
 }
 
+// 3. White Minus Button & City List Renderer
 function renderCitiesList() {
   const container = document.getElementById('citiesListContainer');
   const headerCityName = document.getElementById('meteoCityName');
@@ -215,7 +240,7 @@ function renderCitiesList() {
         }
         METEO_CITIES = METEO_CITIES.filter(c => c.id !== deleteId);
         if (activeCity.id === deleteId) {
-          activeCity = METEO_CITIES[0];
+          saveActiveCityState(METEO_CITIES[0]);
         }
         saveMeteoCities();
         renderCitiesList();
@@ -223,9 +248,12 @@ function renderCitiesList() {
         return;
       }
 
-      activeCity = METEO_CITIES.find(c => c.id === el.dataset.id);
-      renderCitiesList();
-      loadAllWeatherData();
+      const clickedCity = METEO_CITIES.find(c => c.id === el.dataset.id);
+      if (clickedCity) {
+        saveActiveCityState(clickedCity);
+        renderCitiesList();
+        loadAllWeatherData();
+      }
       
       const sidebar = document.getElementById('sidebar');
       const overlay = document.getElementById('sidebarOverlay');
@@ -235,6 +263,7 @@ function renderCitiesList() {
       }
     });
 
+    // Right click or Long press toggles white minus delete buttons
     el.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       deletingCitiesMode = !deletingCitiesMode;
@@ -254,15 +283,56 @@ function renderCitiesList() {
   });
 }
 
-/* Master Data Fetching (Forecast + Hourly + Air Quality + Tips) */
-async function loadAllWeatherData() {
-  await Promise.all([
-    loadCurrentAndForecastWeather(),
-    loadAirQualityData()
-  ]);
+// 4. Instant Launch: Cache last weather data
+function renderCachedWeather() {
+  const cached = localStorage.getItem(`GLANCE_METEO_CACHE_${activeCity.id}`);
+  if (!cached) return;
+  try {
+    const data = JSON.parse(cached);
+    applyWeatherDataToDOM(data.weather, data.airQuality);
+  } catch (e) {
+    // Ignore cache parse error
+  }
 }
 
-async function loadCurrentAndForecastWeather() {
+async function loadAllWeatherData() {
+  try {
+    const [weatherData, aqiData] = await Promise.all([
+      fetchWeatherData(activeCity.lat, activeCity.lon),
+      fetchAirQualityData(activeCity.lat, activeCity.lon)
+    ]);
+
+    if (weatherData) {
+      applyWeatherDataToDOM(weatherData, aqiData);
+      localStorage.setItem(`GLANCE_METEO_CACHE_${activeCity.id}`, JSON.stringify({
+        weather: weatherData,
+        airQuality: aqiData
+      }));
+    }
+  } catch (e) {
+    // Silent catch
+  }
+}
+
+async function fetchWeatherData(lat, lon) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  return await res.json();
+}
+
+async function fetchAirQualityData(lat, lon) {
+  try {
+    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=european_aqi`;
+    const res = await fetch(aqiUrl);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+function applyWeatherDataToDOM(data, aqiData) {
   const heroTemp = document.getElementById('weatherHeroTemp');
   const heroIcon = document.getElementById('weatherHeroIcon');
   const heroDesc = document.getElementById('weatherHeroDesc');
@@ -270,129 +340,58 @@ async function loadCurrentAndForecastWeather() {
   const smartTipText = document.getElementById('smartTipText');
   const sunriseTimeEl = document.getElementById('sunriseTime');
   const sunsetTimeEl = document.getElementById('sunsetTime');
+  const aqiText = document.getElementById('aqiText');
   const hourlyList = document.getElementById('hourlyList');
   const forecastList = document.getElementById('forecastList');
   const alertBanner = document.getElementById('meteoAlertBanner');
 
-  if (!heroTemp) return;
+  if (!heroTemp || !data || !data.current_weather) return;
 
-  heroDesc.innerText = 'Caricamento meteo...';
+  const curr = data.current_weather;
+  const info = getWeatherCodeSvgInfo(curr.weathercode, true);
+  const maxT = Math.round(data.daily.temperature_2m_max[0]);
+  const minT = Math.round(data.daily.temperature_2m_min[0]);
+  const maxRainProb = data.daily.precipitation_probability_max ? data.daily.precipitation_probability_max[0] : 0;
 
-  try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${activeCity.lat}&longitude=${activeCity.lon}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('API Error');
-    const data = await res.json();
+  // Hero Card
+  heroTemp.innerText = `${Math.round(curr.temperature)}°`;
+  heroIcon.innerHTML = info.svg;
+  heroDesc.innerText = info.description;
+  heroDetails.innerText = `Vento: ${curr.windspeed} km/h • Max: ${maxT}° / Min: ${minT}°`;
 
-    const curr = data.current_weather;
-    const info = getWeatherCodeSvgInfo(curr.weathercode, true);
-    const maxT = Math.round(data.daily.temperature_2m_max[0]);
-    const minT = Math.round(data.daily.temperature_2m_min[0]);
-    const maxRainProb = data.daily.precipitation_probability_max ? data.daily.precipitation_probability_max[0] : 0;
-
-    // 1. Current Weather Hero Card
-    heroTemp.innerText = `${Math.round(curr.temperature)}°`;
-    heroIcon.innerHTML = info.svg;
-    heroDesc.innerText = info.description;
-    heroDetails.innerText = `Vento: ${curr.windspeed} km/h • Max: ${maxT}° / Min: ${minT}°`;
-
-    // 2. Extreme Weather Alert Banner
-    if (alertBanner) {
-      if (curr.temperature >= 35) {
-        alertBanner.classList.remove('hidden');
-        document.getElementById('meteoAlertText').innerText = 'Allerta Caldo Estremo: temperatura oltre 35°C!';
-      } else if (curr.temperature <= 0) {
-        alertBanner.classList.remove('hidden');
-        document.getElementById('meteoAlertText').innerText = 'Allerta Gelo: pericolo ghiaccio sulle strade!';
-      } else if (curr.weathercode >= 95) {
-        alertBanner.classList.remove('hidden');
-        document.getElementById('meteoAlertText').innerText = 'Allerta Temporali Forti in corso!';
-      } else {
-        alertBanner.classList.add('hidden');
-      }
+  // Extreme Alert
+  if (alertBanner) {
+    if (curr.temperature >= 35) {
+      alertBanner.classList.remove('hidden');
+      document.getElementById('meteoAlertText').innerText = 'Allerta Caldo Estremo: temperatura oltre 35°C!';
+    } else if (curr.temperature <= 0) {
+      alertBanner.classList.remove('hidden');
+      document.getElementById('meteoAlertText').innerText = 'Allerta Gelo: pericolo ghiaccio sulle strade!';
+    } else if (curr.weathercode >= 95) {
+      alertBanner.classList.remove('hidden');
+      document.getElementById('meteoAlertText').innerText = 'Allerta Temporali Forti in corso!';
+    } else {
+      alertBanner.classList.add('hidden');
     }
-
-    // 3. Smart Daily Tip
-    if (smartTipText) {
-      smartTipText.innerText = generateSmartTip(curr.temperature, curr.weathercode, maxRainProb, curr.windspeed);
-    }
-
-    // 4. Sunrise & Sunset
-    if (sunriseTimeEl && sunsetTimeEl && data.daily.sunrise && data.daily.sunset) {
-      const sunriseVal = new Date(data.daily.sunrise[0]).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-      const sunsetVal = new Date(data.daily.sunset[0]).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-      sunriseTimeEl.innerText = sunriseVal;
-      sunsetTimeEl.innerText = sunsetVal;
-    }
-
-    // 5. Hourly Forecast List (Next 24 Hours)
-    if (hourlyList && data.hourly) {
-      const now = new Date();
-      const currentHourStr = now.toISOString().slice(0, 13);
-      let startIndex = data.hourly.time.findIndex(t => t.startsWith(currentHourStr));
-      if (startIndex === -1) startIndex = 0;
-
-      let hourlyHtml = '';
-      for (let i = startIndex; i < Math.min(startIndex + 24, data.hourly.time.length); i++) {
-        const timeObj = new Date(data.hourly.time[i]);
-        const timeLabel = timeObj.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-        const hCode = getWeatherCodeSvgInfo(data.hourly.weathercode[i], false);
-        const hTemp = Math.round(data.hourly.temperature_2m[i]);
-        const hRain = data.hourly.precipitation_probability ? data.hourly.precipitation_probability[i] : 0;
-
-        hourlyHtml += `
-          <div class="hourly-item">
-            <div class="hourly-time">${timeLabel}</div>
-            <div class="hourly-icon">${hCode.svg}</div>
-            <div class="hourly-temp">${hTemp}°</div>
-            <div class="hourly-rain">${hRain > 0 ? `💧 ${hRain}%` : ''}</div>
-          </div>
-        `;
-      }
-      hourlyList.innerHTML = hourlyHtml;
-    }
-
-    // 6. 7-Day Daily Forecast List
-    if (forecastList && data.daily) {
-      let html = '';
-      for (let i = 0; i < data.daily.time.length; i++) {
-        const dateObj = new Date(data.daily.time[i]);
-        const dayName = i === 0 ? 'Oggi' : dateObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
-        const codeInfo = getWeatherCodeSvgInfo(data.daily.weathercode[i], false);
-        const maxD = Math.round(data.daily.temperature_2m_max[i]);
-        const minD = Math.round(data.daily.temperature_2m_min[i]);
-
-        html += `
-          <div class="forecast-item">
-            <div class="forecast-day">${dayName}</div>
-            <div class="forecast-icon">${codeInfo.svg}</div>
-            <div class="forecast-temps">
-              <span class="forecast-max">${maxD}°</span>
-              <span class="forecast-min">${minD}°</span>
-            </div>
-          </div>
-        `;
-      }
-      forecastList.innerHTML = html;
-    }
-  } catch (err) {
-    heroDesc.innerText = 'Impossibile caricare il meteo. Riprova.';
   }
-}
 
-/* Fetch Air Quality Index (AQI) */
-async function loadAirQualityData() {
-  const aqiText = document.getElementById('aqiText');
-  if (!aqiText) return;
+  // Smart Tip
+  if (smartTipText) {
+    smartTipText.innerText = generateSmartTip(curr.temperature, curr.weathercode, maxRainProb, curr.windspeed);
+  }
 
-  try {
-    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${activeCity.lat}&longitude=${activeCity.lon}&current=european_aqi`;
-    const res = await fetch(aqiUrl);
-    if (!res.ok) throw new Error('AQI Error');
-    const data = await res.json();
+  // Sunrise & Sunset
+  if (sunriseTimeEl && sunsetTimeEl && data.daily.sunrise && data.daily.sunset) {
+    const sunriseVal = new Date(data.daily.sunrise[0]).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    const sunsetVal = new Date(data.daily.sunset[0]).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    sunriseTimeEl.innerText = sunriseVal;
+    sunsetTimeEl.innerText = sunsetVal;
+  }
 
-    if (data.current && data.current.european_aqi !== undefined) {
-      const aqi = data.current.european_aqi;
+  // Air Quality
+  if (aqiText) {
+    if (aqiData && aqiData.current && aqiData.current.european_aqi !== undefined) {
+      const aqi = aqiData.current.european_aqi;
       let label = 'Ottima 🟢';
       if (aqi > 20 && aqi <= 40) label = 'Buona 🟢';
       else if (aqi > 40 && aqi <= 60) label = 'Moderata 🟡';
@@ -403,12 +402,60 @@ async function loadAirQualityData() {
     } else {
       aqiText.innerText = 'Buona 🟢';
     }
-  } catch (e) {
-    aqiText.innerText = 'Buona 🟢';
+  }
+
+  // Hourly Forecast
+  if (hourlyList && data.hourly) {
+    const now = new Date();
+    const currentHourStr = now.toISOString().slice(0, 13);
+    let startIndex = data.hourly.time.findIndex(t => t.startsWith(currentHourStr));
+    if (startIndex === -1) startIndex = 0;
+
+    let hourlyHtml = '';
+    for (let i = startIndex; i < Math.min(startIndex + 24, data.hourly.time.length); i++) {
+      const timeObj = new Date(data.hourly.time[i]);
+      const timeLabel = timeObj.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      const hCode = getWeatherCodeSvgInfo(data.hourly.weathercode[i], false);
+      const hTemp = Math.round(data.hourly.temperature_2m[i]);
+      const hRain = data.hourly.precipitation_probability ? data.hourly.precipitation_probability[i] : 0;
+
+      hourlyHtml += `
+        <div class="hourly-item">
+          <div class="hourly-time">${timeLabel}</div>
+          <div class="hourly-icon">${hCode.svg}</div>
+          <div class="hourly-temp">${hTemp}°</div>
+          <div class="hourly-rain">${hRain > 0 ? `💧 ${hRain}%` : ''}</div>
+        </div>
+      `;
+    }
+    hourlyList.innerHTML = hourlyHtml;
+  }
+
+  // 7-Day Forecast
+  if (forecastList && data.daily) {
+    let html = '';
+    for (let i = 0; i < data.daily.time.length; i++) {
+      const dateObj = new Date(data.daily.time[i]);
+      const dayName = i === 0 ? 'Oggi' : dateObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+      const codeInfo = getWeatherCodeSvgInfo(data.daily.weathercode[i], false);
+      const maxD = Math.round(data.daily.temperature_2m_max[i]);
+      const minD = Math.round(data.daily.temperature_2m_min[i]);
+
+      html += `
+        <div class="forecast-item">
+          <div class="forecast-day">${dayName}</div>
+          <div class="forecast-icon">${codeInfo.svg}</div>
+          <div class="forecast-temps">
+            <span class="forecast-max">${maxD}°</span>
+            <span class="forecast-min">${minD}°</span>
+          </div>
+        </div>
+      `;
+    }
+    forecastList.innerHTML = html;
   }
 }
 
-/* Smart Daily Clothing Tip Generator */
 function generateSmartTip(temp, code, rainProb, wind) {
   if (code >= 95) return 'Temporali forti in vista: resta al sicuro al coperto!';
   if (code >= 51 && code <= 67 || rainProb >= 40) return 'Probabile pioggia oggi: ricordati di portare l’ombrello!';
@@ -421,7 +468,6 @@ function generateSmartTip(temp, code, rainProb, wind) {
   return 'Buona giornata! Il clima è perfetto per uscire.';
 }
 
-/* Authentic WP8 Vector SVG Weather Icons */
 function getWeatherCodeSvgInfo(code, isLarge = false) {
   const size = isLarge ? 56 : 26;
   const stroke = isLarge ? 1.5 : 1.8;
