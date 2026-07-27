@@ -1,5 +1,57 @@
 /* Glance News - Application Logic (Ultra-fast Client RSS Parser, Robust Proxy Waterfall, 0 Console Errors) */
 
+const ALL_SEARCHABLE_SOURCES = [
+  // Generali / Prima Pagina / Italia
+  { name: 'ANSA Ultima Ora', url: 'https://www.ansa.it/sito/ansait_rss.xml', category: 'prima-pagina', tags: 'ansa notizie italia prima pagina news ultime notizie' },
+  { name: 'ANSA Italia', url: 'https://www.ansa.it/sito/notizie/italia/italia_rss.xml', category: 'italia', tags: 'ansa italia notizie cronaca' },
+  { name: 'ANSA Mondo', url: 'https://www.ansa.it/sito/notizie/mondo/mondo_rss.xml', category: 'mondo', tags: 'ansa mondo esteri internazionale' },
+  { name: 'ANSA Economia', url: 'https://www.ansa.it/sito/notizie/economia/economia_rss.xml', category: 'economia', tags: 'ansa finanza economia borse' },
+  { name: 'ANSA Tecnologia', url: 'https://www.ansa.it/sito/notizie/tecnologia/tecnologia_rss.xml', category: 'tecnologia', tags: 'ansa tech tecnologia scienza' },
+  
+  { name: 'Corriere della Sera', url: 'https://xml2.corriereobjects.it/rss/homepage.xml', category: 'prima-pagina', tags: 'corriere sera notizie italia prima pagina coriere' },
+  { name: 'La Repubblica', url: 'https://www.repubblica.it/rss/homepage/rss2.0.xml', category: 'prima-pagina', tags: 'repubblica rep notizie italia prima pagina republica' },
+  { name: 'Il Sole 24 Ore', url: 'https://www.ilsole24ore.com/rss/italia.xml', category: 'economia', tags: 'sole 24 ore economia finanza borse mercati italia' },
+  { name: 'TGCOM24', url: 'https://www.tgcom24.mediaset.it/rss/homepage.xml', category: 'italia', tags: 'tgcom tgcom24 mediaset notizie cronaca italia' },
+  { name: 'Il Fatto Quotidiano', url: 'https://www.ilfattoquotidiano.it/feed/', category: 'italia', tags: 'fatto quotidiano fattoquotidiano travaglio notizie politica' },
+  { name: 'Fanpage.it', url: 'https://www.fanpage.it/feed/', category: 'italia', tags: 'fanpage fanpageit notizie cronaca italia' },
+  { name: 'Open Online', url: 'https://www.open.online/feed/', category: 'italia', tags: 'open mentana notizie giovani italia' },
+  { name: 'Il Post', url: 'https://www.ilpost.it/feed/', category: 'italia', tags: 'post ilpost notizie spiegato bene cultura' },
+  { name: 'La Stampa', url: 'https://www.lastampa.it/rss/homepage.xml', category: 'prima-pagina', tags: 'stampa la stampa torino notizie italia' },
+  { name: 'Il Messaggero', url: 'https://www.ilmessaggero.it/rss/home.xml', category: 'italia', tags: 'messaggero il messaggero roma notizie' },
+  { name: 'Il Giornale', url: 'https://www.ilgiornale.it/feed.xml', category: 'italia', tags: 'giornale il giornale gornale notizie politica' },
+  { name: 'Libero Quotidiano', url: 'https://www.liberoquotidiano.it/rss.xml', category: 'italia', tags: 'libero quotidiano notizie italia' },
+  { name: 'Rai News', url: 'https://www.rainews.it/rss/tutti', category: 'italia', tags: 'rainews rai notizie italia mondo' },
+  { name: 'AGI Agenzia Italia', url: 'https://www.agi.it/rss', category: 'italia', tags: 'agi agenzia italia notizie' },
+  { name: 'Adnkronos', url: 'https://www.adnkronos.com/rss/ultima-ora', category: 'italia', tags: 'adnkronos agenzia notizie' },
+
+  // Sport
+  { name: 'La Gazzetta dello Sport', url: 'https://www.gazzetta.it/rss/home.xml', category: 'sport', tags: 'gazzetta gazzeta sport calcio serie a champions formula 1 moto' },
+  { name: 'Corriere dello Sport', url: 'https://www.corrieredellosport.it/rss', category: 'sport', tags: 'corriere sport corriere dello sport coriere calcio serie a' },
+  { name: 'Tuttosport', url: 'https://www.tuttosport.com/rss', category: 'sport', tags: 'tuttosport tutto sport juve torino calcio' },
+  { name: 'Sky Sport', url: 'https://sport.sky.it/rss/sport.xml', category: 'sport', tags: 'sky sport calcio formula 1 motogp tennis' },
+  { name: 'Eurosport Italia', url: 'https://it.eurosport.com/rss.xml', category: 'sport', tags: 'eurosport sport tennis ciclismo sci' },
+  { name: 'Calciomercato.com', url: 'https://www.calciomercato.com/feed', category: 'sport', tags: 'calciomercato calcio trasferimenti serie a' },
+
+  // Tecnologia & Scienza
+  { name: 'Wired Italia', url: 'https://www.wired.it/feed/rss', category: 'tecnologia', tags: 'wired tecnologia tech innovazione scienza gadgets' },
+  { name: 'HDblog.it', url: 'https://www.hdblog.it/feed/', category: 'tecnologia', tags: 'hdblog hd blog smartphone android apple recensioni tech' },
+  { name: 'Tom\'s Hardware Italia', url: 'https://www.tomshw.it/feed', category: 'tecnologia', tags: 'toms hardware tomshardware pc componenti giochi tech' },
+  { name: 'Hardware Upgrade', url: 'https://www.hwupgrade.it/rss_news.xml', category: 'tecnologia', tags: 'hwupgrade hardware upgrade pc scheda video tech' },
+  { name: 'DDAY.it', url: 'https://www.dday.it/rss.xml', category: 'tecnologia', tags: 'dday ddayit tv audio fotocamera tecnologia' },
+  { name: 'Punto Informatico', url: 'https://www.punto-informatico.it/feed/', category: 'tecnologia', tags: 'punto informatico software sicurezza web tech' },
+  { name: 'TechCrunch', url: 'https://techcrunch.com/feed/', category: 'tecnologia', tags: 'techcrunch startup tecnologia intelligenza artificiale ai' },
+  { name: 'Multiplayer.it', url: 'https://multiplayer.it/feed/rss/news/', category: 'tecnologia', tags: 'multiplayer videogiochi gaming ps5 xbox nintendo' },
+  { name: 'Everyeye.it', url: 'https://www.everyeye.it/feed/feed_news_rss.asp', category: 'tecnologia', tags: 'everyeye gaming videogiochi anime cinema' },
+  { name: 'Focus.it Scienza', url: 'https://www.focus.it/rss', category: 'tecnologia', tags: 'focus scienza spazio natura ambiente tecnologia' },
+
+  // Internazionali
+  { name: 'BBC News World', url: 'http://feeds.bbci.co.uk/news/world/rss.xml', category: 'mondo', tags: 'bbc news bbc world inglese notizie esteri' },
+  { name: 'CNN Top Stories', url: 'http://rss.cnn.com/rss/edition.rss', category: 'mondo', tags: 'cnn notizie america usa mondo' },
+  { name: 'Reuters World News', url: 'https://www.reutersagency.com/feed/', category: 'mondo', tags: 'reuters agenzia mondo finanza esteri' },
+  { name: 'The Guardian World', url: 'https://www.theguardian.com/world/rss', category: 'mondo', tags: 'guardian the guardian uk mondo esteri' },
+  { name: 'The Verge', url: 'https://www.theverge.com/rss/index.xml', category: 'tecnologia', tags: 'the verge verge tech america gadget ai' }
+];
+
 const DEFAULT_NEWS_FEEDS = [
   { id: 'ansa', name: 'ANSA Ultima Ora', url: 'https://www.ansa.it/sito/ansait_rss.xml', category: 'prima-pagina' },
   { id: 'corriere', name: 'Corriere della Sera', url: 'https://xml2.corriereobjects.it/rss/homepage.xml', category: 'prima-pagina' },
@@ -11,13 +63,7 @@ const DEFAULT_NEWS_FEEDS = [
   { id: 'wired', name: 'Wired Italia', url: 'https://www.wired.it/feed/rss', category: 'tecnologia' }
 ];
 
-const PRESET_SUGGESTED_FEEDS = [
-  { name: 'ANSA Mondo', url: 'https://www.ansa.it/sito/notizie/mondo/mondo_rss.xml', category: 'mondo' },
-  { name: 'ANSA Economia', url: 'https://www.ansa.it/sito/notizie/economia/economia_rss.xml', category: 'economia' },
-  { name: 'ANSA Tecnologia', url: 'https://www.ansa.it/sito/notizie/tecnologia/tecnologia_rss.xml', category: 'tecnologia' },
-  { name: 'La Gazzetta dello Sport', url: 'https://www.gazzetta.it/rss/home.xml', category: 'sport' },
-  { name: 'BBC News - World', url: 'http://feeds.bbci.co.uk/news/world/rss.xml', category: 'mondo' }
-];
+const PRESET_SUGGESTED_FEEDS = ALL_SEARCHABLE_SOURCES.slice(0, 10);
 
 let NEWS_FEEDS = JSON.parse(localStorage.getItem('GLANCE_NEWS_FEEDS')) || DEFAULT_NEWS_FEEDS;
 let cachedArticles = JSON.parse(localStorage.getItem('GLANCE_NEWS_CACHE')) || [];
