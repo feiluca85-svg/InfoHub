@@ -1,4 +1,4 @@
-/* Glance Meteo - Application Logic with All 6 Smart Features */
+/* Glance Meteo - Application Logic with WP8 Vector Icons & Refined Layout */
 
 const DEFAULT_METEO_CITIES = [
   { id: 'roma', name: 'Roma', lat: 41.9028, lon: 12.4964 },
@@ -39,7 +39,6 @@ function setupEventListeners() {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
 
-          // Try to reverse geocode city name
           let gpsCityName = 'Posizione Attuale';
           try {
             const revUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${lat},${lon}&count=1`;
@@ -51,7 +50,7 @@ function setupEventListeners() {
               }
             }
           } catch (e) {
-            // Fallback to Posizione Attuale
+            // Fallback
           }
 
           const gpsCity = {
@@ -269,7 +268,8 @@ async function loadCurrentAndForecastWeather() {
   const heroDesc = document.getElementById('weatherHeroDesc');
   const heroDetails = document.getElementById('weatherHeroDetails');
   const smartTipText = document.getElementById('smartTipText');
-  const astroText = document.getElementById('astroText');
+  const sunriseTimeEl = document.getElementById('sunriseTime');
+  const sunsetTimeEl = document.getElementById('sunsetTime');
   const hourlyList = document.getElementById('hourlyList');
   const forecastList = document.getElementById('forecastList');
   const alertBanner = document.getElementById('meteoAlertBanner');
@@ -285,14 +285,14 @@ async function loadCurrentAndForecastWeather() {
     const data = await res.json();
 
     const curr = data.current_weather;
-    const info = getWeatherCodeInfo(curr.weathercode);
+    const info = getWeatherCodeSvgInfo(curr.weathercode, true);
     const maxT = Math.round(data.daily.temperature_2m_max[0]);
     const minT = Math.round(data.daily.temperature_2m_min[0]);
     const maxRainProb = data.daily.precipitation_probability_max ? data.daily.precipitation_probability_max[0] : 0;
 
     // 1. Current Weather Hero Card
     heroTemp.innerText = `${Math.round(curr.temperature)}°`;
-    heroIcon.innerText = info.icon;
+    heroIcon.innerHTML = info.svg;
     heroDesc.innerText = info.description;
     heroDetails.innerText = `Vento: ${curr.windspeed} km/h • Max: ${maxT}° / Min: ${minT}°`;
 
@@ -300,31 +300,29 @@ async function loadCurrentAndForecastWeather() {
     if (alertBanner) {
       if (curr.temperature >= 35) {
         alertBanner.classList.remove('hidden');
-        document.getElementById('meteoAlertIcon').innerText = '🔥';
         document.getElementById('meteoAlertText').innerText = 'Allerta Caldo Estremo: temperatura oltre 35°C!';
       } else if (curr.temperature <= 0) {
         alertBanner.classList.remove('hidden');
-        document.getElementById('meteoAlertIcon').innerText = '❄️';
         document.getElementById('meteoAlertText').innerText = 'Allerta Gelo: pericolo ghiaccio sulle strade!';
       } else if (curr.weathercode >= 95) {
         alertBanner.classList.remove('hidden');
-        document.getElementById('meteoAlertIcon').innerText = '🌩️';
         document.getElementById('meteoAlertText').innerText = 'Allerta Temporali Forti in corso!';
       } else {
         alertBanner.classList.add('hidden');
       }
     }
 
-    // 3. Smart WP8 Tip Generator
+    // 3. Smart Daily Tip
     if (smartTipText) {
       smartTipText.innerText = generateSmartTip(curr.temperature, curr.weathercode, maxRainProb, curr.windspeed);
     }
 
-    // 4. Sunrise & Sunset Astro Times
-    if (astroText && data.daily.sunrise && data.daily.sunset) {
-      const sunriseTime = new Date(data.daily.sunrise[0]).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-      const sunsetTime = new Date(data.daily.sunset[0]).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-      astroText.innerText = `🌅 ${sunriseTime} • 🌇 ${sunsetTime}`;
+    // 4. Sunrise & Sunset
+    if (sunriseTimeEl && sunsetTimeEl && data.daily.sunrise && data.daily.sunset) {
+      const sunriseVal = new Date(data.daily.sunrise[0]).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      const sunsetVal = new Date(data.daily.sunset[0]).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      sunriseTimeEl.innerText = sunriseVal;
+      sunsetTimeEl.innerText = sunsetVal;
     }
 
     // 5. Hourly Forecast List (Next 24 Hours)
@@ -338,14 +336,14 @@ async function loadCurrentAndForecastWeather() {
       for (let i = startIndex; i < Math.min(startIndex + 24, data.hourly.time.length); i++) {
         const timeObj = new Date(data.hourly.time[i]);
         const timeLabel = timeObj.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-        const hCode = getWeatherCodeInfo(data.hourly.weathercode[i]);
+        const hCode = getWeatherCodeSvgInfo(data.hourly.weathercode[i], false);
         const hTemp = Math.round(data.hourly.temperature_2m[i]);
         const hRain = data.hourly.precipitation_probability ? data.hourly.precipitation_probability[i] : 0;
 
         hourlyHtml += `
           <div class="hourly-item">
             <div class="hourly-time">${timeLabel}</div>
-            <div class="hourly-icon">${hCode.icon}</div>
+            <div class="hourly-icon">${hCode.svg}</div>
             <div class="hourly-temp">${hTemp}°</div>
             <div class="hourly-rain">${hRain > 0 ? `💧 ${hRain}%` : ''}</div>
           </div>
@@ -360,14 +358,14 @@ async function loadCurrentAndForecastWeather() {
       for (let i = 0; i < data.daily.time.length; i++) {
         const dateObj = new Date(data.daily.time[i]);
         const dayName = i === 0 ? 'Oggi' : dateObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
-        const codeInfo = getWeatherCodeInfo(data.daily.weathercode[i]);
+        const codeInfo = getWeatherCodeSvgInfo(data.daily.weathercode[i], false);
         const maxD = Math.round(data.daily.temperature_2m_max[i]);
         const minD = Math.round(data.daily.temperature_2m_min[i]);
 
         html += `
           <div class="forecast-item">
             <div class="forecast-day">${dayName}</div>
-            <div class="forecast-icon">${codeInfo.icon}</div>
+            <div class="forecast-icon">${codeInfo.svg}</div>
             <div class="forecast-temps">
               <span class="forecast-max">${maxD}°</span>
               <span class="forecast-min">${minD}°</span>
@@ -410,28 +408,65 @@ async function loadAirQualityData() {
   }
 }
 
-/* Smart Daily Clothes & Weather Tip Generator */
+/* Smart Daily Clothing Tip Generator */
 function generateSmartTip(temp, code, rainProb, wind) {
-  if (code >= 95) return '🌩️ Temporali forti in vista: resta al sicuro al coperto!';
-  if (code >= 51 && code <= 67 || rainProb >= 40) return '☔ Probabile pioggia oggi: ricordati di portare l’ombrello!';
-  if (code >= 71) return '❄️ Nevicate previste: abbigliamento molto caldo e calzature adatte!';
-  if (temp >= 30) return '🕶️ Giornata molto calda e soleggiata: consigliati occhiali da sole e tanta acqua.';
-  if (temp >= 22) return '👕 Clima mite e piacevole: ideale per abbigliamento leggero estivo.';
-  if (temp >= 14) return '🧥 Clima fresco: consigliata una felpa o giacca leggera.';
-  if (temp < 14 && temp >= 5) return '🧥 Giornata fredda: indossa un cappotto o giubbotto caldo.';
-  if (temp < 5) return '🧣 Gelo e freddo intenso: consigliati guanti, berretto e sciarpa.';
-  return '☀️ Buona giornata! Il clima è perfetto per uscire.';
+  if (code >= 95) return 'Temporali forti in vista: resta al sicuro al coperto!';
+  if (code >= 51 && code <= 67 || rainProb >= 40) return 'Probabile pioggia oggi: ricordati di portare l’ombrello!';
+  if (code >= 71) return 'Nevicate previste: abbigliamento molto caldo e calzature adatte!';
+  if (temp >= 30) return 'Giornata molto calda e soleggiata: consigliati occhiali da sole e idratazione.';
+  if (temp >= 22) return 'Clima mite e piacevole: ideale per abbigliamento leggero estivo.';
+  if (temp >= 14) return 'Clima fresco: consigliata una felpa o giacca leggera.';
+  if (temp < 14 && temp >= 5) return 'Giornata fredda: indossa un cappotto o giubbotto caldo.';
+  if (temp < 5) return 'Gelo e freddo intenso: consigliati guanti, berretto e sciarpa.';
+  return 'Buona giornata! Il clima è perfetto per uscire.';
 }
 
-function getWeatherCodeInfo(code) {
-  if (code === 0) return { icon: '☀️', description: 'Sereno' };
-  if (code >= 1 && code <= 3) return { icon: '⛅', description: 'Poco nuvoloso' };
-  if (code >= 45 && code <= 48) return { icon: '🌫️', description: 'Nebbia' };
-  if (code >= 51 && code <= 67) return { icon: '🌧️', description: 'Pioggia' };
-  if (code >= 71 && code <= 77) return { icon: '❄️', description: 'Neve' };
-  if (code >= 80 && code <= 82) return { icon: '🌦️', description: 'Rovesci' };
-  if (code >= 95 && code <= 99) return { icon: '🌩️', description: 'Temporale' };
-  return { icon: '☀️', description: 'Sereno' };
+/* Authentic WP8 Vector SVG Weather Icons */
+function getWeatherCodeSvgInfo(code, isLarge = false) {
+  const size = isLarge ? 56 : 26;
+  const stroke = isLarge ? 1.5 : 1.8;
+
+  if (code === 0) {
+    return {
+      description: 'Sereno',
+      svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`
+    };
+  }
+  if (code >= 1 && code <= 3) {
+    return {
+      description: 'Poco nuvoloso',
+      svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>`
+    };
+  }
+  if (code >= 45 && code <= 48) {
+    return {
+      description: 'Nebbia',
+      svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`
+    };
+  }
+  if (code >= 51 && code <= 67 || (code >= 80 && code <= 82)) {
+    return {
+      description: 'Pioggia',
+      svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="16" y1="13" x2="14" y2="21"></line><line x1="10" y1="13" x2="8" y2="21"></line><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path></svg>`
+    };
+  }
+  if (code >= 71 && code <= 77) {
+    return {
+      description: 'Neve',
+      svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line><line x1="4.93" y1="19.07" x2="19.07" y2="4.93"></line></svg>`
+    };
+  }
+  if (code >= 95 && code <= 99) {
+    return {
+      description: 'Temporale',
+      svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path><polyline points="13 11 9 17 15 17 11 23"></polyline></svg>`
+    };
+  }
+
+  return {
+    description: 'Sereno',
+    svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`
+  };
 }
 
 function escapeHtml(str) {

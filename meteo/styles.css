@@ -127,7 +127,10 @@ body {
 }
 
 .weather-hero-icon {
-  font-size: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
 }
 
 .weather-hero-desc {
@@ -146,7 +149,7 @@ body {
   opacity: 0.95;
 }
 
-/* 2. Smart WP8 Tip Card */
+/* 2. Smart Tip Card ("CONSIGLIO" without WP8) */
 .smart-tip-card {
   background: #181818;
   border-left: 4px solid #0078d7;
@@ -179,14 +182,71 @@ body {
 .metro-info-tile {
   background: #181818;
   padding: 16px;
+  border: 1px solid #252525;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Custom Alba & Tramonto Stacked Metro Tile */
+.astro-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.astro-row {
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+
+.astro-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(0, 120, 215, 0.2);
+  color: #0078d7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.astro-text-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.astro-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+}
+
+.astro-time {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.astro-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  width: 100%;
+}
+
+/* Air Quality Tile */
+.aqi-tile {
+  flex-direction: row;
+  align-items: center;
   gap: 12px;
-  border: 1px solid #252525;
 }
 
 .tile-icon {
-  font-size: 1.8rem;
+  color: #0078d7;
+  display: flex;
+  align-items: center;
 }
 
 .tile-content {
@@ -245,7 +305,10 @@ body {
 }
 
 .hourly-icon {
-  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
 }
 
 .hourly-temp {
@@ -285,7 +348,10 @@ body {
 }
 
 .forecast-icon {
-  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
 }
 
 .forecast-temps {

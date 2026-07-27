@@ -54,7 +54,9 @@
 
     <!-- Extreme Weather Alert Banner -->
     <div id="meteoAlertBanner" class="meteo-alert-banner hidden">
-      <span id="meteoAlertIcon">⚠️</span>
+      <span id="meteoAlertIcon">
+        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </span>
       <span id="meteoAlertText">Allerta Meteo</span>
     </div>
 
@@ -64,29 +66,48 @@
       <section class="weather-hero-card">
         <div class="weather-hero-top">
           <div id="weatherHeroTemp" class="weather-huge-temp">--&deg;</div>
-          <div id="weatherHeroIcon" class="weather-hero-icon">☀️</div>
+          <div id="weatherHeroIcon" class="weather-hero-icon"></div>
         </div>
         <div id="weatherHeroDesc" class="weather-hero-desc">Caricamento...</div>
         <div id="weatherHeroDetails" class="weather-hero-details">Vento: -- km/h • Umidità: --% • Max: --° / Min: --°</div>
       </section>
 
-      <!-- 2. Smart WP8 Tip Card -->
+      <!-- 2. Smart Tip Card ("CONSIGLIO" without WP8) -->
       <section class="smart-tip-card">
-        <span class="smart-tip-badge">consiglio WP8</span>
+        <span class="smart-tip-badge">consiglio</span>
         <p id="smartTipText" class="smart-tip-text">Caricamento consiglio meteo...</p>
       </section>
 
-      <!-- 3. Astro & Air Quality Grid -->
+      <!-- 3. Astro (Alba/Tramonto) & Air Quality Grid -->
       <section class="metro-info-grid">
-        <div class="metro-info-tile">
-          <div class="tile-icon">🌅</div>
-          <div class="tile-content">
-            <span class="tile-label">alba / tramonto</span>
-            <div id="astroText" class="tile-value">--:-- • --:--</div>
+        <!-- Alba & Tramonto Stacked Metro Tile -->
+        <div class="metro-info-tile astro-tile">
+          <div class="astro-row">
+            <div class="astro-icon-box">
+              <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="2" x2="12" y2="9"></line><polyline points="9 5 12 2 15 5"></polyline><line x1="2" y1="18" x2="22" y2="18"></line></svg>
+            </div>
+            <div class="astro-text-box">
+              <span class="astro-label">ALBA</span>
+              <span id="sunriseTime" class="astro-time">--:--</span>
+            </div>
+          </div>
+          <div class="astro-divider"></div>
+          <div class="astro-row">
+            <div class="astro-icon-box">
+              <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="9" x2="12" y2="16"></line><polyline points="9 13 12 16 15 13"></polyline><line x1="2" y1="18" x2="22" y2="18"></line></svg>
+            </div>
+            <div class="astro-text-box">
+              <span class="astro-label">TRAMONTO</span>
+              <span id="sunsetTime" class="astro-time">--:--</span>
+            </div>
           </div>
         </div>
-        <div class="metro-info-tile">
-          <div class="tile-icon">🍃</div>
+
+        <!-- Air Quality Metro Tile -->
+        <div class="metro-info-tile aqi-tile">
+          <div class="tile-icon">
+            <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+          </div>
           <div class="tile-content">
             <span class="tile-label">qualità dell'aria</span>
             <div id="aqiText" class="tile-value">In rilevamento...</div>
@@ -94,7 +115,7 @@
         </div>
       </section>
 
-      <!-- 4. Hourly Forecast Section (Vertical Scroll List) -->
+      <!-- 4. Hourly Forecast Section -->
       <section class="forecast-section">
         <h2 class="forecast-section-title">prossime 24 ore (orario)</h2>
         <div id="hourlyList" class="hourly-list">
@@ -144,6 +165,6 @@
     </dialog>
   </div>
 
-  <script src="app.js?v=20260727_v2"></script>
+  <script src="app.js?v=20260727_v3"></script>
 </body>
 </html>
