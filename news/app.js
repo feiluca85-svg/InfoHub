@@ -168,6 +168,7 @@ function setupEventListeners() {
     addFeedBtn.addEventListener('click', () => {
       renderPresetFeedsList();
       if (googleSearchResults) googleSearchResults.innerHTML = '';
+      if (googleSearchInput) googleSearchInput.value = '';
       addFeedModal.showModal();
     });
   }
@@ -175,45 +176,91 @@ function setupEventListeners() {
     closeAddFeedBtn.addEventListener('click', () => addFeedModal.close());
   }
 
-  // Original App Google Search Site Finder Logic
-  if (googleSearchBtn && googleSearchInput && googleSearchResults) {
-    const executeGoogleSearch = () => {
+  // Smart Search & Auto-Suggest Source Finder Engine
+  if (googleSearchInput && googleSearchResults) {
+    let debounceTimer = null;
+
+    const performSmartSourceSearch = () => {
       const query = googleSearchInput.value.trim();
       if (!query) {
-        alert('Inserisci il nome di un sito da cercare.');
+        googleSearchResults.innerHTML = '';
         return;
       }
 
-      googleSearchResults.innerHTML = '<p style="color:#0078d7; text-align:center; padding:10px;">🔍 Ricerca in corso per "' + escapeHtml(query) + '"...</p>';
+      const qLow = query.toLowerCase();
+      const cleanQ = qLow.replace(/[^a-z0-9]/g, '');
 
-      const cleanQuery = query.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const candidates = [
-        { name: query, url: `https://www.${cleanQuery}.it`, feed: `https://www.${cleanQuery}.it/feed` },
-        { name: query + ' (.com)', url: `https://www.${cleanQuery}.com`, feed: `https://www.${cleanQuery}.com/rss` },
-        { name: query + ' News (Google)', url: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=it&gl=IT&ceid=IT:it`, feed: `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=it&gl=IT&ceid=IT:it` }
-      ];
+      // Fuzzy & Keyword Matching in Source Database
+      const matchedSources = ALL_SEARCHABLE_SOURCES.filter(source => {
+        const nameMatch = source.name.toLowerCase().includes(qLow);
+        const tagsMatch = source.tags.toLowerCase().includes(qLow);
+        const urlMatch = source.url.toLowerCase().includes(qLow);
+        const catMatch = source.category.toLowerCase().includes(qLow);
+        
+        let typoMatch = false;
+        if (cleanQ.length >= 4) {
+          const sClean = source.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (sClean.includes(cleanQ) || cleanQ.includes(sClean)) typoMatch = true;
+        }
+        return nameMatch || tagsMatch || urlMatch || catMatch || typoMatch;
+      });
 
-      googleSearchResults.innerHTML = candidates.map(c => `
-        <div class="google-search-result-item">
+      let html = '';
+      
+      if (matchedSources.length > 0) {
+        html += `<div style="font-size:0.75rem; text-transform:uppercase; color:#0078d7; font-weight:700; margin-bottom:8px; letter-spacing:1px;">Siti consigliati per "${escapeHtml(query)}"</div>`;
+        html += matchedSources.map(src => {
+          const isAdded = NEWS_FEEDS.some(f => f.url === src.url);
+          return `
+            <div class="google-search-result-item">
+              <div class="google-result-info">
+                <div class="google-result-title">${escapeHtml(src.name)}</div>
+                <div class="google-result-url">${escapeHtml(src.url)} <span style="display:inline-block; padding:1px 6px; background:#333; color:#aaa; border-radius:3px; font-size:0.7rem; margin-left:6px;">${escapeHtml(src.category)}</span></div>
+              </div>
+              <button class="add-google-site-btn ${isAdded ? 'added' : ''}" data-name="${escapeHtml(src.name)}" data-url="${escapeHtml(src.url)}" data-category="${escapeHtml(src.category)}">
+                ${isAdded ? '✓ Aggiunto' : '+ Aggiungi'}
+              </button>
+            </div>
+          `;
+        }).join('');
+      } else {
+        html += `<div style="color:#aaa; font-size:0.85rem; padding:6px 0;">Nessun sito preconfigurato trovato con "${escapeHtml(query)}". Puoi aggiungere il feed dinamico qui sotto:</div>`;
+      }
+
+      // Dynamic Google News Topic Feed Fallback
+      const gNewsUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=it&gl=IT&ceid=IT:it`;
+      const isGNewsAdded = NEWS_FEEDS.some(f => f.url === gNewsUrl);
+      html += `
+        <div style="font-size:0.75rem; text-transform:uppercase; color:#888; font-weight:700; margin:14px 0 8px 0; letter-spacing:1px;">Oppure aggiungi come argomento live Google News</div>
+        <div class="google-search-result-item" style="border-left-color: #ffaa00;">
           <div class="google-result-info">
-            <div class="google-result-title">${escapeHtml(c.name)}</div>
-            <div class="google-result-url">${escapeHtml(c.url)}</div>
+            <div class="google-result-title">Notizie per "${escapeHtml(query)}"</div>
+            <div class="google-result-url">Feed dinamico Google News per "${escapeHtml(query)}"</div>
           </div>
-          <button class="add-google-site-btn" data-name="${escapeHtml(c.name)}" data-url="${escapeHtml(c.url)}" data-feed="${escapeHtml(c.feed)}">+ Aggiungi</button>
+          <button class="add-google-site-btn ${isGNewsAdded ? 'added' : ''}" data-name="Notizie: ${escapeHtml(query)}" data-url="${escapeHtml(gNewsUrl)}" data-category="tutti">
+            ${isGNewsAdded ? '✓ Aggiunto' : '+ Aggiungi Feed'}
+          </button>
         </div>
-      `).join('');
+      `;
 
+      googleSearchResults.innerHTML = html;
+
+      // Add click handlers
       googleSearchResults.querySelectorAll('.add-google-site-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const siteName = btn.getAttribute('data-name');
-          const siteUrl = btn.getAttribute('data-url');
-          const feedUrl = btn.getAttribute('data-feed');
+          const feedUrl = btn.getAttribute('data-url');
+          const siteCat = btn.getAttribute('data-category') || 'tutti';
+
+          if (NEWS_FEEDS.some(f => f.url === feedUrl)) {
+            return;
+          }
 
           const newSite = {
             id: 'site_' + Date.now(),
             name: siteName,
             url: feedUrl,
-            category: 'tutti'
+            category: siteCat
           };
 
           NEWS_FEEDS.push(newSite);
@@ -221,17 +268,21 @@ function setupEventListeners() {
           renderFeedsList();
           loadAllFeeds();
 
-          if (addFeedModal) addFeedModal.close();
-          googleSearchInput.value = '';
-          googleSearchResults.innerHTML = '';
+          btn.textContent = '✓ Aggiunto';
+          btn.classList.add('added');
+          btn.style.background = '#28a745';
         });
       });
     };
 
-    googleSearchBtn.addEventListener('click', executeGoogleSearch);
-    googleSearchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') executeGoogleSearch();
+    googleSearchInput.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(performSmartSourceSearch, 150);
     });
+
+    if (googleSearchBtn) {
+      googleSearchBtn.addEventListener('click', performSmartSourceSearch);
+    }
   }
 
   // Direct Custom URL Input
