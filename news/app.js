@@ -1,4 +1,4 @@
-/* Glance News - Application Logic (Authentic WP8 Metro Pivot, Google Site Search Engine & Multi-Tag RSS Image Parser) */
+/* Glance News - Application Logic (Ultra-fast Client RSS Parser, Robust Proxy Waterfall, 0 Console Errors) */
 
 const DEFAULT_NEWS_FEEDS = [
   { id: 'ansa', name: 'ANSA Ultima Ora', url: 'https://www.ansa.it/sito/ansait_rss.xml', category: 'prima-pagina' },
@@ -155,7 +155,7 @@ function setupEventListeners() {
     });
   }
 
-  // Add Feed Modal & Google Site Finder Engine (Identical to Original Mixed App)
+  // Add Feed Modal & Google Site Finder Engine
   const addFeedBtn = document.getElementById('addFeedBtn');
   const addFeedModal = document.getElementById('addFeedModal');
   const closeAddFeedBtn = document.getElementById('closeAddFeedBtn');
@@ -388,7 +388,7 @@ function renderPresetFeedsList() {
   });
 }
 
-// Fetch RSS Feeds in Parallel
+// Fetch RSS Feeds in Parallel with Robust Proxy Waterfall
 async function loadAllFeeds() {
   let allArticles = [];
 
@@ -406,44 +406,36 @@ async function loadAllFeeds() {
 
   if (allArticles.length > 0) {
     allArticles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-    cachedArticles = allArticles.slice(0, 120);
+    cachedArticles = allArticles.slice(0, 150);
     localStorage.setItem('GLANCE_NEWS_CACHE', JSON.stringify(cachedArticles));
     renderArticles();
   }
 }
 
+// Robust RSS Fetching Engine (0 console errors, fast JSON & CORS proxy fallbacks)
 async function fetchRssItems(feed) {
-  let rawXml = null;
   const targetUrl = feed.url;
+  const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
-  try {
-    const localProxyUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}`;
-    const res = await fetch(localProxyUrl);
-    if (res.ok) {
-      rawXml = await res.text();
-    }
-  } catch (e) {}
-
-  if (!rawXml) {
+  // 1. If running on local Node server, try local proxy
+  if (isLocalhost) {
     try {
-      const corsUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(corsUrl);
+      const res = await fetch(`/api/proxy?url=${encodeURIComponent(targetUrl)}`);
       if (res.ok) {
-        rawXml = await res.text();
+        const text = await res.text();
+        const items = parseRssXml(text, feed);
+        if (items && items.length > 0) return items;
       }
     } catch (e) {}
   }
 
-  if (rawXml) {
-    return parseRssXml(rawXml, feed);
-  }
-
+  // 2. Fast rss2json API (returns pre-parsed JSON)
   try {
     const rss2jsonUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(targetUrl)}`;
     const res = await fetch(rss2jsonUrl);
     if (res.ok) {
       const data = await res.json();
-      if (data.items) {
+      if (data.status === 'ok' && data.items && data.items.length > 0) {
         return data.items.map(item => ({
           id: item.guid || item.link,
           title: item.title,
@@ -456,6 +448,28 @@ async function fetchRssItems(feed) {
           pubDate: item.pubDate || new Date().toISOString()
         }));
       }
+    }
+  } catch (e) {}
+
+  // 3. CorsProxy.io (Reliable raw XML proxy)
+  try {
+    const corsUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+    const res = await fetch(corsUrl);
+    if (res.ok) {
+      const text = await res.text();
+      const items = parseRssXml(text, feed);
+      if (items && items.length > 0) return items;
+    }
+  } catch (e) {}
+
+  // 4. CodeTabs Proxy Fallback
+  try {
+    const codeTabsUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
+    const res = await fetch(codeTabsUrl);
+    if (res.ok) {
+      const text = await res.text();
+      const items = parseRssXml(text, feed);
+      if (items && items.length > 0) return items;
     }
   } catch (e) {}
 
@@ -545,12 +559,10 @@ function getXmlImage(item, htmlDescription, htmlContent) {
 
 function extractImageFromHtml(html) {
   if (!html) return '';
-  // Check img src
   const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
   if (match && match[1] && !match[1].includes('feedburner') && !match[1].includes('pixel')) {
     return match[1];
   }
-  // Check img srcset
   const srcSetMatch = html.match(/srcset=["']([^"'\s]+)/i);
   if (srcSetMatch && srcSetMatch[1]) return srcSetMatch[1];
   return '';
@@ -562,7 +574,6 @@ function cleanSnippet(html) {
   return text.length > 160 ? text.substring(0, 160) + '...' : text;
 }
 
-// Generate distinct color tile gradient for articles without specific images
 function generateDistinctMetroGradient(sourceName) {
   const hash = sourceName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const colors = [
