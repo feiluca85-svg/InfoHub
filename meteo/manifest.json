@@ -1,7 +1,7 @@
 {
-  "name": "Glance Meteo",
+  "name": "Meteo",
   "short_name": "Meteo",
-  "description": "Previsioni meteo in stile Windows Phone 8",
+  "description": "Previsioni meteo veloci, dettagliate e senza pubblicità in stile Windows Phone 8",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",

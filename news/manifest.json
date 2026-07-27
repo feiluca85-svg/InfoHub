@@ -1,6 +1,6 @@
 {
-  "name": "Glance News",
-  "short_name": "Glance News",
+  "name": "News",
+  "short_name": "News",
   "description": "Notizie, feed RSS e modalità lettura veloci e senza pubblicità in stile Windows Phone 8",
   "start_url": "./index.html",
   "display": "standalone",
