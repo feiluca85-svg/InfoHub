@@ -592,9 +592,8 @@ function applyWeatherDataToDOM(data, aqiData) {
   // Extract apparent temp and dew point from hourly array based on current time
   let apparentTemp = Math.round(curr.temperature);
   let dewPoint = Math.round(curr.temperature);
-  if (data.hourly && data.hourly.time) {
-    const nowStr = new Date().toISOString().slice(0, 13);
-    const hIdx = Math.max(0, data.hourly.time.findIndex(t => t.startsWith(nowStr)));
+  if (data.hourly && data.hourly.time && curr.time) {
+    const hIdx = Math.max(0, data.hourly.time.indexOf(curr.time));
     if (data.hourly.apparent_temperature && data.hourly.apparent_temperature[hIdx] !== undefined) {
       apparentTemp = Math.round(data.hourly.apparent_temperature[hIdx]);
     }
@@ -674,9 +673,7 @@ function applyWeatherDataToDOM(data, aqiData) {
   if (hourlyTitle) hourlyTitle.innerText = appLang === 'en' ? 'next 24 hours' : 'prossime 24 ore (orario)';
   
   if (hourlyList && data.hourly) {
-    const now = new Date();
-    const currentHourStr = now.toISOString().slice(0, 13);
-    let startIndex = data.hourly.time.findIndex(t => t.startsWith(currentHourStr));
+    let startIndex = data.hourly.time.indexOf(curr.time);
     if (startIndex === -1) startIndex = 0;
 
     let hourlyHtml = '';
