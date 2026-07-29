@@ -593,7 +593,8 @@ function applyWeatherDataToDOM(data, aqiData) {
   let apparentTemp = Math.round(curr.temperature);
   let dewPoint = Math.round(curr.temperature);
   if (data.hourly && data.hourly.time && curr.time) {
-    const hIdx = Math.max(0, data.hourly.time.indexOf(curr.time));
+    const currentHourPrefix = curr.time.slice(0, 13);
+    const hIdx = Math.max(0, data.hourly.time.findIndex(t => t.startsWith(currentHourPrefix)));
     if (data.hourly.apparent_temperature && data.hourly.apparent_temperature[hIdx] !== undefined) {
       apparentTemp = Math.round(data.hourly.apparent_temperature[hIdx]);
     }
@@ -672,8 +673,9 @@ function applyWeatherDataToDOM(data, aqiData) {
   const hourlyTitle = document.querySelector('.forecast-section:nth-of-type(4) .forecast-section-title');
   if (hourlyTitle) hourlyTitle.innerText = appLang === 'en' ? 'next 24 hours' : 'prossime 24 ore (orario)';
   
-  if (hourlyList && data.hourly) {
-    let startIndex = data.hourly.time.indexOf(curr.time);
+  if (hourlyList && data.hourly && curr.time) {
+    const currentHourPrefix = curr.time.slice(0, 13);
+    let startIndex = data.hourly.time.findIndex(t => t.startsWith(currentHourPrefix));
     if (startIndex === -1) startIndex = 0;
 
     let hourlyHtml = '';
