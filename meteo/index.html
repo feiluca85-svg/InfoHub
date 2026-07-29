@@ -37,15 +37,10 @@
     <!-- Header -->
     <header class="meteo-header">
       <div class="meteo-title-group">
-        <span class="meteo-sub-title">meteo</span>
-        <h1 id="meteoCityName" class="meteo-city-name">Roma</h1>
+        <h1 class="meteo-sub-title">Meteo</h1>
+        <div id="meteoCityName" class="meteo-city-name" style="cursor: pointer; user-select: none;">Roma</div>
       </div>
-      <div class="meteo-header-actions">
-        <button id="gpsBtn" class="metro-icon-btn" title="Posizione attuale GPS" aria-label="GPS">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
-            <polygon points="12 2 19 21 12 17 5 21 12 2"></polygon>
-          </svg>
-        </button>
+      <div class="meteo-header-actions" style="align-items: flex-end;">
         <button id="sidebarToggleBtn" class="metro-icon-btn" title="Città salvate" aria-label="Menu città">
           <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -214,6 +209,8 @@
           <div class="settings-section">
             <h3 class="settings-label" id="settingsColorLabel">Colore Accento / Accent Color</h3>
             <div class="color-palette-grid">
+              <!-- Special Auto Color -->
+              <button class="color-swatch auto-swatch" data-color="auto" title="Auto Meteo Color" style="background: linear-gradient(135deg, #f09609, #0078d7, #a200ff); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Auto</button>
               <!-- WP8 Classic Colors -->
               <button class="color-swatch" style="background-color: #ff0097;" data-color="#ff0097" title="Magenta"></button>
               <button class="color-swatch" style="background-color: #a200ff;" data-color="#a200ff" title="Purple"></button>
@@ -224,7 +221,6 @@
               <button class="color-swatch" style="background-color: #f09609;" data-color="#f09609" title="Orange"></button>
               <button class="color-swatch" style="background-color: #0078d7;" data-color="#0078d7" title="Blue"></button>
               <button class="color-swatch" style="background-color: #e81123;" data-color="#e81123" title="Red"></button>
-              <button class="color-swatch" style="background-color: #107c41;" data-color="#107c41" title="Green"></button>
             </div>
           </div>
         </div>

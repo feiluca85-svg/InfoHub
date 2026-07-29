@@ -97,42 +97,42 @@ function saveActiveCityState(city) {
 }
 
 function setupEventListeners() {
-  // GPS Button: Reverse Geocode Actual City Name with Dual Fallback
-  const gpsBtn = document.getElementById('gpsBtn');
-  if (gpsBtn) {
-    gpsBtn.addEventListener('click', () => {
+  // GPS Long-Press on Header City Name
+  const meteoCityName = document.getElementById('meteoCityName');
+  if (meteoCityName) {
+    let titleTouchTimer = null;
+    let isTitleLongPressPreventClick = false;
+
+    const startGpsSearch = () => {
       if (!navigator.geolocation) {
-        alert('Geolocalizzazione non supportata dal tuo browser.');
+        alert(appLang === 'en' ? 'Geolocation not supported by your browser.' : 'Geolocalizzazione non supportata dal tuo browser.');
         return;
       }
-      gpsBtn.style.transform = 'scale(0.85)';
-      setTimeout(() => gpsBtn.style.transform = 'none', 300);
-
-      const headerCityName = document.getElementById('meteoCityName');
-      if (headerCityName) headerCityName.innerText = 'Rilevamento GPS...';
+      
+      meteoCityName.style.transform = 'scale(0.95)';
+      setTimeout(() => meteoCityName.style.transform = 'none', 300);
+      meteoCityName.innerText = appLang === 'en' ? 'GPS Searching...' : 'Rilevamento GPS...';
 
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
 
-          let realCityName = 'Posizione Rilevata';
+          let realCityName = appLang === 'en' ? 'Detected Location' : 'Posizione Rilevata';
           try {
             // 1. BigDataCloud API
-            const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=it`;
+            const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=${appLang}`;
             const geoRes = await fetch(geoUrl);
             if (geoRes.ok) {
               const geoData = await geoRes.json();
               realCityName = geoData.city || geoData.locality || geoData.principalSubdivision || realCityName;
             }
-          } catch (e) {
-            // Fallback
-          }
+          } catch (e) { }
 
-          if (realCityName === 'Posizione Rilevata') {
+          if (realCityName === 'Posizione Rilevata' || realCityName === 'Detected Location') {
             try {
               // 2. Open-Meteo Reverse Geocoding API
-              const geoUrl2 = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=it`;
+              const geoUrl2 = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=${appLang}`;
               const res2 = await fetch(geoUrl2);
               if (res2.ok) {
                 const data2 = await res2.json();
@@ -140,9 +140,7 @@ function setupEventListeners() {
                   realCityName = data2.results[0].name;
                 }
               }
-            } catch (e) {
-              // Fallback
-            }
+            } catch (e) { }
           }
 
           const gpsCity = {
@@ -157,11 +155,37 @@ function setupEventListeners() {
           loadAllWeatherData();
         },
         (error) => {
-          alert('Impossibile rilevare la posizione GPS. Assicurati di aver dato i permessi di localizzazione.');
-          if (headerCityName) headerCityName.innerText = activeCity.name;
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
+          alert(appLang === 'en' ? 'Cannot detect GPS. Please ensure location permissions are granted.' : 'Impossibile rilevare la posizione GPS. Assicurati di aver dato i permessi di localizzazione.');
+          renderCitiesList(); // restore old name
+        }
       );
+    };
+
+    meteoCityName.addEventListener('touchstart', () => {
+      isTitleLongPressPreventClick = false;
+      titleTouchTimer = setTimeout(() => {
+        isTitleLongPressPreventClick = true;
+        startGpsSearch();
+      }, 500);
+    }, { passive: true });
+
+    meteoCityName.addEventListener('touchend', () => clearTimeout(titleTouchTimer), { passive: true });
+    meteoCityName.addEventListener('touchmove', () => clearTimeout(titleTouchTimer), { passive: true });
+    
+    // Also support desktop right-click or long click (mousedown)
+    meteoCityName.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return; // Only left click
+      isTitleLongPressPreventClick = false;
+      titleTouchTimer = setTimeout(() => {
+        isTitleLongPressPreventClick = true;
+        startGpsSearch();
+      }, 500);
+    });
+    meteoCityName.addEventListener('mouseup', () => clearTimeout(titleTouchTimer));
+    meteoCityName.addEventListener('mouseleave', () => clearTimeout(titleTouchTimer));
+    meteoCityName.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      startGpsSearch();
     });
   }
 
@@ -540,6 +564,22 @@ function applyWeatherDataToDOM(data, aqiData) {
   const maxT = Math.round(data.daily.temperature_2m_max[0]);
   const minT = Math.round(data.daily.temperature_2m_min[0]);
   const maxRainProb = data.daily.precipitation_probability_max ? data.daily.precipitation_probability_max[0] : 0;
+  
+  // Dynamic Auto Color Logic
+  if (appAccent === 'auto') {
+    let autoColor = '#0078d7'; // Default Blue
+    if (curr.weathercode >= 95) autoColor = '#a200ff'; // Thunderstorm -> Purple
+    else if (curr.weathercode >= 71) autoColor = '#00aba9'; // Snow -> Teal
+    else if (curr.weathercode >= 51 && curr.weathercode <= 67) autoColor = '#0078d7'; // Rain -> Blue
+    else if (curr.temperature >= 30) autoColor = '#e81123'; // Hot -> Red
+    else if (curr.temperature >= 22) autoColor = '#f09609'; // Warm -> Orange
+    else if (curr.temperature <= 5) autoColor = '#00aba9'; // Cold -> Teal
+    else autoColor = '#8cbF26'; // Mild/Good weather -> Lime
+    
+    document.documentElement.style.setProperty('--accent-color', autoColor);
+  } else {
+    document.documentElement.style.setProperty('--accent-color', appAccent);
+  }
   
   // Extract apparent temp and dew point from hourly array based on current time
   let apparentTemp = Math.round(curr.temperature);
