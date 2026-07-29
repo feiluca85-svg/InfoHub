@@ -39,7 +39,12 @@ function applySettingsToDOM() {
   }
   
   // Accent
-  document.documentElement.style.setProperty('--accent-color', appAccent);
+  if (appAccent !== 'auto') {
+    document.documentElement.style.setProperty('--accent-color', appAccent);
+  } else {
+    // Provide a fallback color to prevent 'auto' string turning into black CSS
+    document.documentElement.style.setProperty('--accent-color', '#0078d7');
+  }
 
   // Sync Toggles in Modal
   document.querySelectorAll('.settings-toggle-btn[data-lang]').forEach(b => {
@@ -261,6 +266,9 @@ function setupEventListeners() {
       appAccent = btn.dataset.color;
       localStorage.setItem('GLANCE_METEO_ACCENT', appAccent);
       applySettingsToDOM();
+      if (appAccent === 'auto') {
+        renderCachedWeather(); // Force immediate weather-based color calculation
+      }
     });
   });
 

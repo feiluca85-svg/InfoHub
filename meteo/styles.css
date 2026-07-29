@@ -42,7 +42,7 @@ body {
 /* WP8 Metro Header */
 .meteo-header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   padding: 25px 20px 10px 20px;
   background: var(--bg-main);
@@ -68,13 +68,14 @@ body {
   font-weight: 300;
   letter-spacing: -0.02em;
   color: var(--text-primary);
+  line-height: 1;
 }
 
 .meteo-header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 20px; /* Pushes the buttons down to align with the large city name */
+  margin-bottom: 2px;
 }
 
 .metro-icon-btn {
