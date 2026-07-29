@@ -330,6 +330,17 @@ body {
   font-size: 0.95rem;
 }
 
+.hourly-item.current-hour {
+  background: var(--bg-item);
+  border-left-width: 6px;
+}
+
+.hourly-item.current-hour .hourly-time {
+  color: var(--accent-color);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
 .hourly-time {
   font-weight: 500;
   width: 70px;

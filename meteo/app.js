@@ -687,8 +687,10 @@ function applyWeatherDataToDOM(data, aqiData) {
       const hTemp = Math.round(data.hourly.temperature_2m[i]);
       const hRain = data.hourly.precipitation_probability ? data.hourly.precipitation_probability[i] : 0;
 
+      const isCurrentHour = (i === startIndex);
+
       hourlyHtml += `
-        <div class="hourly-item">
+        <div class="hourly-item ${isCurrentHour ? 'current-hour' : ''}">
           <div class="hourly-time">${timeLabel}</div>
           <div class="hourly-icon">${hCode.svg}</div>
           <div class="hourly-temp">${hTemp}°</div>
