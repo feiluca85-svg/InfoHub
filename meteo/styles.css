@@ -2,11 +2,24 @@
   --bg-main: #000000;
   --text-primary: #ffffff;
   --text-secondary: #aaaaaa;
-  --accent-blue: #0078d7;
-  --accent-orange: #d83b01;
-  --accent-green: #107c41;
-  --accent-red: #e81123;
+  --accent-color: #0078d7;
+  --bg-card: #181818;
+  --bg-dialog: #111111;
+  --border-color: #222222;
+  --bg-item: #1f1f1f;
+  --bg-item-alt: #141414;
   --font-family: 'Outfit', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+body.theme-light {
+  --bg-main: #ffffff;
+  --text-primary: #000000;
+  --text-secondary: #555555;
+  --bg-card: #f0f0f0;
+  --bg-dialog: #ffffff;
+  --border-color: #dddddd;
+  --bg-item: #f9f9f9;
+  --bg-item-alt: #f4f4f4;
 }
 
 * {
@@ -23,6 +36,7 @@ body {
   line-height: 1.4;
   overflow-x: hidden;
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* WP8 Metro Header */
@@ -31,7 +45,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 25px 20px 10px 20px;
-  background: #000000;
+  background: var(--bg-main);
+  transition: background-color 0.3s ease;
 }
 
 .meteo-title-group {
@@ -52,7 +67,7 @@ body {
   font-size: 2.2rem;
   font-weight: 300;
   letter-spacing: -0.02em;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .meteo-header-actions {
@@ -63,8 +78,8 @@ body {
 
 .metro-icon-btn {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  color: var(--text-primary);
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -72,12 +87,13 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 }
 
 .metro-icon-btn:active {
-  background: var(--accent-blue);
-  border-color: var(--accent-blue);
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #ffffff;
   transform: scale(0.92);
 }
 
@@ -105,12 +121,14 @@ body {
 
 /* 1. Current Weather Hero Card */
 .weather-hero-card {
-  background: #0078d7;
+  background: var(--accent-color);
+  color: #ffffff;
   padding: 28px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
 }
 
 .weather-hero-top {
@@ -149,10 +167,16 @@ body {
   opacity: 0.95;
 }
 
+.weather-hero-extra {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
 /* 2. Smart Tip Card ("CONSIGLIO" without WP8) */
 .smart-tip-card {
-  background: #181818;
-  border-left: 4px solid #0078d7;
+  background: var(--bg-card);
+  border-left: 4px solid var(--accent-color);
   padding: 16px 18px;
 }
 
@@ -161,14 +185,14 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: #0078d7;
+  color: var(--accent-color);
   display: block;
   margin-bottom: 6px;
 }
 
 .smart-tip-text {
   font-size: 1rem;
-  color: #dddddd;
+  color: var(--text-primary);
   font-weight: 400;
 }
 
@@ -180,9 +204,9 @@ body {
 }
 
 .metro-info-tile {
-  background: #181818;
+  background: var(--bg-card);
   padding: 16px;
-  border: 1px solid #252525;
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -212,8 +236,9 @@ body {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(0, 120, 215, 0.2);
-  color: #0078d7;
+  background: transparent;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -231,12 +256,12 @@ body {
 .astro-time {
   font-size: 1.05rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .astro-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border-color);
   width: 100%;
 }
 
@@ -248,7 +273,7 @@ body {
 }
 
 .tile-icon {
-  color: #0078d7;
+  color: var(--accent-color);
   display: flex;
   align-items: center;
 }
@@ -268,7 +293,7 @@ body {
 .tile-value {
   font-size: 0.95rem;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text-primary);
   margin-top: 2px;
 }
 
@@ -279,7 +304,7 @@ body {
   text-transform: lowercase;
   color: var(--text-secondary);
   margin-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 6px;
 }
 
@@ -298,8 +323,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: #141414;
-  border-left: 3px solid #0078d7;
+  background: var(--bg-item-alt);
+  border-left: 3px solid var(--accent-color);
   font-size: 0.95rem;
 }
 
@@ -312,12 +337,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .hourly-temp {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
   width: 60px;
   text-align: right;
 }
@@ -341,8 +366,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: #181818;
-  border-left: 4px solid #0078d7;
+  background: var(--bg-card);
+  border-left: 4px solid var(--accent-color);
 }
 
 .forecast-day {
@@ -355,7 +380,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .forecast-temps {
@@ -366,7 +391,7 @@ body {
 }
 
 .forecast-max {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .forecast-min {
@@ -389,8 +414,8 @@ body {
   bottom: 0;
   width: 320px;
   max-width: 85vw;
-  background: #111111;
-  border-right: 1px solid #222222;
+  background: var(--bg-dialog);
+  border-right: 1px solid var(--border-color);
   z-index: 999;
   display: flex;
   flex-direction: column;
@@ -408,7 +433,7 @@ body {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
 }
 
@@ -431,15 +456,15 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: #1f1f1f;
+  background: var(--bg-item);
   cursor: pointer;
   user-select: none;
   transition: background 0.15s ease;
 }
 
 .weather-city-item.active-city {
-  border-left: 4px solid #0078d7;
-  background: #252526;
+  border-left: 4px solid var(--accent-color);
+  background: var(--bg-item-alt);
 }
 
 .metro-icon-btn.active-delete-mode {
@@ -476,14 +501,14 @@ body {
 .sidebar-footer {
   margin-top: auto;
   padding-top: 15px;
-  border-top: 1px solid #222;
+  border-top: 1px solid var(--border-color);
 }
 
 .metro-list-btn {
   width: 100%;
   padding: 14px;
-  background: #0078d7;
-  color: white;
+  background: var(--accent-color);
+  color: #ffffff;
   border: none;
   font-size: 1rem;
   cursor: pointer;
@@ -494,12 +519,12 @@ body {
 .reader-dialog {
   padding: 0;
   border: none;
-  background: #111111;
-  color: white;
+  background: var(--bg-dialog);
+  color: var(--text-primary);
   width: 90%;
   max-width: 480px;
   margin: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 .reader-dialog::backdrop {
@@ -512,14 +537,14 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 18px 20px;
-  background: #181818;
-  border-bottom: 1px solid #222;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .close-modal-btn {
   background: transparent;
   border: none;
-  color: white;
+  color: var(--text-primary);
   font-size: 1.8rem;
   cursor: pointer;
 }
@@ -535,8 +560,8 @@ body {
 
 .search-result-item {
   padding: 12px;
-  background: #202020;
-  border: 1px solid #333;
+  background: var(--bg-item);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -544,9 +569,98 @@ body {
 }
 
 .search-result-item:hover {
-  background: #0078d7;
+  background: var(--accent-color);
+  color: #ffffff;
 }
 
 .hidden {
   display: none !important;
+}
+
+/* Settings Modal Specifics */
+.settings-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.settings-toggle-group {
+  display: flex;
+  gap: 10px;
+}
+
+.settings-toggle-btn {
+  flex: 1;
+  padding: 12px;
+  background: var(--bg-item);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-toggle-btn.active {
+  background: var(--accent-color);
+  color: #ffffff;
+  border-color: var(--accent-color);
+}
+
+.color-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.color-swatch {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.05);
+}
+
+.color-swatch.active {
+  border-color: var(--text-primary);
+  transform: scale(0.9);
+}
+
+/* Pull to Refresh Indicator */
+.ptr-indicator {
+  height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-color);
+  transition: height 0.2s ease;
+}
+
+.ptr-spinner {
+  animation: spin 1s linear infinite;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
 }

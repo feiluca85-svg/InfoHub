@@ -53,11 +53,10 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <button id="refreshBtn" class="metro-icon-btn" title="Aggiorna meteo" aria-label="Aggiorna">
+        <button id="settingsBtn" class="metro-icon-btn" title="Impostazioni" aria-label="Impostazioni">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
-            <path d="M23 4v6h-6"></path>
-            <path d="M1 20v-6h6"></path>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
         </button>
       </div>
@@ -72,7 +71,14 @@
     </div>
 
     <!-- Main Vertical Scroll Body -->
-    <main class="meteo-body">
+    <main class="meteo-body" id="meteoBodyScroll">
+      <!-- Pull-to-refresh spinner -->
+      <div id="pullToRefreshIndicator" class="ptr-indicator">
+        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="ptr-spinner">
+          <line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+        </svg>
+      </div>
+
       <!-- 1. Current Weather Hero Card -->
       <section class="weather-hero-card">
         <div class="weather-hero-top">
@@ -81,6 +87,7 @@
         </div>
         <div id="weatherHeroDesc" class="weather-hero-desc">Caricamento...</div>
         <div id="weatherHeroDetails" class="weather-hero-details">Vento: -- km/h • Umidità: --% • Max: --° / Min: --°</div>
+        <div id="weatherHeroExtra" class="weather-hero-extra">Percepita: --° • P. di rugiada: --°</div>
       </section>
 
       <!-- 2. Smart Tip Card ("CONSIGLIO" without WP8) -->
@@ -176,6 +183,50 @@
             <button id="searchCityBtn" class="metro-list-btn" style="flex:0 0 auto; width:auto; padding:0 18px;">Cerca</button>
           </div>
           <div id="citySearchResults" class="search-results-list"></div>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Settings Dialog -->
+    <dialog id="settingsModal" class="reader-dialog">
+      <div class="reader-dialog-content">
+        <header class="reader-header">
+          <h2 style="font-weight:300;" id="settingsTitle">impostazioni</h2>
+          <button id="closeSettingsBtn" class="close-modal-btn">&times;</button>
+        </header>
+        <div class="settings-body">
+          <div class="settings-section">
+            <h3 class="settings-label" id="settingsLangLabel">Lingua / Language</h3>
+            <div class="settings-toggle-group">
+              <button class="settings-toggle-btn active" data-lang="it">Italiano</button>
+              <button class="settings-toggle-btn" data-lang="en">English</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3 class="settings-label" id="settingsThemeLabel">Tema / Theme</h3>
+            <div class="settings-toggle-group">
+              <button class="settings-toggle-btn active" data-theme="dark" id="themeDarkBtn">Scuro</button>
+              <button class="settings-toggle-btn" data-theme="light" id="themeLightBtn">Chiaro</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3 class="settings-label" id="settingsColorLabel">Colore Accento / Accent Color</h3>
+            <div class="color-palette-grid">
+              <!-- WP8 Classic Colors -->
+              <button class="color-swatch" style="background-color: #ff0097;" data-color="#ff0097" title="Magenta"></button>
+              <button class="color-swatch" style="background-color: #a200ff;" data-color="#a200ff" title="Purple"></button>
+              <button class="color-swatch" style="background-color: #00aba9;" data-color="#00aba9" title="Teal"></button>
+              <button class="color-swatch" style="background-color: #8cbF26;" data-color="#8cbF26" title="Lime"></button>
+              <button class="color-swatch" style="background-color: #a05000;" data-color="#a05000" title="Brown"></button>
+              <button class="color-swatch" style="background-color: #e671b8;" data-color="#e671b8" title="Pink"></button>
+              <button class="color-swatch" style="background-color: #f09609;" data-color="#f09609" title="Orange"></button>
+              <button class="color-swatch" style="background-color: #0078d7;" data-color="#0078d7" title="Blue"></button>
+              <button class="color-swatch" style="background-color: #e81123;" data-color="#e81123" title="Red"></button>
+              <button class="color-swatch" style="background-color: #107c41;" data-color="#107c41" title="Green"></button>
+            </div>
+          </div>
         </div>
       </div>
     </dialog>

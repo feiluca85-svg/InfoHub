@@ -21,7 +21,60 @@ let activeCity = (savedGpsCity && savedActiveCityId === savedGpsCity.id)
 let deletingCitiesMode = false;
 let isLongPressPreventClick = false;
 
+// User Settings
+let appLang = localStorage.getItem('GLANCE_METEO_LANG') || 'it';
+let appTheme = localStorage.getItem('GLANCE_METEO_THEME') || 'dark';
+let appAccent = localStorage.getItem('GLANCE_METEO_ACCENT') || '#0078d7';
+
+function applySettingsToDOM() {
+  // Theme
+  if (appTheme === 'light') {
+    document.body.classList.add('theme-light');
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute('content', '#ffffff');
+  } else {
+    document.body.classList.remove('theme-light');
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute('content', '#000000');
+  }
+  
+  // Accent
+  document.documentElement.style.setProperty('--accent-color', appAccent);
+
+  // Sync Toggles in Modal
+  document.querySelectorAll('.settings-toggle-btn[data-lang]').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === appLang);
+  });
+  document.querySelectorAll('.settings-toggle-btn[data-theme]').forEach(b => {
+    b.classList.toggle('active', b.dataset.theme === appTheme);
+  });
+  document.querySelectorAll('.color-swatch').forEach(b => {
+    b.classList.toggle('active', b.dataset.color === appAccent);
+  });
+  
+  // Static labels translation
+  const labels = {
+    it: { settings: 'impostazioni', addCityBtn: '+ cerca e aggiungi città', savedCities: 'città salvate', searchCity: 'cerca città', searchInput: 'Es: Milano, Napoli, Parigi, Londra...', searchBtn: 'Cerca' },
+    en: { settings: 'settings', addCityBtn: '+ search and add city', savedCities: 'saved cities', searchCity: 'search city', searchInput: 'Ex: Milan, Naples, Paris, London...', searchBtn: 'Search' }
+  };
+  
+  const l = labels[appLang];
+  const sTitle = document.getElementById('settingsTitle');
+  if(sTitle) sTitle.innerText = l.settings;
+  const addCityBtn = document.getElementById('addCityBtn');
+  if(addCityBtn) addCityBtn.innerText = l.addCityBtn;
+  const savedTitle = document.querySelector('.sidebar-header h2');
+  if(savedTitle) savedTitle.innerText = l.savedCities;
+  const searchModalTitle = document.querySelector('#addCityModal .reader-header h2');
+  if(searchModalTitle) searchModalTitle.innerText = l.searchCity;
+  const cSearchInput = document.getElementById('citySearchInput');
+  if(cSearchInput) cSearchInput.placeholder = l.searchInput;
+  const cSearchBtn = document.getElementById('searchCityBtn');
+  if(cSearchBtn) cSearchBtn.innerText = l.searchBtn;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  applySettingsToDOM();
   // 1. Instant Launch: Render cached UI state immediately (0ms delay)
   renderCitiesList();
   renderCachedWeather();
@@ -149,14 +202,97 @@ function setupEventListeners() {
     });
   }
 
-  // Refresh Weather
-  const refreshBtn = document.getElementById('refreshBtn');
-  if (refreshBtn) {
-    refreshBtn.addEventListener('click', () => {
-      refreshBtn.style.transform = 'rotate(360deg)';
-      setTimeout(() => refreshBtn.style.transform = 'none', 600);
-      loadAllWeatherData();
+  // Settings Button & Modal
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsModal = document.getElementById('settingsModal');
+  const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+
+  if (settingsBtn && settingsModal) {
+    settingsBtn.addEventListener('click', () => settingsModal.showModal());
+  }
+  if (closeSettingsBtn && settingsModal) {
+    closeSettingsBtn.addEventListener('click', () => settingsModal.close());
+  }
+
+  // Settings Logic
+  document.querySelectorAll('.settings-toggle-btn[data-lang]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      appLang = btn.dataset.lang;
+      localStorage.setItem('GLANCE_METEO_LANG', appLang);
+      applySettingsToDOM();
+      renderCachedWeather(); // Re-render with new language
     });
+  });
+
+  document.querySelectorAll('.settings-toggle-btn[data-theme]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      appTheme = btn.dataset.theme;
+      localStorage.setItem('GLANCE_METEO_THEME', appTheme);
+      applySettingsToDOM();
+    });
+  });
+
+  document.querySelectorAll('.color-swatch').forEach(btn => {
+    btn.addEventListener('click', () => {
+      appAccent = btn.dataset.color;
+      localStorage.setItem('GLANCE_METEO_ACCENT', appAccent);
+      applySettingsToDOM();
+    });
+  });
+
+  // Pull to Refresh Logic
+  const meteoBody = document.getElementById('meteoBodyScroll');
+  const ptrIndicator = document.getElementById('pullToRefreshIndicator');
+  
+  if (meteoBody && ptrIndicator) {
+    let startY = 0;
+    let currentY = 0;
+    let isPulling = false;
+    
+    meteoBody.addEventListener('touchstart', (e) => {
+      if (window.scrollY === 0) {
+        startY = e.touches[0].clientY;
+        isPulling = true;
+      }
+    }, { passive: true });
+    
+    meteoBody.addEventListener('touchmove', (e) => {
+      if (!isPulling) return;
+      currentY = e.touches[0].clientY;
+      const diff = currentY - startY;
+      
+      if (diff > 0 && window.scrollY === 0) {
+        // Pulling down
+        ptrIndicator.style.height = Math.min(diff * 0.4, 80) + 'px';
+        const spinner = ptrIndicator.querySelector('.ptr-spinner');
+        if (spinner) {
+          spinner.style.opacity = Math.min(diff / 100, 1);
+          spinner.style.transform = `rotate(${diff * 2}deg)`;
+        }
+      }
+    }, { passive: true });
+    
+    meteoBody.addEventListener('touchend', (e) => {
+      if (!isPulling) return;
+      isPulling = false;
+      const diff = currentY - startY;
+      
+      if (diff > 60 && window.scrollY === 0) {
+        // Trigger refresh
+        ptrIndicator.style.height = '60px';
+        const spinner = ptrIndicator.querySelector('.ptr-spinner');
+        if (spinner) {
+          spinner.style.animation = 'spin 1s linear infinite';
+        }
+        
+        loadAllWeatherData().then(() => {
+          ptrIndicator.style.height = '0px';
+          if (spinner) spinner.style.animation = 'none';
+        });
+      } else {
+        ptrIndicator.style.height = '0px';
+      }
+    }, { passive: true });
   }
 
   // Add City Modal & Search
@@ -364,7 +500,7 @@ async function loadAllWeatherData() {
 }
 
 async function fetchWeatherData(lat, lon) {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,apparent_temperature,dewpoint_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
   const res = await fetch(url);
   if (!res.ok) return null;
   return await res.json();
@@ -386,10 +522,13 @@ function applyWeatherDataToDOM(data, aqiData) {
   const heroIcon = document.getElementById('weatherHeroIcon');
   const heroDesc = document.getElementById('weatherHeroDesc');
   const heroDetails = document.getElementById('weatherHeroDetails');
+  const heroExtra = document.getElementById('weatherHeroExtra');
   const smartTipText = document.getElementById('smartTipText');
+  const smartTipBadge = document.querySelector('.smart-tip-badge');
   const sunriseTimeEl = document.getElementById('sunriseTime');
   const sunsetTimeEl = document.getElementById('sunsetTime');
   const aqiText = document.getElementById('aqiText');
+  const aqiLabel = document.querySelector('.aqi-tile .tile-label');
   const hourlyList = document.getElementById('hourlyList');
   const forecastList = document.getElementById('forecastList');
   const alertBanner = document.getElementById('meteoAlertBanner');
@@ -401,24 +540,45 @@ function applyWeatherDataToDOM(data, aqiData) {
   const maxT = Math.round(data.daily.temperature_2m_max[0]);
   const minT = Math.round(data.daily.temperature_2m_min[0]);
   const maxRainProb = data.daily.precipitation_probability_max ? data.daily.precipitation_probability_max[0] : 0;
+  
+  // Extract apparent temp and dew point from hourly array based on current time
+  let apparentTemp = Math.round(curr.temperature);
+  let dewPoint = Math.round(curr.temperature);
+  if (data.hourly && data.hourly.time) {
+    const nowStr = new Date().toISOString().slice(0, 13);
+    const hIdx = Math.max(0, data.hourly.time.findIndex(t => t.startsWith(nowStr)));
+    if (data.hourly.apparent_temperature && data.hourly.apparent_temperature[hIdx] !== undefined) {
+      apparentTemp = Math.round(data.hourly.apparent_temperature[hIdx]);
+    }
+    if (data.hourly.dewpoint_2m && data.hourly.dewpoint_2m[hIdx] !== undefined) {
+      dewPoint = Math.round(data.hourly.dewpoint_2m[hIdx]);
+    }
+  }
 
   // Hero Card
   heroTemp.innerText = `${Math.round(curr.temperature)}°`;
   heroIcon.innerHTML = info.svg;
   heroDesc.innerText = info.description;
-  heroDetails.innerText = `Vento: ${curr.windspeed} km/h • Max: ${maxT}° / Min: ${minT}°`;
+  
+  if (appLang === 'en') {
+    heroDetails.innerText = `Wind: ${curr.windspeed} km/h • Max: ${maxT}° / Min: ${minT}°`;
+    if (heroExtra) heroExtra.innerText = `Feels like: ${apparentTemp}° • Dew point: ${dewPoint}°`;
+  } else {
+    heroDetails.innerText = `Vento: ${curr.windspeed} km/h • Max: ${maxT}° / Min: ${minT}°`;
+    if (heroExtra) heroExtra.innerText = `Percepita: ${apparentTemp}° • P. di rugiada: ${dewPoint}°`;
+  }
 
   // Extreme Alert
   if (alertBanner) {
     if (curr.temperature >= 35) {
       alertBanner.classList.remove('hidden');
-      document.getElementById('meteoAlertText').innerText = 'Allerta Caldo Estremo: temperatura oltre 35°C!';
+      document.getElementById('meteoAlertText').innerText = appLang === 'en' ? 'Extreme Heat Alert: temperature over 35°C!' : 'Allerta Caldo Estremo: temperatura oltre 35°C!';
     } else if (curr.temperature <= 0) {
       alertBanner.classList.remove('hidden');
-      document.getElementById('meteoAlertText').innerText = 'Allerta Gelo: pericolo ghiaccio sulle strade!';
+      document.getElementById('meteoAlertText').innerText = appLang === 'en' ? 'Ice Alert: freezing conditions!' : 'Allerta Gelo: pericolo ghiaccio sulle strade!';
     } else if (curr.weathercode >= 95) {
       alertBanner.classList.remove('hidden');
-      document.getElementById('meteoAlertText').innerText = 'Allerta Temporali Forti in corso!';
+      document.getElementById('meteoAlertText').innerText = appLang === 'en' ? 'Severe Thunderstorms Alert!' : 'Allerta Temporali Forti in corso!';
     } else {
       alertBanner.classList.add('hidden');
     }
@@ -426,34 +586,45 @@ function applyWeatherDataToDOM(data, aqiData) {
 
   // Smart Tip
   if (smartTipText) {
+    if (smartTipBadge) smartTipBadge.innerText = appLang === 'en' ? 'tip' : 'consiglio';
     smartTipText.innerText = generateSmartTip(curr.temperature, curr.weathercode, maxRainProb, curr.windspeed);
   }
 
   // Sunrise & Sunset
+  const astroLabelSunrise = document.querySelector('.astro-tile .astro-block:nth-child(1) .astro-label');
+  const astroLabelSunset = document.querySelector('.astro-tile .astro-block:nth-child(3) .astro-label');
+  if (astroLabelSunrise) astroLabelSunrise.innerText = appLang === 'en' ? 'SUNRISE' : 'ALBA';
+  if (astroLabelSunset) astroLabelSunset.innerText = appLang === 'en' ? 'SUNSET' : 'TRAMONTO';
+
   if (sunriseTimeEl && sunsetTimeEl && data.daily.sunrise && data.daily.sunset) {
-    const sunriseVal = new Date(data.daily.sunrise[0]).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-    const sunsetVal = new Date(data.daily.sunset[0]).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    const sunriseVal = new Date(data.daily.sunrise[0]).toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
+    const sunsetVal = new Date(data.daily.sunset[0]).toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
     sunriseTimeEl.innerText = sunriseVal;
     sunsetTimeEl.innerText = sunsetVal;
   }
 
   // Air Quality
+  if (aqiLabel) aqiLabel.innerText = appLang === 'en' ? 'air quality' : "qualità dell'aria";
+  
   if (aqiText) {
     if (aqiData && aqiData.current && aqiData.current.european_aqi !== undefined) {
       const aqi = aqiData.current.european_aqi;
-      let label = 'Ottima 🟢';
-      if (aqi > 20 && aqi <= 40) label = 'Buona 🟢';
-      else if (aqi > 40 && aqi <= 60) label = 'Moderata 🟡';
-      else if (aqi > 60 && aqi <= 80) label = 'Scadente 🔴';
-      else if (aqi > 80) label = 'Pessima 🔴';
+      let label = appLang === 'en' ? 'Excellent 🟢' : 'Ottima 🟢';
+      if (aqi > 20 && aqi <= 40) label = appLang === 'en' ? 'Good 🟢' : 'Buona 🟢';
+      else if (aqi > 40 && aqi <= 60) label = appLang === 'en' ? 'Moderate 🟡' : 'Moderata 🟡';
+      else if (aqi > 60 && aqi <= 80) label = appLang === 'en' ? 'Poor 🔴' : 'Scadente 🔴';
+      else if (aqi > 80) label = appLang === 'en' ? 'Very Poor 🔴' : 'Pessima 🔴';
 
       aqiText.innerText = `${label} (AQI ${Math.round(aqi)})`;
     } else {
-      aqiText.innerText = 'Buona 🟢';
+      aqiText.innerText = appLang === 'en' ? 'Good 🟢' : 'Buona 🟢';
     }
   }
 
   // Hourly Forecast
+  const hourlyTitle = document.querySelector('.forecast-section:nth-of-type(4) .forecast-section-title');
+  if (hourlyTitle) hourlyTitle.innerText = appLang === 'en' ? 'next 24 hours' : 'prossime 24 ore (orario)';
+  
   if (hourlyList && data.hourly) {
     const now = new Date();
     const currentHourStr = now.toISOString().slice(0, 13);
@@ -463,7 +634,7 @@ function applyWeatherDataToDOM(data, aqiData) {
     let hourlyHtml = '';
     for (let i = startIndex; i < Math.min(startIndex + 24, data.hourly.time.length); i++) {
       const timeObj = new Date(data.hourly.time[i]);
-      const timeLabel = timeObj.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      const timeLabel = timeObj.toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
       const hCode = getWeatherCodeSvgInfo(data.hourly.weathercode[i], false);
       const hTemp = Math.round(data.hourly.temperature_2m[i]);
       const hRain = data.hourly.precipitation_probability ? data.hourly.precipitation_probability[i] : 0;
@@ -481,11 +652,14 @@ function applyWeatherDataToDOM(data, aqiData) {
   }
 
   // 7-Day Forecast
+  const dailyTitle = document.querySelector('.forecast-section:nth-of-type(5) .forecast-section-title');
+  if (dailyTitle) dailyTitle.innerText = appLang === 'en' ? 'next 7 days' : 'prossimi 7 giorni';
+  
   if (forecastList && data.daily) {
     let html = '';
     for (let i = 0; i < data.daily.time.length; i++) {
       const dateObj = new Date(data.daily.time[i]);
-      const dayName = i === 0 ? 'Oggi' : dateObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+      let dayName = i === 0 ? (appLang === 'en' ? 'Today' : 'Oggi') : dateObj.toLocaleDateString(appLang === 'en' ? 'en-US' : 'it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
       const codeInfo = getWeatherCodeSvgInfo(data.daily.weathercode[i], false);
       const maxD = Math.round(data.daily.temperature_2m_max[i]);
       const minD = Math.round(data.daily.temperature_2m_min[i]);
@@ -506,60 +680,62 @@ function applyWeatherDataToDOM(data, aqiData) {
 }
 
 function generateSmartTip(temp, code, rainProb, wind) {
-  if (code >= 95) return 'Temporali forti in vista: resta al sicuro al coperto!';
-  if (code >= 51 && code <= 67 || rainProb >= 40) return 'Probabile pioggia oggi: ricordati di portare l’ombrello!';
-  if (code >= 71) return 'Nevicate previste: abbigliamento molto caldo e calzature adatte!';
-  if (temp >= 30) return 'Giornata molto calda e soleggiata: consigliati occhiali da sole e idratazione.';
-  if (temp >= 22) return 'Clima mite e piacevole: ideale per abbigliamento leggero estivo.';
-  if (temp >= 14) return 'Clima fresco: consigliata una felpa o giacca leggera.';
-  if (temp < 14 && temp >= 5) return 'Giornata fredda: indossa un cappotto o giubbotto caldo.';
-  if (temp < 5) return 'Gelo e freddo intenso: consigliati guanti, berretto e sciarpa.';
-  return 'Buona giornata! Il clima è perfetto per uscire.';
+  const en = appLang === 'en';
+  if (code >= 95) return en ? 'Severe thunderstorms expected: stay safe indoors!' : 'Temporali forti in vista: resta al sicuro al coperto!';
+  if (code >= 51 && code <= 67 || rainProb >= 40) return en ? 'Rain expected today: remember your umbrella!' : 'Probabile pioggia oggi: ricordati di portare l’ombrello!';
+  if (code >= 71) return en ? 'Snow expected: dress warmly with appropriate footwear!' : 'Nevicate previste: abbigliamento molto caldo e calzature adatte!';
+  if (temp >= 30) return en ? 'Very hot and sunny day: sunglasses and hydration recommended.' : 'Giornata molto calda e soleggiata: consigliati occhiali da sole e idratazione.';
+  if (temp >= 22) return en ? 'Mild and pleasant weather: perfect for light summer clothing.' : 'Clima mite e piacevole: ideale per abbigliamento leggero estivo.';
+  if (temp >= 14) return en ? 'Cool weather: a light jacket or hoodie is recommended.' : 'Clima fresco: consigliata una felpa o giacca leggera.';
+  if (temp < 14 && temp >= 5) return en ? 'Cold day: wear a warm coat or jacket.' : 'Giornata fredda: indossa un cappotto o giubbotto caldo.';
+  if (temp < 5) return en ? 'Freezing cold: gloves, beanie, and scarf recommended.' : 'Gelo e freddo intenso: consigliati guanti, berretto e sciarpa.';
+  return en ? 'Have a great day! The weather is perfect for heading outside.' : 'Buona giornata! Il clima è perfetto per uscire.';
 }
 
 function getWeatherCodeSvgInfo(code, isLarge = false) {
   const size = isLarge ? 56 : 26;
   const stroke = isLarge ? 1.5 : 1.8;
+  const en = appLang === 'en';
 
   if (code === 0) {
     return {
-      description: 'Sereno',
+      description: en ? 'Clear' : 'Sereno',
       svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`
     };
   }
   if (code >= 1 && code <= 3) {
     return {
-      description: 'Poco nuvoloso',
+      description: en ? 'Partly Cloudy' : 'Poco nuvoloso',
       svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>`
     };
   }
   if (code >= 45 && code <= 48) {
     return {
-      description: 'Nebbia',
+      description: en ? 'Fog' : 'Nebbia',
       svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`
     };
   }
   if (code >= 51 && code <= 67 || (code >= 80 && code <= 82)) {
     return {
-      description: 'Pioggia',
+      description: en ? 'Rain' : 'Pioggia',
       svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="16" y1="13" x2="14" y2="21"></line><line x1="10" y1="13" x2="8" y2="21"></line><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path></svg>`
     };
   }
   if (code >= 71 && code <= 77) {
     return {
-      description: 'Neve',
+      description: en ? 'Snow' : 'Neve',
       svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line><line x1="4.93" y1="19.07" x2="19.07" y2="4.93"></line></svg>`
     };
   }
   if (code >= 95 && code <= 99) {
     return {
-      description: 'Temporale',
+      description: en ? 'Thunderstorm' : 'Temporale',
       svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path><polyline points="13 11 9 17 15 17 11 23"></polyline></svg>`
     };
   }
 
   return {
-    description: 'Sereno',
+    description: en ? 'Clear' : 'Sereno',
     svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`
   };
 }
