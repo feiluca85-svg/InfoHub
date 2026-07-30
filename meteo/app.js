@@ -574,8 +574,6 @@ function applyWeatherDataToDOM(data, aqiData) {
   const heroExtra = document.getElementById('weatherHeroExtra');
   const smartTipText = document.getElementById('smartTipText');
   const smartTipBadge = document.querySelector('.smart-tip-badge');
-  const sunriseTimeEl = document.getElementById('sunriseTime');
-  const sunsetTimeEl = document.getElementById('sunsetTime');
   const aqiText = document.getElementById('aqiText');
   const aqiLabel = document.querySelector('.aqi-tile .tile-label');
   const hourlyList = document.getElementById('hourlyList');
