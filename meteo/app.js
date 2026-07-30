@@ -26,6 +26,7 @@ let appLang = localStorage.getItem('GLANCE_METEO_LANG') || 'it';
 let appTheme = localStorage.getItem('GLANCE_METEO_THEME') || 'dark';
 let appAccent = localStorage.getItem('GLANCE_METEO_ACCENT') || '#0078d7';
 let appUnit = localStorage.getItem('GLANCE_METEO_UNIT') || 'metric';
+let appWindUnit = localStorage.getItem('GLANCE_METEO_WIND_UNIT') || 'kmh';
 
 function applySettingsToDOM() {
   // Theme
@@ -56,6 +57,9 @@ function applySettingsToDOM() {
   });
   document.querySelectorAll('.settings-toggle-btn[data-unit]').forEach(b => {
     b.classList.toggle('active', b.dataset.unit === appUnit);
+  });
+  document.querySelectorAll('.settings-toggle-btn[data-wind-unit]').forEach(b => {
+    b.classList.toggle('active', b.dataset.windUnit === appWindUnit);
   });
   document.querySelectorAll('.color-swatch').forEach(b => {
     b.classList.toggle('active', b.dataset.color === appAccent);
@@ -269,6 +273,16 @@ function setupEventListeners() {
     btn.addEventListener('click', () => {
       appUnit = btn.dataset.unit;
       localStorage.setItem('GLANCE_METEO_UNIT', appUnit);
+      applySettingsToDOM();
+      renderCachedWeather();
+      loadAllWeatherData();
+    });
+  });
+
+  document.querySelectorAll('.settings-toggle-btn[data-wind-unit]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      appWindUnit = btn.dataset.windUnit;
+      localStorage.setItem('GLANCE_METEO_WIND_UNIT', appWindUnit);
       applySettingsToDOM();
       renderCachedWeather();
       loadAllWeatherData();
@@ -548,7 +562,12 @@ async function loadAllWeatherData() {
 async function fetchWeatherData(lat, lon) {
   let url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,apparent_temperature,dewpoint_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
   if (appUnit === 'imperial') {
-    url += '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch';
+    url += '&temperature_unit=fahrenheit&precipitation_unit=inch';
+  }
+  if (appWindUnit === 'mph') {
+    url += '&wind_speed_unit=mph';
+  } else if (appWindUnit === 'ms') {
+    url += '&wind_speed_unit=ms';
   }
   const res = await fetch(url);
   if (!res.ok) return null;
@@ -623,12 +642,15 @@ function applyWeatherDataToDOM(data, aqiData) {
   heroIcon.innerHTML = info.svg;
   heroDesc.innerText = info.description;
   
-  const speedUnit = appUnit === 'imperial' ? 'mph' : 'km/h';
+  let speedUnitStr = 'km/h';
+  if (appWindUnit === 'mph') speedUnitStr = 'mph';
+  else if (appWindUnit === 'ms') speedUnitStr = 'm/s';
+  
   if (appLang === 'en') {
-    heroDetails.innerText = `Wind: ${curr.windspeed} ${speedUnit} • Max: ${maxT}° / Min: ${minT}°`;
+    heroDetails.innerText = `Wind: ${curr.windspeed} ${speedUnitStr} • Max: ${maxT}° / Min: ${minT}°`;
     if (heroExtra) heroExtra.innerText = `Feels like: ${apparentTemp}° • Dew point: ${dewPoint}°`;
   } else {
-    heroDetails.innerText = `Vento: ${curr.windspeed} ${speedUnit} • Max: ${maxT}° / Min: ${minT}°`;
+    heroDetails.innerText = `Vento: ${curr.windspeed} ${speedUnitStr} • Max: ${maxT}° / Min: ${minT}°`;
     if (heroExtra) heroExtra.innerText = `Percepita: ${apparentTemp}° • P. di rugiada: ${dewPoint}°`;
   }
 
@@ -668,7 +690,7 @@ function applyWeatherDataToDOM(data, aqiData) {
       alertCard.style.display = 'block';
       alertCard.style.borderLeftColor = aColor;
       alertBadge.style.backgroundColor = aColor;
-      alertBadge.innerText = appLang === 'en' ? 'alert' : 'allerta';
+      alertBadge.innerText = appLang === 'en' ? 'warning' : 'avviso';
       alertText.innerText = aText;
     } else {
       alertCard.style.display = 'none';

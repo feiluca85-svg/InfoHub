@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260730_v1001">
+  <link rel="stylesheet" href="styles.css?v=20260730_v1002">
 </head>
 <body>
   <div id="meteoApp">
@@ -87,8 +87,16 @@
 
       <!-- 2. Smart Alerts Card (Hidden by default) -->
       <section id="alertCard" class="smart-tip-card alert-card" style="display: none;">
-        <span id="alertBadge" class="smart-tip-badge" style="background-color: #ff0000; color: white;">allerta</span>
+        <span id="alertBadge" class="smart-tip-badge" style="background-color: #ff0000; color: white;">avviso</span>
         <p id="alertText" class="smart-tip-text">--</p>
+      </section>
+
+      <!-- 4. Hourly Forecast Section -->
+      <section class="forecast-section">
+        <h2 class="forecast-section-title">prossime 24 ore (orario)</h2>
+        <div id="hourlyList" class="hourly-list">
+          <!-- JS fills this via horizontal flex -->
+        </div>
       </section>
 
       <!-- 3. Smart Tip Card ("CONSIGLIO" without WP8) -->
@@ -121,14 +129,6 @@
             <span class="smart-tip-badge" style="margin-bottom: 5px;">qualità dell'aria</span>
             <div id="aqiText" style="font-size: 1.2rem; font-weight: 600;">In rilevamento...</div>
           </div>
-        </div>
-      </section>
-
-      <!-- 4. Hourly Forecast Section -->
-      <section class="forecast-section">
-        <h2 class="forecast-section-title">prossime 24 ore (orario)</h2>
-        <div id="hourlyList" class="hourly-list">
-          <!-- Generated dynamically -->
         </div>
       </section>
 
@@ -193,10 +193,19 @@
           </div>
 
           <div class="settings-section">
-            <h3 class="settings-label" id="settingsUnitLabel">Unità di Misura / Units</h3>
+            <h3 class="settings-label" id="settingsUnitLabel">Temp. / Units</h3>
             <div class="settings-toggle-group">
-              <button class="settings-toggle-btn active" data-unit="metric">°C / km/h</button>
-              <button class="settings-toggle-btn" data-unit="imperial">°F / mph</button>
+              <button class="settings-toggle-btn active" data-unit="metric">°C</button>
+              <button class="settings-toggle-btn" data-unit="imperial">°F</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3 class="settings-label" id="settingsWindUnitLabel">Vento / Wind Speed</h3>
+            <div class="settings-toggle-group">
+              <button class="settings-toggle-btn active" data-wind-unit="kmh">km/h</button>
+              <button class="settings-toggle-btn" data-wind-unit="mph">mph</button>
+              <button class="settings-toggle-btn" data-wind-unit="ms">m/s</button>
             </div>
           </div>
 
@@ -230,6 +239,6 @@
     </dialog>
   </div>
 
-  <script src="app.js?v=20260730_v1001" defer></script>
+  <script src="app.js?v=20260730_v1002" defer></script>
 </body>
 </html>
