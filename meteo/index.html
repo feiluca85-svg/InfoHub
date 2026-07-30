@@ -85,47 +85,41 @@
         <div id="weatherHeroExtra" class="weather-hero-extra">Percepita: --° • P. di rugiada: --°</div>
       </section>
 
-      <!-- 2. Smart Tip Card ("CONSIGLIO" without WP8) -->
+      <!-- 2. Smart Alerts Card (Hidden by default) -->
+      <section id="alertCard" class="smart-tip-card alert-card" style="display: none;">
+        <span id="alertBadge" class="smart-tip-badge" style="background-color: #ff0000; color: white;">allerta</span>
+        <p id="alertText" class="smart-tip-text">--</p>
+      </section>
+
+      <!-- 3. Smart Tip Card ("CONSIGLIO" without WP8) -->
       <section class="smart-tip-card">
         <span class="smart-tip-badge">consiglio</span>
         <p id="smartTipText" class="smart-tip-text">Caricamento consiglio meteo...</p>
       </section>
 
-      <!-- 3. Astro (Alba/Tramonto) & Air Quality Grid -->
-      <section class="metro-info-grid">
-        <!-- Alba & Tramonto Stacked Metro Tile -->
-        <div class="metro-info-tile astro-tile">
-          <!-- Top Alba Block -->
-          <div class="astro-block">
-            <span class="astro-label">ALBA</span>
-            <div class="astro-content">
-              <div class="astro-icon-box">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="2" x2="12" y2="9"></line><polyline points="9 5 12 2 15 5"></polyline><line x1="2" y1="18" x2="22" y2="18"></line></svg>
-              </div>
-              <span id="sunriseTime" class="astro-time">--:--</span>
-            </div>
-          </div>
-          <div class="astro-divider"></div>
-          <!-- Bottom Tramonto Block -->
-          <div class="astro-block">
-            <span class="astro-label">TRAMONTO</span>
-            <div class="astro-content">
-              <div class="astro-icon-box">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="9" x2="12" y2="16"></line><polyline points="9 13 12 16 15 13"></polyline><line x1="2" y1="18" x2="22" y2="18"></line></svg>
-              </div>
-              <span id="sunsetTime" class="astro-time">--:--</span>
-            </div>
+      <!-- 4. Astro (Alba/Tramonto) Horizontal Card -->
+      <section class="smart-tip-card astro-card">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <span class="astro-label-small">ALBA <br><strong id="sunriseTime">--:--</strong></span>
+          <span class="astro-label-small" style="text-align: right;">TRAMONTO <br><strong id="sunsetTime">--:--</strong></span>
+        </div>
+        <div class="astro-timeline">
+          <div id="astroProgress" class="astro-progress-bar"></div>
+          <div id="astroIcon" class="astro-sun-moon-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
           </div>
         </div>
+      </section>
 
-        <!-- Air Quality Metro Tile -->
-        <div class="metro-info-tile aqi-tile">
+      <!-- 5. Air Quality Horizontal Card -->
+      <section class="smart-tip-card aqi-card">
+        <div style="display: flex; align-items: center; gap: 15px;">
           <div class="tile-icon">
-            <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+            <svg viewBox="0 0 24 24" width="30" height="30" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
           </div>
-          <div class="tile-content">
-            <span class="tile-label">qualità dell'aria</span>
-            <div id="aqiText" class="tile-value">In rilevamento...</div>
+          <div>
+            <span class="smart-tip-badge" style="margin-bottom: 5px;">qualità dell'aria</span>
+            <div id="aqiText" style="font-size: 1.2rem; font-weight: 600;">In rilevamento...</div>
           </div>
         </div>
       </section>
@@ -199,6 +193,14 @@
           </div>
 
           <div class="settings-section">
+            <h3 class="settings-label" id="settingsUnitLabel">Unità di Misura / Units</h3>
+            <div class="settings-toggle-group">
+              <button class="settings-toggle-btn active" data-unit="metric">°C / km/h</button>
+              <button class="settings-toggle-btn" data-unit="imperial">°F / mph</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
             <h3 class="settings-label" id="settingsThemeLabel">Tema / Theme</h3>
             <div class="settings-toggle-group">
               <button class="settings-toggle-btn active" data-theme="dark" id="themeDarkBtn">Scuro</button>
@@ -228,6 +230,6 @@
     </dialog>
   </div>
 
-  <script src="app.js?v=20260729_v900"></script>
+  <script src="app.js?v=20260730_v1000"></script>
 </body>
 </html>

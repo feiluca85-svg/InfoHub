@@ -198,105 +198,85 @@ body {
   font-weight: 400;
 }
 
-/* 3. Astro & Air Quality Grid */
-.metro-info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+/* Alert Card */
+.alert-card {
+  background: #bd2c00;
+  border-left: 4px solid #ff0000;
+  color: #fff;
+  margin-bottom: 12px;
 }
 
-.metro-info-tile {
-  background: var(--bg-card);
-  padding: 16px;
-  border: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.alert-card .smart-tip-text {
+  color: #fff;
+  font-weight: 600;
 }
 
-/* Custom Alba & Tramonto Stacked Metro Tile */
-.astro-tile {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 8px;
+/* Astro Horizontal Timeline */
+.astro-card {
+  margin-top: 12px;
 }
 
-.astro-block {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+.astro-label-small {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.astro-content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.astro-label-small strong {
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
-.astro-icon-box {
+.astro-timeline {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-item);
+  position: relative;
+  border-radius: 2px;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+.astro-progress-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--accent-color);
+  width: 0%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.astro-sun-moon-icon {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: transparent;
-  border: 1px solid var(--accent-color);
+  background: var(--bg-card);
+  border: 2px solid var(--accent-color);
   color: var(--accent-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  left: 0%;
+  transition: left 0.5s ease;
+  z-index: 2;
 }
 
-.astro-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
+/* Air Quality Horizontal */
+.aqi-card {
+  margin-top: 12px;
 }
-
-.astro-time {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.astro-divider {
-  height: 1px;
-  background: var(--border-color);
-  width: 100%;
-}
-
-/* Air Quality Tile */
-.aqi-tile {
-  flex-direction: row;
-  align-items: center;
-  gap: 12px;
-}
-
 .tile-icon {
   color: var(--accent-color);
   display: flex;
   align-items: center;
-}
-
-.tile-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.tile-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.tile-value {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-top: 2px;
+  justify-content: center;
 }
 
 /* 4. Hourly & 7-Day Forecast Sections */
@@ -310,29 +290,37 @@ body {
   padding-bottom: 6px;
 }
 
-/* Hourly Forecast Vertical List */
+/* Hourly Forecast Horizontal Scroll */
 .hourly-list {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 320px;
-  overflow-y: auto;
-  padding-right: 4px;
+  flex-direction: row;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 12px;
+  /* Hide scrollbar for a cleaner look */
+  scrollbar-width: none;
+}
+.hourly-list::-webkit-scrollbar {
+  display: none;
 }
 
 .hourly-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
+  min-width: 80px;
+  padding: 12px 10px;
   background: var(--bg-item-alt);
-  border-left: 3px solid var(--accent-color);
+  border-top: 3px solid var(--accent-color);
   font-size: 0.95rem;
+  gap: 8px;
 }
 
 .hourly-item.current-hour {
   background: var(--bg-item);
-  border-left-width: 6px;
+  border-top-width: 6px;
 }
 
 .hourly-item.current-hour .hourly-time {
@@ -343,7 +331,7 @@ body {
 
 .hourly-time {
   font-weight: 500;
-  width: 70px;
+  text-align: center;
 }
 
 .hourly-icon {

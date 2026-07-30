@@ -25,6 +25,7 @@ let isLongPressPreventClick = false;
 let appLang = localStorage.getItem('GLANCE_METEO_LANG') || 'it';
 let appTheme = localStorage.getItem('GLANCE_METEO_THEME') || 'dark';
 let appAccent = localStorage.getItem('GLANCE_METEO_ACCENT') || '#0078d7';
+let appUnit = localStorage.getItem('GLANCE_METEO_UNIT') || 'metric';
 
 function applySettingsToDOM() {
   // Theme
@@ -52,6 +53,9 @@ function applySettingsToDOM() {
   });
   document.querySelectorAll('.settings-toggle-btn[data-theme]').forEach(b => {
     b.classList.toggle('active', b.dataset.theme === appTheme);
+  });
+  document.querySelectorAll('.settings-toggle-btn[data-unit]').forEach(b => {
+    b.classList.toggle('active', b.dataset.unit === appUnit);
   });
   document.querySelectorAll('.color-swatch').forEach(b => {
     b.classList.toggle('active', b.dataset.color === appAccent);
@@ -258,6 +262,16 @@ function setupEventListeners() {
       appTheme = btn.dataset.theme;
       localStorage.setItem('GLANCE_METEO_THEME', appTheme);
       applySettingsToDOM();
+    });
+  });
+
+  document.querySelectorAll('.settings-toggle-btn[data-unit]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      appUnit = btn.dataset.unit;
+      localStorage.setItem('GLANCE_METEO_UNIT', appUnit);
+      applySettingsToDOM();
+      renderCachedWeather();
+      loadAllWeatherData();
     });
   });
 
@@ -532,7 +546,10 @@ async function loadAllWeatherData() {
 }
 
 async function fetchWeatherData(lat, lon) {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,apparent_temperature,dewpoint_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
+  let url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,apparent_temperature,dewpoint_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
+  if (appUnit === 'imperial') {
+    url += '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch';
+  }
   const res = await fetch(url);
   if (!res.ok) return null;
   return await res.json();
@@ -608,27 +625,55 @@ function applyWeatherDataToDOM(data, aqiData) {
   heroIcon.innerHTML = info.svg;
   heroDesc.innerText = info.description;
   
+  const speedUnit = appUnit === 'imperial' ? 'mph' : 'km/h';
   if (appLang === 'en') {
-    heroDetails.innerText = `Wind: ${curr.windspeed} km/h • Max: ${maxT}° / Min: ${minT}°`;
+    heroDetails.innerText = `Wind: ${curr.windspeed} ${speedUnit} • Max: ${maxT}° / Min: ${minT}°`;
     if (heroExtra) heroExtra.innerText = `Feels like: ${apparentTemp}° • Dew point: ${dewPoint}°`;
   } else {
-    heroDetails.innerText = `Vento: ${curr.windspeed} km/h • Max: ${maxT}° / Min: ${minT}°`;
+    heroDetails.innerText = `Vento: ${curr.windspeed} ${speedUnit} • Max: ${maxT}° / Min: ${minT}°`;
     if (heroExtra) heroExtra.innerText = `Percepita: ${apparentTemp}° • P. di rugiada: ${dewPoint}°`;
   }
 
-  // Extreme Alert
-  if (alertBanner) {
-    if (curr.temperature >= 35) {
-      alertBanner.classList.remove('hidden');
-      document.getElementById('meteoAlertText').innerText = appLang === 'en' ? 'Extreme Heat Alert: temperature over 35°C!' : 'Allerta Caldo Estremo: temperatura oltre 35°C!';
-    } else if (curr.temperature <= 0) {
-      alertBanner.classList.remove('hidden');
-      document.getElementById('meteoAlertText').innerText = appLang === 'en' ? 'Ice Alert: freezing conditions!' : 'Allerta Gelo: pericolo ghiaccio sulle strade!';
+  // Extreme Alert (Smart Alerts)
+  const alertCard = document.getElementById('alertCard');
+  const alertText = document.getElementById('alertText');
+  const alertBadge = document.getElementById('alertBadge');
+  
+  if (alertCard && alertText && alertBadge) {
+    let hasAlert = false;
+    let aColor = '#ff0000';
+    let aText = '';
+    
+    const heatThreshold = appUnit === 'imperial' ? 95 : 35;
+    const coldThreshold = appUnit === 'imperial' ? 32 : 0;
+    const windThreshold = appUnit === 'imperial' ? 37 : 60;
+    
+    if (curr.temperature >= heatThreshold || maxT >= heatThreshold) {
+      hasAlert = true;
+      aColor = '#ff0000'; // Red
+      aText = appLang === 'en' ? 'Extreme Heat Alert!' : 'Allerta Caldo Estremo!';
+    } else if (curr.temperature <= coldThreshold || minT <= coldThreshold) {
+      hasAlert = true;
+      aColor = '#0078d7'; // Blue/Ice
+      aText = appLang === 'en' ? 'Ice/Freezing Alert!' : 'Allerta Ghiaccio / Gelo!';
     } else if (curr.weathercode >= 95) {
-      alertBanner.classList.remove('hidden');
-      document.getElementById('meteoAlertText').innerText = appLang === 'en' ? 'Severe Thunderstorms Alert!' : 'Allerta Temporali Forti in corso!';
+      hasAlert = true;
+      aColor = '#a200ff'; // Purple
+      aText = appLang === 'en' ? 'Severe Thunderstorms Alert!' : 'Allerta Temporali Forti in corso!';
+    } else if (curr.windspeed >= windThreshold) {
+      hasAlert = true;
+      aColor = '#ff0097'; // Magenta
+      aText = appLang === 'en' ? 'Strong Wind Alert!' : 'Allerta Vento Forte!';
+    }
+    
+    if (hasAlert) {
+      alertCard.style.display = 'block';
+      alertCard.style.borderLeftColor = aColor;
+      alertBadge.style.backgroundColor = aColor;
+      alertBadge.innerText = appLang === 'en' ? 'alert' : 'allerta';
+      alertText.innerText = aText;
     } else {
-      alertBanner.classList.add('hidden');
+      alertCard.style.display = 'none';
     }
   }
 
@@ -638,17 +683,54 @@ function applyWeatherDataToDOM(data, aqiData) {
     smartTipText.innerText = generateSmartTip(curr.temperature, curr.weathercode, maxRainProb, curr.windspeed);
   }
 
-  // Sunrise & Sunset
-  const astroLabelSunrise = document.querySelector('.astro-tile .astro-block:nth-child(1) .astro-label');
-  const astroLabelSunset = document.querySelector('.astro-tile .astro-block:nth-child(3) .astro-label');
-  if (astroLabelSunrise) astroLabelSunrise.innerText = appLang === 'en' ? 'SUNRISE' : 'ALBA';
-  if (astroLabelSunset) astroLabelSunset.innerText = appLang === 'en' ? 'SUNSET' : 'TRAMONTO';
+  // Sunrise & Sunset Timeline
+  const astroLabelSunrise = document.querySelector('.astro-card .astro-label-small:nth-child(1)');
+  const astroLabelSunset = document.querySelector('.astro-card .astro-label-small:nth-child(2)');
+  if (astroLabelSunrise) astroLabelSunrise.innerHTML = (appLang === 'en' ? 'SUNRISE <br>' : 'ALBA <br>') + '<strong id="sunriseTime">--:--</strong>';
+  if (astroLabelSunset) astroLabelSunset.innerHTML = (appLang === 'en' ? 'SUNSET <br>' : 'TRAMONTO <br>') + '<strong id="sunsetTime">--:--</strong>';
+
+  const sunriseTimeEl = document.getElementById('sunriseTime');
+  const sunsetTimeEl = document.getElementById('sunsetTime');
 
   if (sunriseTimeEl && sunsetTimeEl && data.daily.sunrise && data.daily.sunset) {
-    const sunriseVal = new Date(data.daily.sunrise[0]).toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
-    const sunsetVal = new Date(data.daily.sunset[0]).toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
+    const sunriseTimeStr = data.daily.sunrise[0];
+    const sunsetTimeStr = data.daily.sunset[0];
+    
+    const sunriseVal = new Date(sunriseTimeStr).toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
+    const sunsetVal = new Date(sunsetTimeStr).toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
     sunriseTimeEl.innerText = sunriseVal;
     sunsetTimeEl.innerText = sunsetVal;
+    
+    // Timeline calculation
+    const nowMs = new Date(curr.time).getTime();
+    const riseMs = new Date(sunriseTimeStr).getTime();
+    const setMs = new Date(sunsetTimeStr).getTime();
+    const progress = document.getElementById('astroProgress');
+    const iconDiv = document.getElementById('astroIcon');
+    
+    if (progress && iconDiv) {
+      if (nowMs >= riseMs && nowMs <= setMs) {
+        // Daytime
+        const pct = ((nowMs - riseMs) / (setMs - riseMs)) * 100;
+        progress.style.width = `${pct}%`;
+        iconDiv.style.left = `${pct}%`;
+        iconDiv.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+      } else {
+        // Nighttime
+        let prevSetMs = setMs - 86400000;
+        let nextRiseMs = riseMs;
+        if (nowMs > setMs) {
+          prevSetMs = setMs;
+          nextRiseMs = riseMs + 86400000;
+        }
+        let pct = ((nowMs - prevSetMs) / (nextRiseMs - prevSetMs)) * 100;
+        if (pct < 0) pct = 0;
+        if (pct > 100) pct = 100;
+        progress.style.width = `${pct}%`;
+        iconDiv.style.left = `${pct}%`;
+        iconDiv.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+      }
+    }
   }
 
   // Air Quality
