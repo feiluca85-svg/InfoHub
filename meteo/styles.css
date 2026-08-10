@@ -163,16 +163,17 @@ body {
 .weather-hero-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
-  margin-top: 12px;
-  font-size: 0.95rem;
-  opacity: 0.95;
+  gap: 20px;
+  margin-top: 20px;
+  opacity: 1;
 }
 
 .weather-hero-extra {
-  margin-top: 6px;
-  font-size: 0.85rem;
-  opacity: 0.8;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 15px;
+  opacity: 1;
 }
 
 /* 2. Smart Tip Card ("CONSIGLIO" without WP8) */

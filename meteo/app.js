@@ -651,11 +651,55 @@ function applyWeatherDataToDOM(data, aqiData) {
   else if (appWindUnit === 'ms') speedUnitStr = 'm/s';
   
   if (appLang === 'en') {
-    heroDetails.innerText = `Wind: ${curr.windspeed} ${speedUnitStr} • Humidity: ${humidity}% • Max: ${maxT}° / Min: ${minT}°`;
-    if (heroExtra) heroExtra.innerText = `Feels like: ${apparentTemp}° • Dew point: ${dewPoint}°`;
+    heroDetails.innerHTML = `
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Wind</span>
+        <span style="font-size:1.2rem; font-weight:500;">${curr.windspeed} ${speedUnitStr}</span>
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Humidity</span>
+        <span style="font-size:1.2rem; font-weight:500;">${humidity}%</span>
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Max / Min</span>
+        <span style="font-size:1.2rem; font-weight:500;">${maxT}° / ${minT}°</span>
+      </div>
+    `;
+    if (heroExtra) heroExtra.innerHTML = `
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Feels like</span>
+        <span style="font-size:1.1rem; font-weight:400;">${apparentTemp}°</span>
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Dew point</span>
+        <span style="font-size:1.1rem; font-weight:400;">${dewPoint}°</span>
+      </div>
+    `;
   } else {
-    heroDetails.innerText = `Vento: ${curr.windspeed} ${speedUnitStr} • Umidità: ${humidity}% • Max: ${maxT}° / Min: ${minT}°`;
-    if (heroExtra) heroExtra.innerText = `Percepita: ${apparentTemp}° • P. di rugiada: ${dewPoint}°`;
+    heroDetails.innerHTML = `
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Vento</span>
+        <span style="font-size:1.2rem; font-weight:500;">${curr.windspeed} ${speedUnitStr}</span>
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Umidità</span>
+        <span style="font-size:1.2rem; font-weight:500;">${humidity}%</span>
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Max / Min</span>
+        <span style="font-size:1.2rem; font-weight:500;">${maxT}° / ${minT}°</span>
+      </div>
+    `;
+    if (heroExtra) heroExtra.innerHTML = `
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Percepita</span>
+        <span style="font-size:1.1rem; font-weight:400;">${apparentTemp}°</span>
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Rugiada</span>
+        <span style="font-size:1.1rem; font-weight:400;">${dewPoint}°</span>
+      </div>
+    `;
   }
 
   // Extreme Alert (Smart Alerts)
@@ -734,13 +778,17 @@ function applyWeatherDataToDOM(data, aqiData) {
     
     if (progress && iconDiv) {
       if (nowMs >= riseMs && nowMs <= setMs) {
-        // Daytime
+        // Daytime (Left to Right)
         const pct = ((nowMs - riseMs) / (setMs - riseMs)) * 100;
+        progress.style.left = '0';
+        progress.style.right = 'auto';
         progress.style.width = `${pct}%`;
         iconDiv.style.left = `${pct}%`;
+        iconDiv.style.right = 'auto';
+        iconDiv.style.transform = 'translate(-50%, -50%)'; // Ensure icon centers correctly
         iconDiv.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
       } else {
-        // Nighttime
+        // Nighttime (Right to Left)
         let prevSetMs = setMs - 86400000;
         let nextRiseMs = riseMs;
         if (nowMs > setMs) {
@@ -751,9 +799,12 @@ function applyWeatherDataToDOM(data, aqiData) {
         if (pct < 0) pct = 0;
         if (pct > 100) pct = 100;
         
-        const reversePct = 100 - pct;
-        progress.style.width = `${reversePct}%`;
-        iconDiv.style.left = `${reversePct}%`;
+        progress.style.left = 'auto';
+        progress.style.right = '0';
+        progress.style.width = `${pct}%`;
+        iconDiv.style.left = 'auto';
+        iconDiv.style.right = `${pct}%`;
+        iconDiv.style.transform = 'translate(50%, -50%)'; // Anchor adjust when right aligned
         iconDiv.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
       }
     }
