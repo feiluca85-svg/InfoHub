@@ -590,6 +590,7 @@ function applyWeatherDataToDOM(data, aqiData) {
   const heroIcon = document.getElementById('weatherHeroIcon');
   const heroDesc = document.getElementById('weatherHeroDesc');
   const heroDetails = document.getElementById('weatherHeroDetails');
+  const heroWind = document.getElementById('weatherHeroWind');
   const heroExtra = document.getElementById('weatherHeroExtra');
   const smartTipText = document.getElementById('smartTipText');
   const smartTipBadge = document.querySelector('.smart-tip-badge');
@@ -653,53 +654,60 @@ function applyWeatherDataToDOM(data, aqiData) {
   if (appLang === 'en') {
     heroDetails.innerHTML = `
       <div style="display:flex; flex-direction:column;">
-        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Wind</span>
-        <span style="font-size:1.2rem; font-weight:500;">${curr.windspeed} ${speedUnitStr}</span>
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Max / Min</span>
+        <span style="font-size:1.2rem; font-weight:500;">${maxT}° / ${minT}°</span>
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Feels like</span>
+        <span style="font-size:1.2rem; font-weight:500;">${apparentTemp}°</span>
       </div>
       <div style="display:flex; flex-direction:column;">
         <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Humidity</span>
         <span style="font-size:1.2rem; font-weight:500;">${humidity}%</span>
       </div>
       <div style="display:flex; flex-direction:column;">
-        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Max / Min</span>
-        <span style="font-size:1.2rem; font-weight:500;">${maxT}° / ${minT}°</span>
-      </div>
-    `;
-    if (heroExtra) heroExtra.innerHTML = `
-      <div style="display:flex; flex-direction:column;">
-        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Feels like</span>
-        <span style="font-size:1.1rem; font-weight:400;">${apparentTemp}°</span>
-      </div>
-      <div style="display:flex; flex-direction:column;">
         <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Dew point</span>
-        <span style="font-size:1.1rem; font-weight:400;">${dewPoint}°</span>
+        <span style="font-size:1.2rem; font-weight:500;">${dewPoint}°</span>
       </div>
     `;
   } else {
     heroDetails.innerHTML = `
       <div style="display:flex; flex-direction:column;">
-        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Vento</span>
-        <span style="font-size:1.2rem; font-weight:500;">${curr.windspeed} ${speedUnitStr}</span>
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Max / Min</span>
+        <span style="font-size:1.2rem; font-weight:500;">${maxT}° / ${minT}°</span>
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Percepita</span>
+        <span style="font-size:1.2rem; font-weight:500;">${apparentTemp}°</span>
       </div>
       <div style="display:flex; flex-direction:column;">
         <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Umidità</span>
         <span style="font-size:1.2rem; font-weight:500;">${humidity}%</span>
       </div>
       <div style="display:flex; flex-direction:column;">
-        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Max / Min</span>
-        <span style="font-size:1.2rem; font-weight:500;">${maxT}° / ${minT}°</span>
-      </div>
-    `;
-    if (heroExtra) heroExtra.innerHTML = `
-      <div style="display:flex; flex-direction:column;">
-        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Percepita</span>
-        <span style="font-size:1.1rem; font-weight:400;">${apparentTemp}°</span>
-      </div>
-      <div style="display:flex; flex-direction:column;">
         <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">Rugiada</span>
-        <span style="font-size:1.1rem; font-weight:400;">${dewPoint}°</span>
+        <span style="font-size:1.2rem; font-weight:500;">${dewPoint}°</span>
       </div>
     `;
+  }
+  
+  if (heroExtra) heroExtra.style.display = 'none';
+
+  // Render Wind Bar
+  if (heroWind && curr.winddirection !== undefined) {
+    const windInfo = getWindInfo(curr.winddirection, appLang);
+    heroWind.style.display = 'flex';
+    heroWind.innerHTML = `
+      <div class="weather-hero-wind-icon">
+        <svg style="transform: rotate(${curr.winddirection}deg);" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+      </div>
+      <div style="display:flex; flex-direction:column;">
+        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">${appLang === 'en' ? 'Wind' : 'Vento'} • ${windInfo.dir}</span>
+        <span style="font-size:1.2rem; font-weight:500;">${curr.windspeed} ${speedUnitStr} - ${windInfo.name}</span>
+      </div>
+    `;
+  } else if (heroWind) {
+    heroWind.style.display = 'none';
   }
 
   // Extreme Alert (Smart Alerts)
@@ -898,6 +906,37 @@ function generateSmartTip(temp, code, rainProb, wind) {
   if (temp < 14 && temp >= 5) return en ? 'Cold day: wear a warm coat or jacket.' : 'Giornata fredda: indossa un cappotto o giubbotto caldo.';
   if (temp < 5) return en ? 'Freezing cold: gloves, beanie, and scarf recommended.' : 'Gelo e freddo intenso: consigliati guanti, berretto e sciarpa.';
   return en ? 'Have a great day! The weather is perfect for heading outside.' : 'Buona giornata! Il clima è perfetto per uscire.';
+}
+
+function getWindInfo(degrees, lang) {
+  const dirs = [
+    { n: 'Tramontana', n_en: 'North Wind', dir: 'N', dir_en: 'N', r: [337.5, 360], r2: [0, 22.5] },
+    { n: 'Grecale', n_en: 'Grecale', dir: 'NE', dir_en: 'NE', r: [22.5, 67.5] },
+    { n: 'Levante', n_en: 'East Wind', dir: 'E', dir_en: 'E', r: [67.5, 112.5] },
+    { n: 'Scirocco', n_en: 'Scirocco', dir: 'SE', dir_en: 'SE', r: [112.5, 157.5] },
+    { n: 'Ostro', n_en: 'South Wind', dir: 'S', dir_en: 'S', r: [157.5, 202.5] },
+    { n: 'Libeccio', n_en: 'Libeccio', dir: 'SW', dir_en: 'SW', r: [202.5, 247.5] },
+    { n: 'Ponente', n_en: 'West Wind', dir: 'O', dir_en: 'W', r: [247.5, 292.5] },
+    { n: 'Maestrale', n_en: 'Mistral', dir: 'NO', dir_en: 'NW', r: [292.5, 337.5] }
+  ];
+  let windName = '';
+  let windDir = '';
+  for (let d of dirs) {
+    if (d.r2) {
+      if ((degrees >= d.r[0] && degrees <= d.r[1]) || (degrees >= d.r2[0] && degrees <= d.r2[1])) {
+        windName = lang === 'en' ? d.n_en : d.n;
+        windDir = lang === 'en' ? d.dir_en : d.dir;
+        break;
+      }
+    } else {
+      if (degrees >= d.r[0] && degrees <= d.r[1]) {
+        windName = lang === 'en' ? d.n_en : d.n;
+        windDir = lang === 'en' ? d.dir_en : d.dir;
+        break;
+      }
+    }
+  }
+  return { name: windName, dir: windDir };
 }
 
 function getWeatherCodeSvgInfo(code, isLarge = false) {

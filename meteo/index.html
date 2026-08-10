@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260810_v2">
+  <link rel="stylesheet" href="styles.css?v=20260810_v3">
 </head>
 <body>
   <div id="meteoApp">
@@ -81,8 +81,9 @@
           <div id="weatherHeroIcon" class="weather-hero-icon"></div>
         </div>
         <div id="weatherHeroDesc" class="weather-hero-desc">Caricamento...</div>
-        <div id="weatherHeroDetails" class="weather-hero-details">Vento: -- km/h • Umidità: --% • Max: --° / Min: --°</div>
-        <div id="weatherHeroExtra" class="weather-hero-extra">Percepita: --° • P. di rugiada: --°</div>
+        <div id="weatherHeroDetails" class="weather-hero-details">Max: --° / Min: --° • Percepita: --° • Umidità: --% • Rugiada: --°</div>
+        <div id="weatherHeroExtra" class="weather-hero-extra" style="display:none;"></div>
+        <div id="weatherHeroWind" class="weather-hero-wind"></div>
       </section>
 
       <!-- 2. Smart Alerts Card (Hidden by default) -->
@@ -239,6 +240,6 @@
     </dialog>
   </div>
 
-  <script src="app.js?v=20260810_v2" defer></script>
+  <script src="app.js?v=20260810_v3" defer></script>
 </body>
 </html>
