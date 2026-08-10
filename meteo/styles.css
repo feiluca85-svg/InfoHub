@@ -163,7 +163,8 @@ body {
 .weather-hero-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 10px;
+  justify-content: space-between;
   margin-top: 20px;
   opacity: 1;
 }
@@ -179,10 +180,16 @@ body {
 .weather-hero-wind {
   display: flex;
   align-items: center;
-  gap: 15px;
+  justify-content: space-between;
   margin-top: 25px;
   padding-top: 15px;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.weather-hero-wind-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .weather-hero-wind-icon {

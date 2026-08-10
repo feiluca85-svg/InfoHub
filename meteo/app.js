@@ -697,13 +697,31 @@ function applyWeatherDataToDOM(data, aqiData) {
   if (heroWind && curr.winddirection !== undefined) {
     const windInfo = getWindInfo(curr.winddirection, appLang);
     heroWind.style.display = 'flex';
+    
+    // Calculate normalized wind speed in km/h for intensity icon
+    let kph = curr.windspeed;
+    if (appWindUnit === 'mph') kph = curr.windspeed * 1.60934;
+    else if (appWindUnit === 'ms') kph = curr.windspeed * 3.6;
+    
+    let strokeW = 1.5;
+    let opacityW = 0.6;
+    if (kph > 15) { strokeW = 2; opacityW = 0.8; }
+    if (kph > 35) { strokeW = 2.5; opacityW = 1; }
+    
+    const intensityIcon = `<svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" stroke-width="${strokeW}" fill="none" stroke-linecap="round" stroke-linejoin="round" style="opacity:${opacityW}; margin-right:5px;"><path d="M9.59 4.59A2 2 0 1 1 11 8H2"></path><path d="M12.59 19.41A2 2 0 1 0 14 16H2"></path><path d="M17.73 7.73A2.5 2.5 0 1 1 19.5 12H2"></path></svg>`;
+
     heroWind.innerHTML = `
-      <div class="weather-hero-wind-icon">
-        <svg style="transform: rotate(${curr.winddirection}deg);" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+      <div class="weather-hero-wind-left">
+        <div class="weather-hero-wind-icon">
+          <svg style="transform: rotate(${curr.winddirection}deg);" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+        </div>
+        <div style="display:flex; flex-direction:column;">
+          <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">${appLang === 'en' ? 'Wind' : 'Vento'} • ${windInfo.dir}</span>
+          <span style="font-size:1.2rem; font-weight:500;">${curr.windspeed} ${speedUnitStr} - ${windInfo.name}</span>
+        </div>
       </div>
-      <div style="display:flex; flex-direction:column;">
-        <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">${appLang === 'en' ? 'Wind' : 'Vento'} • ${windInfo.dir}</span>
-        <span style="font-size:1.2rem; font-weight:500;">${curr.windspeed} ${speedUnitStr} - ${windInfo.name}</span>
+      <div>
+        ${intensityIcon}
       </div>
     `;
   } else if (heroWind) {
@@ -910,14 +928,14 @@ function generateSmartTip(temp, code, rainProb, wind) {
 
 function getWindInfo(degrees, lang) {
   const dirs = [
-    { n: 'Tramontana', n_en: 'North Wind', dir: 'N', dir_en: 'N', r: [337.5, 360], r2: [0, 22.5] },
-    { n: 'Grecale', n_en: 'Grecale', dir: 'NE', dir_en: 'NE', r: [22.5, 67.5] },
-    { n: 'Levante', n_en: 'East Wind', dir: 'E', dir_en: 'E', r: [67.5, 112.5] },
-    { n: 'Scirocco', n_en: 'Scirocco', dir: 'SE', dir_en: 'SE', r: [112.5, 157.5] },
-    { n: 'Ostro', n_en: 'South Wind', dir: 'S', dir_en: 'S', r: [157.5, 202.5] },
-    { n: 'Libeccio', n_en: 'Libeccio', dir: 'SW', dir_en: 'SW', r: [202.5, 247.5] },
-    { n: 'Ponente', n_en: 'West Wind', dir: 'O', dir_en: 'W', r: [247.5, 292.5] },
-    { n: 'Maestrale', n_en: 'Mistral', dir: 'NO', dir_en: 'NW', r: [292.5, 337.5] }
+    { n: 'Tramontana', n_en: 'North Wind', dir: 'Nord', dir_en: 'North', r: [337.5, 360], r2: [0, 22.5] },
+    { n: 'Grecale', n_en: 'Grecale', dir: 'Nord-Est', dir_en: 'North-East', r: [22.5, 67.5] },
+    { n: 'Levante', n_en: 'East Wind', dir: 'Est', dir_en: 'East', r: [67.5, 112.5] },
+    { n: 'Scirocco', n_en: 'Scirocco', dir: 'Sud-Est', dir_en: 'South-East', r: [112.5, 157.5] },
+    { n: 'Ostro', n_en: 'South Wind', dir: 'Sud', dir_en: 'South', r: [157.5, 202.5] },
+    { n: 'Libeccio', n_en: 'Libeccio', dir: 'Sud-Ovest', dir_en: 'South-West', r: [202.5, 247.5] },
+    { n: 'Ponente', n_en: 'West Wind', dir: 'Ovest', dir_en: 'West', r: [247.5, 292.5] },
+    { n: 'Maestrale', n_en: 'Mistral', dir: 'Nord-Ovest', dir_en: 'North-West', r: [292.5, 337.5] }
   ];
   let windName = '';
   let windDir = '';
