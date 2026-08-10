@@ -560,7 +560,7 @@ async function loadAllWeatherData() {
 }
 
 async function fetchWeatherData(lat, lon) {
-  let url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,apparent_temperature,dewpoint_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
+  let url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,dewpoint_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
   if (appUnit === 'imperial') {
     url += '&temperature_unit=fahrenheit&precipitation_unit=inch';
   }
@@ -626,6 +626,7 @@ function applyWeatherDataToDOM(data, aqiData) {
   // Extract apparent temp and dew point from hourly array based on current time
   let apparentTemp = Math.round(curr.temperature);
   let dewPoint = Math.round(curr.temperature);
+  let humidity = 0;
   if (data.hourly && data.hourly.time && curr.time) {
     const currentHourPrefix = curr.time.slice(0, 13);
     const hIdx = Math.max(0, data.hourly.time.findIndex(t => t.startsWith(currentHourPrefix)));
@@ -634,6 +635,9 @@ function applyWeatherDataToDOM(data, aqiData) {
     }
     if (data.hourly.dewpoint_2m && data.hourly.dewpoint_2m[hIdx] !== undefined) {
       dewPoint = Math.round(data.hourly.dewpoint_2m[hIdx]);
+    }
+    if (data.hourly.relative_humidity_2m && data.hourly.relative_humidity_2m[hIdx] !== undefined) {
+      humidity = Math.round(data.hourly.relative_humidity_2m[hIdx]);
     }
   }
 
@@ -647,10 +651,10 @@ function applyWeatherDataToDOM(data, aqiData) {
   else if (appWindUnit === 'ms') speedUnitStr = 'm/s';
   
   if (appLang === 'en') {
-    heroDetails.innerText = `Wind: ${curr.windspeed} ${speedUnitStr} • Max: ${maxT}° / Min: ${minT}°`;
+    heroDetails.innerText = `Wind: ${curr.windspeed} ${speedUnitStr} • Humidity: ${humidity}% • Max: ${maxT}° / Min: ${minT}°`;
     if (heroExtra) heroExtra.innerText = `Feels like: ${apparentTemp}° • Dew point: ${dewPoint}°`;
   } else {
-    heroDetails.innerText = `Vento: ${curr.windspeed} ${speedUnitStr} • Max: ${maxT}° / Min: ${minT}°`;
+    heroDetails.innerText = `Vento: ${curr.windspeed} ${speedUnitStr} • Umidità: ${humidity}% • Max: ${maxT}° / Min: ${minT}°`;
     if (heroExtra) heroExtra.innerText = `Percepita: ${apparentTemp}° • P. di rugiada: ${dewPoint}°`;
   }
 
@@ -697,9 +701,9 @@ function applyWeatherDataToDOM(data, aqiData) {
     }
   }
 
-  // Smart Tip
+  // Smart Tip (Renamed to Avviso based on user request)
   if (smartTipText) {
-    if (smartTipBadge) smartTipBadge.innerText = appLang === 'en' ? 'tip' : 'consiglio';
+    if (smartTipBadge) smartTipBadge.innerText = appLang === 'en' ? 'notice' : 'avviso';
     smartTipText.innerText = generateSmartTip(curr.temperature, curr.weathercode, maxRainProb, curr.windspeed);
   }
 
@@ -746,8 +750,10 @@ function applyWeatherDataToDOM(data, aqiData) {
         let pct = ((nowMs - prevSetMs) / (nextRiseMs - prevSetMs)) * 100;
         if (pct < 0) pct = 0;
         if (pct > 100) pct = 100;
-        progress.style.width = `${pct}%`;
-        iconDiv.style.left = `${pct}%`;
+        
+        const reversePct = 100 - pct;
+        progress.style.width = `${reversePct}%`;
+        iconDiv.style.left = `${reversePct}%`;
         iconDiv.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
       }
     }
