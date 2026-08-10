@@ -771,9 +771,9 @@ function applyWeatherDataToDOM(data, aqiData) {
     }
   }
 
-  // Smart Tip (Renamed to Avviso based on user request)
+  // Smart Tip
   if (smartTipText) {
-    if (smartTipBadge) smartTipBadge.innerText = appLang === 'en' ? 'notice' : 'avviso';
+    if (smartTipBadge) smartTipBadge.innerText = appLang === 'en' ? 'tip' : 'consiglio';
     smartTipText.innerText = generateSmartTip(curr.temperature, curr.weathercode, maxRainProb, curr.windspeed);
   }
 
