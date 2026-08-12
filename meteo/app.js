@@ -713,7 +713,7 @@ function applyWeatherDataToDOM(data, aqiData) {
     heroWind.innerHTML = `
       <div class="weather-hero-wind-left">
         <div class="weather-hero-wind-icon">
-          <svg style="transform: rotate(${curr.winddirection}deg);" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+          <svg style="transform: rotate(${curr.winddirection + 180}deg);" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
         </div>
         <div style="display:flex; flex-direction:column;">
           <span style="font-size:0.75rem; opacity:0.8; text-transform:uppercase;">${appLang === 'en' ? 'Wind' : 'Vento'} • ${windInfo.dir}</span>
