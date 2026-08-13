@@ -972,7 +972,7 @@ function getWindInfo(degrees, lang) {
 }
 
 function getWeatherCodeSvgInfo(code, isLarge = false) {
-  const size = isLarge ? 92 : 26;
+  const size = isLarge ? 76 : 26;
   const stroke = isLarge ? 1.6 : 1.8;
   const en = appLang === 'en';
 

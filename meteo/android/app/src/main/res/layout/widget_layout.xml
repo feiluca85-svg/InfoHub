@@ -5,8 +5,8 @@
     android:background="@android:color/transparent"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
-    android:paddingTop="12dp"
-    android:paddingBottom="12dp">
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
 
     <!-- LEFT SIDE: Weather (Icon + Temp + Condition) -->
     <LinearLayout
@@ -20,8 +20,8 @@
 
         <ImageView
             android:id="@+id/widget_main_icon"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:layout_marginEnd="10dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_sun" />
@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:text="--°"
                 android:textColor="#ffffff"
-                android:textSize="48sp"
+                android:textSize="58sp"
                 android:includeFontPadding="false"
                 android:fontFamily="sans-serif-light"
                 android:shadowColor="#80000000"
@@ -52,7 +52,7 @@
                 android:layout_marginTop="2dp"
                 android:text="..."
                 android:textColor="#ffffff"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:includeFontPadding="false"
                 android:fontFamily="sans-serif"
                 android:shadowColor="#80000000"
@@ -77,7 +77,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#ffffff"
-            android:textSize="48sp"
+            android:textSize="58sp"
             android:includeFontPadding="false"
             android:fontFamily="sans-serif-light"
             android:format12Hour="h:mm"
@@ -94,7 +94,7 @@
             android:layout_marginTop="2dp"
             android:text="--"
             android:textColor="#ffffff"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:includeFontPadding="false"
             android:fontFamily="sans-serif-medium"
             android:shadowColor="#80000000"
@@ -109,7 +109,7 @@
             android:layout_marginTop="1dp"
             android:text="--"
             android:textColor="#dddddd"
-            android:textSize="14sp"
+            android:textSize="15sp"
             android:includeFontPadding="false"
             android:fontFamily="sans-serif"
             android:shadowColor="#80000000"
