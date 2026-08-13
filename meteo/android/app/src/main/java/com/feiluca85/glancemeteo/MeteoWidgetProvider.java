@@ -29,10 +29,6 @@ public class MeteoWidgetProvider extends AppWidgetProvider {
     static void updateAppWidget(final Context context, final AppWidgetManager appWidgetManager, final int appWidgetId) {
         final RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
         
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, d MMMM", Locale.getDefault());
-        String currentDate = sdf.format(new Date());
-        views.setTextViewText(R.id.widget_date, currentDate);
-        
         // Push state
         appWidgetManager.updateAppWidget(appWidgetId, views);
 
