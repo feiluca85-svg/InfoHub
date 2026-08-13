@@ -93,6 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
   renderCachedWeather();
   setupEventListeners();
 
+  // Sync active city to native widget storage right away
+  syncCityToNativeWidget(activeCity);
+
   // 2. Fast background update for fresh weather data
   loadAllWeatherData();
 
@@ -101,11 +104,27 @@ document.addEventListener('DOMContentLoaded', () => {
     window.Capacitor.Plugins.StatusBar.setBackgroundColor({ color: '#000000' });
     window.Capacitor.Plugins.StatusBar.setStyle({ style: 'DARK' });
   }
+
+  // Live real-time ticker for sun/moon position
+  setInterval(() => {
+    if (window._lastWeatherData) {
+      updateAstroTimeline(window._lastWeatherData);
+    }
+  }, 10000);
 });
 
 
 function saveMeteoCities() {
   localStorage.setItem('GLANCE_METEO_CITIES', JSON.stringify(METEO_CITIES));
+}
+
+function syncCityToNativeWidget(city) {
+  if (!city) return;
+  if (window.Capacitor && window.Capacitor.Plugins.Preferences) {
+    window.Capacitor.Plugins.Preferences.set({ key: 'ACTIVE_CITY_LAT', value: city.lat.toString() });
+    window.Capacitor.Plugins.Preferences.set({ key: 'ACTIVE_CITY_LON', value: city.lon.toString() });
+    window.Capacitor.Plugins.Preferences.set({ key: 'ACTIVE_CITY_NAME', value: city.name });
+  }
 }
 
 function saveActiveCityState(city) {
@@ -116,11 +135,7 @@ function saveActiveCityState(city) {
   }
   
   // Sync with Capacitor Preferences for Native Widget
-  if (window.Capacitor && window.Capacitor.Plugins.Preferences) {
-    window.Capacitor.Plugins.Preferences.set({ key: 'ACTIVE_CITY_LAT', value: city.lat.toString() });
-    window.Capacitor.Plugins.Preferences.set({ key: 'ACTIVE_CITY_LON', value: city.lon.toString() });
-    window.Capacitor.Plugins.Preferences.set({ key: 'ACTIVE_CITY_NAME', value: city.name });
-  }
+  syncCityToNativeWidget(city);
 }
 
 function setupEventListeners() {
@@ -791,64 +806,11 @@ function applyWeatherDataToDOM(data, aqiData) {
     smartTipText.innerText = generateSmartTip(curr.temperature, curr.weathercode, maxRainProb, curr.windspeed);
   }
 
+  // Save weather data globally for real-time live tickers
+  window._lastWeatherData = data;
+
   // Sunrise & Sunset Timeline
-  const astroLabelSunrise = document.querySelector('.astro-card .astro-label-small:nth-child(1)');
-  const astroLabelSunset = document.querySelector('.astro-card .astro-label-small:nth-child(2)');
-  if (astroLabelSunrise) astroLabelSunrise.innerHTML = (appLang === 'en' ? 'SUNRISE <br>' : 'ALBA <br>') + '<strong id="sunriseTime">--:--</strong>';
-  if (astroLabelSunset) astroLabelSunset.innerHTML = (appLang === 'en' ? 'SUNSET <br>' : 'TRAMONTO <br>') + '<strong id="sunsetTime">--:--</strong>';
-
-  const sunriseTimeEl = document.getElementById('sunriseTime');
-  const sunsetTimeEl = document.getElementById('sunsetTime');
-
-  if (sunriseTimeEl && sunsetTimeEl && data.daily.sunrise && data.daily.sunset) {
-    const sunriseTimeStr = data.daily.sunrise[0];
-    const sunsetTimeStr = data.daily.sunset[0];
-    
-    const sunriseVal = new Date(sunriseTimeStr).toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
-    const sunsetVal = new Date(sunsetTimeStr).toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
-    sunriseTimeEl.innerText = sunriseVal;
-    sunsetTimeEl.innerText = sunsetVal;
-    
-    // Timeline calculation
-    const nowMs = new Date(curr.time).getTime();
-    const riseMs = new Date(sunriseTimeStr).getTime();
-    const setMs = new Date(sunsetTimeStr).getTime();
-    const progress = document.getElementById('astroProgress');
-    const iconDiv = document.getElementById('astroIcon');
-    
-    if (progress && iconDiv) {
-      if (nowMs >= riseMs && nowMs <= setMs) {
-        // Daytime (Left to Right)
-        const pct = ((nowMs - riseMs) / (setMs - riseMs)) * 100;
-        progress.style.left = '0';
-        progress.style.right = 'auto';
-        progress.style.width = `${pct}%`;
-        iconDiv.style.left = `${pct}%`;
-        iconDiv.style.right = 'auto';
-        iconDiv.style.transform = 'translate(-50%, -50%)'; // Ensure icon centers correctly
-        iconDiv.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
-      } else {
-        // Nighttime (Right to Left)
-        let prevSetMs = setMs - 86400000;
-        let nextRiseMs = riseMs;
-        if (nowMs > setMs) {
-          prevSetMs = setMs;
-          nextRiseMs = riseMs + 86400000;
-        }
-        let pct = ((nowMs - prevSetMs) / (nextRiseMs - prevSetMs)) * 100;
-        if (pct < 0) pct = 0;
-        if (pct > 100) pct = 100;
-        
-        progress.style.left = 'auto';
-        progress.style.right = '0';
-        progress.style.width = `${pct}%`;
-        iconDiv.style.left = 'auto';
-        iconDiv.style.right = `${pct}%`;
-        iconDiv.style.transform = 'translate(50%, -50%)'; // Anchor adjust when right aligned
-        iconDiv.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
-      }
-    }
-  }
+  updateAstroTimeline(data);
 
   // Air Quality
   if (aqiLabel) aqiLabel.innerText = appLang === 'en' ? 'air quality' : "qualità dell'aria";
@@ -924,6 +886,74 @@ function applyWeatherDataToDOM(data, aqiData) {
       `;
     }
     forecastList.innerHTML = html;
+  }
+}
+
+function updateAstroTimeline(data) {
+  if (!data || !data.daily || !data.daily.sunrise || !data.daily.sunset) return;
+
+  const sunriseTimeStr = data.daily.sunrise[0];
+  const sunsetTimeStr = data.daily.sunset[0];
+
+  const astroLabelSunrise = document.querySelector('.astro-card .astro-label-small:nth-child(1)');
+  const astroLabelSunset = document.querySelector('.astro-card .astro-label-small:nth-child(2)');
+  if (astroLabelSunrise) astroLabelSunrise.innerHTML = (appLang === 'en' ? 'SUNRISE <br>' : 'ALBA <br>') + '<strong id="sunriseTime">--:--</strong>';
+  if (astroLabelSunset) astroLabelSunset.innerHTML = (appLang === 'en' ? 'SUNSET <br>' : 'TRAMONTO <br>') + '<strong id="sunsetTime">--:--</strong>';
+
+  const sunriseTimeEl = document.getElementById('sunriseTime');
+  const sunsetTimeEl = document.getElementById('sunsetTime');
+
+  if (sunriseTimeEl) {
+    sunriseTimeEl.innerText = new Date(sunriseTimeStr).toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
+  }
+  if (sunsetTimeEl) {
+    sunsetTimeEl.innerText = new Date(sunsetTimeStr).toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  const progress = document.getElementById('astroProgress');
+  const iconDiv = document.getElementById('astroIcon');
+  if (!progress || !iconDiv) return;
+
+  // Real-time device clock timestamp
+  const nowMs = Date.now();
+  const riseMs = new Date(sunriseTimeStr).getTime();
+  const setMs = new Date(sunsetTimeStr).getTime();
+
+  if (nowMs >= riseMs && nowMs < setMs) {
+    // Daytime (Left to Right) - Sun moving towards Sunset
+    const pct = Math.min(100, Math.max(0, ((nowMs - riseMs) / (setMs - riseMs)) * 100));
+    progress.style.left = '0';
+    progress.style.right = 'auto';
+    progress.style.width = `${pct}%`;
+    iconDiv.style.left = `${pct}%`;
+    iconDiv.style.right = 'auto';
+    iconDiv.style.transform = 'translate(-50%, -50%)';
+    iconDiv.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+  } else {
+    // Nighttime (Right to Left) - Moon moving from Sunset towards Sunrise
+    let prevSetMs = setMs;
+    let nextRiseMs = riseMs;
+    if (nowMs < riseMs) {
+      // Morning before sunrise
+      prevSetMs = setMs - 86400000;
+      nextRiseMs = riseMs;
+    } else {
+      // Evening after sunset
+      prevSetMs = setMs;
+      nextRiseMs = riseMs + 86400000;
+    }
+
+    const totalNightDuration = Math.max(1, nextRiseMs - prevSetMs);
+    const nightElapsed = Math.max(0, nowMs - prevSetMs);
+    const pct = Math.min(100, Math.max(0, (nightElapsed / totalNightDuration) * 100));
+
+    progress.style.left = 'auto';
+    progress.style.right = '0';
+    progress.style.width = `${pct}%`;
+    iconDiv.style.left = 'auto';
+    iconDiv.style.right = `${pct}%`;
+    iconDiv.style.transform = 'translate(50%, -50%)';
+    iconDiv.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
   }
 }
 
