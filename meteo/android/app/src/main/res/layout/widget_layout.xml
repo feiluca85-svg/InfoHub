@@ -4,34 +4,248 @@
     android:layout_height="match_parent"
     android:background="@android:color/transparent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="8dp">
+    android:padding="12dp">
 
-    <TextView
-        android:id="@+id/widget_weather"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#ffffff"
-        android:shadowColor="#80000000"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="3"
-        android:textSize="48sp"
-        android:fontFamily="sans-serif-light"
-        android:text="--°" />
+    <!-- Top Section -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        
+        <!-- Left Side: Emoji and Temp -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_main_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☀️"
+                android:textSize="64sp"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/widget_temp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--°"
+                android:textColor="#ffffff"
+                android:textSize="48sp"
+                android:fontFamily="sans-serif-light"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/widget_condition"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="..."
+                android:textColor="#ffffff"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+        </LinearLayout>
 
-    <TextView
-        android:id="@+id/widget_condition"
-        android:layout_width="wrap_content"
+        <!-- Right Side: Time, Date, City -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:gravity="end"
+            android:orientation="vertical">
+            <TextClock
+                android:id="@+id/widget_clock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:textSize="56sp"
+                android:fontFamily="sans-serif-light"
+                android:format12Hour="h:mm"
+                android:format24Hour="HH:mm"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/widget_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textColor="#ffffff"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-medium"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/widget_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Milano"
+                android:textColor="#dddddd"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <!-- Bottom Section (3 Days Forecast) -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textColor="#ffffff"
-        android:shadowColor="#80000000"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="3"
-        android:textSize="20sp"
-        android:fontFamily="sans-serif-medium"
-        android:text="..." />
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:layout_marginTop="16dp">
+        
+        <!-- Day 1 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_day1_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textColor="#ffffff"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/widget_day1_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:text="☁️"
+                android:textSize="24sp"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/widget_day1_temps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--/--°"
+                android:textColor="#dddddd"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+        </LinearLayout>
+
+        <!-- Day 2 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_day2_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textColor="#ffffff"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/widget_day2_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:text="☁️"
+                android:textSize="24sp"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/widget_day2_temps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--/--°"
+                android:textColor="#dddddd"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+        </LinearLayout>
+
+        <!-- Day 3 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_day3_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textColor="#ffffff"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/widget_day3_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:text="☁️"
+                android:textSize="24sp"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+            <TextView
+                android:id="@+id/widget_day3_temps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--/--°"
+                android:textColor="#dddddd"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>
