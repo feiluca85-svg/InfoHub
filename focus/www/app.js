@@ -52,6 +52,64 @@ const DEFAULT_REWARDS = [
   { id: 'rew_5', title: 'Cena Pizza / Sushi nel weekend', cost: 100, emoji: '🍕' }
 ];
 
+const DEFAULT_TASK_MEMORY = [
+  {
+    id: 'mem_1',
+    title: 'Completare report o documento di lavoro',
+    diff: 'medium',
+    category: 'work',
+    subtasks: [
+      { id: 'st_1', text: 'Aprire bozza e rileggere gli appunti (1 min)', done: false },
+      { id: 'st_2', text: 'Lavorare al testo per 20 minuti', done: false }
+    ],
+    count: 3,
+    lastUsed: Date.now() - 3600000
+  },
+  {
+    id: 'mem_2',
+    title: 'Sessione di Studio / Deep Work (25 min)',
+    diff: 'medium',
+    category: 'study',
+    subtasks: [
+      { id: 'st_1', text: 'Mettere il telefono in modalità silenziosa', done: false },
+      { id: 'st_2', text: 'Leggere o riassumere 1 capitolo', done: false }
+    ],
+    count: 5,
+    lastUsed: Date.now() - 7200000
+  },
+  {
+    id: 'mem_3',
+    title: 'Riordinare postazione / tavolo da lavoro (5 min)',
+    diff: 'easy',
+    category: 'home',
+    subtasks: [
+      { id: 'st_1', text: 'Liberare la scrivania da carte e oggetti', done: false }
+    ],
+    count: 4,
+    lastUsed: Date.now() - 14400000
+  },
+  {
+    id: 'mem_4',
+    title: 'Allenamento o sessione di stretching',
+    diff: 'easy',
+    category: 'health',
+    subtasks: [
+      { id: 'st_1', text: '10 min di riscaldamento o stretching', done: false }
+    ],
+    count: 2,
+    lastUsed: Date.now() - 28800000
+  },
+  {
+    id: 'mem_5',
+    title: 'Chiamata o email importante da inviare subito',
+    diff: 'easy',
+    category: 'work',
+    subtasks: [],
+    count: 2,
+    lastUsed: Date.now() - 43200000
+  }
+];
+
 // =============================================================================
 // 2. STATE STORAGE & INITIALIZATION
 // =============================================================================
@@ -104,6 +162,9 @@ let quests = [
 
 let rewards = [...DEFAULT_REWARDS];
 let claimedRewards = [];
+let taskMemory = [...DEFAULT_TASK_MEMORY];
+let currentMemoryFilter = 'all';
+let currentMemorySearch = '';
 
 // LocalStorage loaders
 function loadSavedData() {
@@ -119,6 +180,11 @@ function loadSavedData() {
 
     const savedClaimed = localStorage.getItem('focusquest_claimed');
     if (savedClaimed) claimedRewards = JSON.parse(savedClaimed);
+
+    const savedMemory = localStorage.getItem('focusquest_task_memory');
+    if (savedMemory) taskMemory = JSON.parse(savedMemory);
+
+    indexExistingQuestsToMemory();
   } catch (e) {
     console.error('Error reading localStorage:', e);
   }
@@ -130,6 +196,7 @@ function saveData() {
     localStorage.setItem('focusquest_quests', JSON.stringify(quests));
     localStorage.setItem('focusquest_rewards', JSON.stringify(rewards));
     localStorage.setItem('focusquest_claimed', JSON.stringify(claimedRewards));
+    localStorage.setItem('focusquest_task_memory', JSON.stringify(taskMemory));
   } catch (e) {
     console.error('Error saving to localStorage:', e);
   }
@@ -712,6 +779,9 @@ function completeQuest(questId, clickX = window.innerWidth / 2, clickY = window.
     if (quest.isFrog) userState.stats.frogsEaten += 1;
     if (quest.diff === 'boss') userState.stats.bossesDefeated += 1;
 
+    // Save to permanent Activity Memory so it can be re-selected easily anytime
+    saveToTaskMemory(quest);
+
     SoundFX.complete();
     SoundFX.coin();
     triggerConfetti();
@@ -1080,6 +1150,265 @@ function setupSOSWorkflow() {
 }
 
 // =============================================================================
+// 8.5 ACTIVITY MEMORY ENGINE (Ripeti & Scegli Attività Già Svolte)
+// =============================================================================
+
+function indexExistingQuestsToMemory() {
+  quests.forEach(q => {
+    if (q.title) {
+      saveToTaskMemory(q, false);
+    }
+  });
+}
+
+function saveToTaskMemory(quest, autoSave = true) {
+  if (!quest || !quest.title) return;
+  const cleanTitle = quest.title.trim();
+  if (!cleanTitle) return;
+
+  const existingIdx = taskMemory.findIndex(m => m.title.trim().toLowerCase() === cleanTitle.toLowerCase());
+  
+  const subtasksCopy = (quest.subtasks || []).map((st, i) => ({
+    id: 'st_mem_' + i,
+    text: typeof st === 'string' ? st : (st.text || ''),
+    done: false
+  }));
+
+  if (existingIdx !== -1) {
+    taskMemory[existingIdx].count = (taskMemory[existingIdx].count || 1) + 1;
+    taskMemory[existingIdx].lastUsed = Date.now();
+    taskMemory[existingIdx].diff = quest.diff || taskMemory[existingIdx].diff || 'medium';
+    taskMemory[existingIdx].category = quest.category || taskMemory[existingIdx].category || 'work';
+    if (subtasksCopy.length > 0) {
+      taskMemory[existingIdx].subtasks = subtasksCopy;
+    }
+  } else {
+    taskMemory.unshift({
+      id: 'mem_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+      title: cleanTitle,
+      diff: quest.diff || 'medium',
+      category: quest.category || 'work',
+      subtasks: subtasksCopy,
+      count: 1,
+      lastUsed: Date.now()
+    });
+  }
+
+  if (autoSave) {
+    saveData();
+    renderTaskMemoryUI();
+  }
+}
+
+function deleteMemoryItem(memId) {
+  taskMemory = taskMemory.filter(m => m.id !== memId);
+  SoundFX.click();
+  saveData();
+  renderTaskMemoryUI();
+  showToast('Attività rimossa dalla memoria', '🗑️');
+}
+
+function readdQuestFromMemory(memoryItem, customTitle = null) {
+  const newQuest = {
+    id: 'q_' + Date.now(),
+    title: customTitle || memoryItem.title,
+    diff: memoryItem.diff || 'medium',
+    category: memoryItem.category || 'work',
+    isFrog: false,
+    subtasks: (memoryItem.subtasks || []).map((st, idx) => ({
+      id: 'st_' + idx + '_' + Date.now(),
+      text: typeof st === 'string' ? st : st.text,
+      done: false
+    })),
+    completed: false,
+    createdAt: Date.now()
+  };
+
+  quests.unshift(newQuest);
+  saveToTaskMemory(newQuest);
+  saveData();
+  renderQuests();
+  renderHUD();
+  renderTaskMemoryUI();
+
+  // Close memory modal if open
+  const memModal = document.getElementById('memoryModal');
+  if (memModal) memModal.classList.add('hidden');
+
+  SoundFX.complete();
+  triggerConfetti();
+  showToast(`Quest "${newQuest.title}" riattivata dalla memoria!`, '🔄');
+}
+
+function fillTaskModalFromMemory(memoryItem) {
+  if (!memoryItem) return;
+  
+  const titleInput = document.getElementById('modalTaskInput');
+  titleInput.value = memoryItem.title;
+
+  // Diff
+  const modalDiffBtns = document.querySelectorAll('#modalDiffSelector .diff-btn');
+  modalDiffBtns.forEach(b => {
+    b.classList.toggle('active', b.dataset.diff === memoryItem.diff);
+  });
+
+  // Category
+  const catSelect = document.getElementById('modalTaskCategory');
+  if (catSelect && memoryItem.category) {
+    catSelect.value = memoryItem.category;
+  }
+
+  // Subtasks
+  const subContainer = document.getElementById('modalSubtaskContainer');
+  subContainer.innerHTML = '';
+  if (memoryItem.subtasks && memoryItem.subtasks.length > 0) {
+    memoryItem.subtasks.forEach(st => {
+      const text = typeof st === 'string' ? st : st.text;
+      if (text) {
+        const row = document.createElement('div');
+        row.className = 'subtask-input-row';
+        row.innerHTML = `
+          <input type="text" value="${escapeHTML(text)}" placeholder="Micro-step..." class="subtask-field">
+          <button type="button" class="subtask-remove-btn">&times;</button>
+        `;
+        row.querySelector('.subtask-remove-btn').onclick = () => row.remove();
+        subContainer.appendChild(row);
+      }
+    });
+  }
+
+  showToast('Attività caricata dalla memoria!', '✨');
+}
+
+function renderTaskMemoryUI() {
+  // 1. Update datalist
+  const datalist = document.getElementById('taskDatalist');
+  if (datalist) {
+    datalist.innerHTML = '';
+    taskMemory.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.title;
+      datalist.appendChild(opt);
+    });
+  }
+
+  // 2. Update Quick Ribbon chips
+  const quickChipsContainer = document.getElementById('quickMemoryChipsContainer');
+  const quickCount = document.getElementById('quickMemoryCount');
+  if (quickCount) quickCount.textContent = taskMemory.length;
+
+  if (quickChipsContainer) {
+    quickChipsContainer.innerHTML = '';
+    const sorted = [...taskMemory].sort((a, b) => (b.count || 1) - (a.count || 1)).slice(0, 7);
+    
+    if (sorted.length === 0) {
+      quickChipsContainer.innerHTML = '<span style="color: var(--text-faint); font-size: 11px;">Le tue attività completate appariranno qui</span>';
+    } else {
+      sorted.forEach(m => {
+        const cat = CATEGORIES[m.category] || CATEGORIES.work;
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'quick-memory-chip';
+        chip.title = `Svolta ${m.count || 1} volte. Clicca per riaggiungere istantaneamente!`;
+        chip.innerHTML = `
+          <span>${cat.icon}</span>
+          <span>${escapeHTML(m.title)}</span>
+          <span class="chip-count-tag">x${m.count || 1}</span>
+        `;
+        chip.addEventListener('click', () => readdQuestFromMemory(m));
+        quickChipsContainer.appendChild(chip);
+      });
+    }
+  }
+
+  // 3. Update Modal Select Dropdown
+  const modalMemorySelect = document.getElementById('modalMemorySelect');
+  const modalFrequentChips = document.getElementById('modalFrequentChips');
+
+  if (modalMemorySelect) {
+    modalMemorySelect.innerHTML = '<option value="">-- Seleziona un\'attività in memoria per compilarla --</option>';
+    taskMemory.forEach(m => {
+      const cat = CATEGORIES[m.category] || CATEGORIES.work;
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `${cat.icon} ${m.title} (${m.count || 1}x)`;
+      modalMemorySelect.appendChild(opt);
+    });
+  }
+
+  if (modalFrequentChips) {
+    modalFrequentChips.innerHTML = '';
+    const topMemories = [...taskMemory].sort((a, b) => (b.count || 1) - (a.count || 1)).slice(0, 4);
+    topMemories.forEach(m => {
+      const cat = CATEGORIES[m.category] || CATEGORIES.work;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'frequent-chip-btn';
+      btn.textContent = `${cat.icon} ${m.title.length > 22 ? m.title.substring(0, 20) + '...' : m.title}`;
+      btn.addEventListener('click', () => {
+        if (modalMemorySelect) modalMemorySelect.value = m.id;
+        fillTaskModalFromMemory(m);
+      });
+      modalFrequentChips.appendChild(btn);
+    });
+  }
+
+  // 4. Update Memory Library Modal
+  const modalTotalBadge = document.getElementById('modalMemoryTotalBadge');
+  if (modalTotalBadge) modalTotalBadge.textContent = `${taskMemory.length} salvate`;
+
+  const memoryCardsList = document.getElementById('memoryCardsList');
+  if (memoryCardsList) {
+    memoryCardsList.innerHTML = '';
+    
+    let filtered = taskMemory.filter(m => {
+      const matchCat = currentMemoryFilter === 'all' || m.category === currentMemoryFilter;
+      const matchSearch = !currentMemorySearch || m.title.toLowerCase().includes(currentMemorySearch.toLowerCase());
+      return matchCat && matchSearch;
+    });
+
+    if (filtered.length === 0) {
+      memoryCardsList.innerHTML = '<p style="color: var(--text-faint); font-size: 13px; text-align: center; padding: 20px 0;">Nessuna attività in memoria trovata.</p>';
+    } else {
+      filtered.forEach(m => {
+        const cat = CATEGORIES[m.category] || CATEGORIES.work;
+        const diff = DIFFICULTY_MAP[m.diff] || DIFFICULTY_MAP.medium;
+        const card = document.createElement('div');
+        card.className = 'memory-item-card';
+
+        const subtaskCount = m.subtasks ? m.subtasks.length : 0;
+
+        card.innerHTML = `
+          <div class="memory-card-info">
+            <div class="memory-card-title">${escapeHTML(m.title)}</div>
+            <div class="memory-card-meta">
+              <span class="category-tag">${cat.icon} ${cat.name}</span>
+              <span class="diff-tag ${m.diff}">${diff.tag}</span>
+              <span class="chip-count-tag" style="color: #fbbf24;">Svolta ${m.count || 1} volte</span>
+              ${subtaskCount > 0 ? `<span class="chip-count-tag">✂️ ${subtaskCount} micro-step</span>` : ''}
+            </div>
+          </div>
+          <div class="memory-actions">
+            <button class="memory-use-btn" title="Aggiungi come nuova quest">
+              <span>➕ Svolgi di nuovo</span>
+            </button>
+            <button class="memory-delete-btn" title="Elimina dalla memoria">&times;</button>
+          </div>
+        `;
+
+        card.querySelector('.memory-use-btn').addEventListener('click', () => readdQuestFromMemory(m));
+        card.querySelector('.memory-delete-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteMemoryItem(m.id);
+        });
+
+        memoryCardsList.appendChild(card);
+      });
+    }
+  }
+}
+
+// =============================================================================
 // 9. MODALS & FORMS HANDLING
 // =============================================================================
 
@@ -1087,6 +1416,8 @@ function openTaskModal(isFrogDefault = false) {
   document.getElementById('modalTaskInput').value = '';
   document.getElementById('modalFrogCheckbox').checked = isFrogDefault;
   document.getElementById('modalSubtaskContainer').innerHTML = '';
+  const modalMemorySelect = document.getElementById('modalMemorySelect');
+  if (modalMemorySelect) modalMemorySelect.value = '';
   document.getElementById('taskModal').classList.remove('hidden');
 }
 
@@ -1096,27 +1427,88 @@ function openRewardModal() {
   document.getElementById('rewardModal').classList.remove('hidden');
 }
 
+function openMemoryModal() {
+  currentMemorySearch = '';
+  const searchInput = document.getElementById('memorySearchInput');
+  if (searchInput) searchInput.value = '';
+  renderTaskMemoryUI();
+  document.getElementById('memoryModal').classList.remove('hidden');
+}
+
 function setupModals() {
-  // Task Modal
+  // Memory Modal Buttons
+  const openMemBtn = document.getElementById('openMemoryModalBtn');
+  if (openMemBtn) openMemBtn.addEventListener('click', openMemoryModal);
+
+  const closeMemBtn = document.getElementById('closeMemoryModalBtn');
+  if (closeMemBtn) closeMemBtn.addEventListener('click', () => {
+    document.getElementById('memoryModal').classList.add('hidden');
+  });
+
+  const closeMemFooterBtn = document.getElementById('closeMemoryModalFooterBtn');
+  if (closeMemFooterBtn) closeMemFooterBtn.addEventListener('click', () => {
+    document.getElementById('memoryModal').classList.add('hidden');
+  });
+
+  // Memory Search Input
+  const memorySearchInput = document.getElementById('memorySearchInput');
+  if (memorySearchInput) {
+    memorySearchInput.addEventListener('input', (e) => {
+      currentMemorySearch = e.target.value.trim();
+      renderTaskMemoryUI();
+    });
+  }
+
+  // Memory Category Filter
+  const memCatFilters = document.querySelectorAll('#memoryCategoryFilter .filter-chip');
+  memCatFilters.forEach(chip => {
+    chip.addEventListener('click', () => {
+      memCatFilters.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      currentMemoryFilter = chip.dataset.cat;
+      SoundFX.click();
+      renderTaskMemoryUI();
+    });
+  });
+
+  // Modal Memory Dropdown Selector (Autofill)
+  const modalMemorySelect = document.getElementById('modalMemorySelect');
+  if (modalMemorySelect) {
+    modalMemorySelect.addEventListener('change', (e) => {
+      const selectedId = e.target.value;
+      if (selectedId) {
+        const item = taskMemory.find(m => m.id === selectedId);
+        if (item) fillTaskModalFromMemory(item);
+      }
+    });
+  }
+
+  // Task Modal Open / Quick Add Button
   document.getElementById('openNewTaskModalBtn').addEventListener('click', () => {
     const quickInput = document.getElementById('quickTaskInput');
     const title = quickInput.value.trim();
     if (title) {
-      // Quick add directly
-      const activeDiffBtn = document.querySelector('#quickDifficultySelector .preset-chip.active');
-      const diff = activeDiffBtn ? activeDiffBtn.dataset.diff : 'easy';
+      // Check if matches an existing memory item to reuse its subtasks and diff if available
+      const memMatch = taskMemory.find(m => m.title.trim().toLowerCase() === title.toLowerCase());
       
+      const activeDiffBtn = document.querySelector('#quickDifficultySelector .preset-chip.active');
+      const diff = memMatch ? memMatch.diff : (activeDiffBtn ? activeDiffBtn.dataset.diff : 'easy');
+      const category = memMatch ? memMatch.category : 'work';
+      const subtasks = memMatch ? memMatch.subtasks.map((st, i) => ({ id: 'st_' + i + '_' + Date.now(), text: typeof st === 'string' ? st : st.text, done: false })) : [];
+
       const newQuest = {
         id: 'q_' + Date.now(),
         title: title,
         diff: diff,
-        category: 'work',
+        category: category,
         isFrog: false,
-        subtasks: [],
+        subtasks: subtasks,
         completed: false,
         createdAt: Date.now()
       };
+
       quests.unshift(newQuest);
+      saveToTaskMemory(newQuest);
       quickInput.value = '';
       SoundFX.click();
       saveData();
@@ -1124,9 +1516,20 @@ function setupModals() {
       renderHUD();
       showToast('Quest aggiunta alla tua lista!', '⚔️');
     } else {
+      // If quick input is empty, open task modal (or memory modal if they prefer)
       openTaskModal();
     }
   });
+
+  // Pressing Enter in Quick Task Input adds immediately
+  const quickTaskInput = document.getElementById('quickTaskInput');
+  if (quickTaskInput) {
+    quickTaskInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('openNewTaskModalBtn').click();
+      }
+    });
+  }
 
   document.getElementById('closeTaskModalBtn').addEventListener('click', () => {
     document.getElementById('taskModal').classList.add('hidden');
@@ -1190,11 +1593,14 @@ function setupModals() {
     };
 
     quests.unshift(newQuest);
+    saveToTaskMemory(newQuest);
+
     document.getElementById('taskModal').classList.add('hidden');
     SoundFX.complete();
     saveData();
     renderQuests();
     renderHUD();
+    renderTaskMemoryUI();
     showToast('Nuova Quest creata con successo!', '⚔️');
   });
 
@@ -1367,6 +1773,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial Renders
   renderHUD();
   renderQuests();
+  renderTaskMemoryUI();
   updateTimerDisplay();
 
   // Register PWA Service Worker

@@ -139,17 +139,30 @@
           <button id="frogActionBtn" class="frog-action-btn" title="Azione Rana">Imposta</button>
         </div>
 
-        <!-- Quick Add Section -->
+        <!-- Quick Add Section with Activity Memory Support -->
         <div class="quick-add-card">
           <div class="quick-input-row">
-            <input type="text" id="quickTaskInput" placeholder="Aggiungi una nuova attività o sfida..." autocomplete="off">
-            <button id="openNewTaskModalBtn" class="btn-primary add-task-btn" title="Crea nuova quest">
+            <input type="text" id="quickTaskInput" list="taskDatalist" placeholder="Aggiungi o scegli un'attività..." autocomplete="off">
+            <datalist id="taskDatalist"></datalist>
+            <button id="openMemoryModalBtn" class="btn-secondary memory-quick-btn" title="Scegli da attività in memoria">
+              <span>📜 Memoria</span>
+              <span class="memory-badge-count" id="quickMemoryCount">0</span>
+            </button>
+            <button id="openNewTaskModalBtn" class="btn-primary add-task-btn" title="Crea nuova quest o apri opzioni">
               <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
               <span>Aggiungi</span>
             </button>
+          </div>
+
+          <!-- Quick Memory Chips Bar (Recent & Frequent Completed Tasks) -->
+          <div class="quick-memory-ribbon" id="quickMemoryRibbon">
+            <span class="memory-ribbon-label">⚡ Ripeti rapido:</span>
+            <div class="quick-memory-chips-container" id="quickMemoryChipsContainer">
+              <!-- Dynamically populated chips of past tasks -->
+            </div>
           </div>
 
           <!-- Difficulty Preset Selector -->
@@ -431,9 +444,23 @@
         </div>
 
         <div class="modal-body">
+          <!-- Memory / History Quick Selection -->
+          <div class="form-group memory-picker-box">
+            <label for="modalMemorySelect">
+              <span class="memory-lbl-icon">🔄</span>
+              <span>Scegli da attività già svolte / in memoria</span>
+            </label>
+            <select id="modalMemorySelect" class="metro-select memory-dropdown">
+              <option value="">-- Seleziona un'attività passata per compilarla --</option>
+            </select>
+            <div id="modalFrequentChips" class="modal-frequent-chips">
+              <!-- Auto-populated frequent chips -->
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="modalTaskInput">Nome dell'Attività *</label>
-            <input type="text" id="modalTaskInput" placeholder="Es. Finire il report per il cliente..." autocomplete="off">
+            <input type="text" id="modalTaskInput" list="taskDatalist" placeholder="Es. Finire il report per il cliente..." autocomplete="off">
           </div>
 
           <div class="form-group">
@@ -547,6 +574,44 @@
           <strong>+50 Monete d'Oro 🪙</strong>
         </div>
         <button id="closeLevelUpModalBtn" class="btn-primary full-width-btn">Avanti Eroe! ⚔️</button>
+      </div>
+    </div>
+
+    <!-- Memory Library Modal -->
+    <div id="memoryModal" class="modal-overlay hidden">
+      <div class="modal-card memory-modal-card">
+        <div class="modal-header">
+          <div class="modal-title-with-badge">
+            <h3>Memoria Attività</h3>
+            <span class="memory-counter-badge" id="modalMemoryTotalBadge">0 salvate</span>
+          </div>
+          <button id="closeMemoryModalBtn" class="modal-close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p class="modal-lead-text">Seleziona un'attività già svolta per riattivarla istantaneamente con un solo tocco:</p>
+          
+          <div class="memory-search-bar">
+            <input type="text" id="memorySearchInput" placeholder="Cerca nelle attività passate..." autocomplete="off">
+          </div>
+
+          <div class="memory-category-filter" id="memoryCategoryFilter">
+            <button class="filter-chip active" data-cat="all">Tutte</button>
+            <button class="filter-chip" data-cat="work">💼 Lavoro</button>
+            <button class="filter-chip" data-cat="study">📚 Studio</button>
+            <button class="filter-chip" data-cat="home">🏠 Casa</button>
+            <button class="filter-chip" data-cat="health">🏃 Salute</button>
+            <button class="filter-chip" data-cat="mind">🧘 Crescita</button>
+          </div>
+
+          <div id="memoryCardsList" class="memory-cards-list">
+            <!-- Dynamic list of remembered tasks -->
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="closeMemoryModalFooterBtn" class="btn-secondary">Chiudi</button>
+        </div>
       </div>
     </div>
 
