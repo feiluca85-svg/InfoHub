@@ -95,7 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 2. Fast background update for fresh weather data
   loadAllWeatherData();
+
+  // 3. Force Status Bar Color in Native App
+  if (window.Capacitor && window.Capacitor.Plugins.StatusBar) {
+    window.Capacitor.Plugins.StatusBar.setBackgroundColor({ color: '#000000' });
+    window.Capacitor.Plugins.StatusBar.setStyle({ style: 'DARK' });
+  }
 });
+
 
 function saveMeteoCities() {
   localStorage.setItem('GLANCE_METEO_CITIES', JSON.stringify(METEO_CITIES));
