@@ -1,54 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/transparent"
-    android:padding="16dp">
-
-    <TextClock
-        android:id="@+id/widget_clock"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:textColor="#ffffff"
-        android:shadowColor="#80000000"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="3"
-        android:textSize="56sp"
-        android:fontFamily="sans-serif-light"
-        android:format12Hour="h:mm"
-        android:format24Hour="HH:mm" />
-
-    <TextView
-        android:id="@+id/widget_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/widget_clock"
-        android:layout_alignParentStart="true"
-        android:textColor="#ffffff"
-        android:shadowColor="#80000000"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="3"
-        android:textSize="14sp"
-        android:fontFamily="sans-serif-medium"
-        android:text="Aggiornamento..." />
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="8dp">
 
     <TextView
         android:id="@+id/widget_weather"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
         android:textColor="#ffffff"
         android:shadowColor="#80000000"
         android:shadowDx="1"
         android:shadowDy="1"
         android:shadowRadius="3"
-        android:textSize="24sp"
+        android:textSize="48sp"
         android:fontFamily="sans-serif-light"
         android:text="--°" />
 
-</RelativeLayout>
+    <TextView
+        android:id="@+id/widget_condition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#ffffff"
+        android:shadowColor="#80000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="3"
+        android:textSize="20sp"
+        android:fontFamily="sans-serif-medium"
+        android:text="..." />
+
+</LinearLayout>
