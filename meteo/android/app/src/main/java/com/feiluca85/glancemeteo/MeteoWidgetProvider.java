@@ -92,30 +92,10 @@ public class MeteoWidgetProvider extends AppWidgetProvider {
                 double temp = current.getDouble("temperature");
                 int code = current.getInt("weathercode");
                 
-                JSONObject daily = json.getJSONObject("daily");
-                JSONArray dailyCodes = daily.getJSONArray("weathercode");
-                JSONArray dailyMax = daily.getJSONArray("temperature_2m_max");
-                JSONArray dailyMin = daily.getJSONArray("temperature_2m_min");
-                
                 // Current
                 views.setTextViewText(R.id.widget_temp, Math.round(temp) + "°");
                 views.setTextViewText(R.id.widget_condition, getTextForCode(code));
                 views.setImageViewResource(R.id.widget_main_icon, getDrawableForCode(code));
-                
-                // Day 1 (Tomorrow)
-                views.setTextViewText(R.id.widget_day1_name, getDayName(1));
-                views.setImageViewResource(R.id.widget_day1_icon, getDrawableForCode(dailyCodes.getInt(1)));
-                views.setTextViewText(R.id.widget_day1_temps, Math.round(dailyMin.getDouble(1)) + "/" + Math.round(dailyMax.getDouble(1)) + "°");
-
-                // Day 2
-                views.setTextViewText(R.id.widget_day2_name, getDayName(2));
-                views.setImageViewResource(R.id.widget_day2_icon, getDrawableForCode(dailyCodes.getInt(2)));
-                views.setTextViewText(R.id.widget_day2_temps, Math.round(dailyMin.getDouble(2)) + "/" + Math.round(dailyMax.getDouble(2)) + "°");
-
-                // Day 3
-                views.setTextViewText(R.id.widget_day3_name, getDayName(3));
-                views.setImageViewResource(R.id.widget_day3_icon, getDrawableForCode(dailyCodes.getInt(3)));
-                views.setTextViewText(R.id.widget_day3_temps, Math.round(dailyMin.getDouble(3)) + "/" + Math.round(dailyMax.getDouble(3)) + "°");
                 
                 appWidgetManager.updateAppWidget(appWidgetId, views);
 
