@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Glance Meteo</string>
-    <string name="title_activity_main">Glance Meteo</string>
+    <string name="app_name">Meteo</string>
+    <string name="title_activity_main">Meteo</string>
     <string name="package_name">com.feiluca85.glancemeteo</string>
     <string name="custom_url_scheme">com.feiluca85.glancemeteo</string>
 </resources>
