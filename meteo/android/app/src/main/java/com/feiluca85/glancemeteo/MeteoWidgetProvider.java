@@ -125,16 +125,20 @@ public class MeteoWidgetProvider extends AppWidgetProvider {
         });
     }
 
-    private static int getDrawableForCode(int code) {
-        if (code >= 0 && code <= 1) return R.drawable.ic_sun;
-        if (code == 2) return R.drawable.ic_partly_cloudy;
+    private static int getDrawableForCode(int code, int isDay) {
+        if (code >= 0 && code <= 1) {
+            return (isDay == 1) ? R.drawable.ic_sun : R.drawable.ic_moon;
+        }
+        if (code == 2) {
+            return (isDay == 1) ? R.drawable.ic_partly_cloudy : R.drawable.ic_cloud;
+        }
         if (code == 3) return R.drawable.ic_cloud;
         if (code >= 45 && code <= 48) return R.drawable.ic_fog;
         if (code >= 51 && code <= 67) return R.drawable.ic_rain;
         if (code >= 71 && code <= 77) return R.drawable.ic_snow;
         if (code >= 80 && code <= 82) return R.drawable.ic_rain;
         if (code >= 95) return R.drawable.ic_storm;
-        return R.drawable.ic_cloud;
+        return (isDay == 1) ? R.drawable.ic_sun : R.drawable.ic_moon;
     }
 
     private static String getTextForCode(int code) {
@@ -206,11 +210,12 @@ public class MeteoWidgetProvider extends AppWidgetProvider {
                 JSONObject current = json.getJSONObject("current_weather");
                 double temp = current.getDouble("temperature");
                 int code = current.getInt("weathercode");
+                int isDay = current.optInt("is_day", 1);
 
                 // Update widget texts
                 views.setTextViewText(R.id.widget_temp, Math.round(temp) + "°");
                 views.setTextViewText(R.id.widget_condition, getTextForCode(code));
-                views.setImageViewResource(R.id.widget_main_icon, getDrawableForCode(code));
+                views.setImageViewResource(R.id.widget_main_icon, getDrawableForCode(code, isDay));
                 views.setTextViewText(R.id.widget_city, cityName);
 
                 appWidgetManager.updateAppWidget(appWidgetId, views);

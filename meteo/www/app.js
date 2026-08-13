@@ -589,7 +589,7 @@ async function loadAllWeatherData() {
 }
 
 async function fetchWeatherData(lat, lon) {
-  let url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,dewpoint_2m,weathercode,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
+  let url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,dewpoint_2m,weathercode,precipitation_probability,is_day&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max&timezone=auto`;
   if (appUnit === 'imperial') {
     url += '&temperature_unit=fahrenheit&precipitation_unit=inch';
   }
@@ -632,7 +632,14 @@ function applyWeatherDataToDOM(data, aqiData) {
   if (!heroTemp || !data || !data.current_weather) return;
 
   const curr = data.current_weather;
-  const info = getWeatherCodeSvgInfo(curr.weathercode, true);
+  let isCurrentDay = curr.is_day === 1;
+  if (data.daily && data.daily.sunrise && data.daily.sunset) {
+    const nowMs = Date.now();
+    const riseMs = new Date(data.daily.sunrise[0]).getTime();
+    const setMs = new Date(data.daily.sunset[0]).getTime();
+    isCurrentDay = (nowMs >= riseMs && nowMs < setMs);
+  }
+  const info = getWeatherCodeSvgInfo(curr.weathercode, true, isCurrentDay);
   const maxT = Math.round(data.daily.temperature_2m_max[0]);
   const minT = Math.round(data.daily.temperature_2m_min[0]);
   const maxRainProb = data.daily.precipitation_probability_max ? data.daily.precipitation_probability_max[0] : 0;
@@ -843,7 +850,20 @@ function applyWeatherDataToDOM(data, aqiData) {
     for (let i = startIndex; i < Math.min(startIndex + 24, data.hourly.time.length); i++) {
       const timeObj = new Date(data.hourly.time[i]);
       const timeLabel = timeObj.toLocaleTimeString(appLang === 'en' ? 'en-US' : 'it-IT', { hour: '2-digit', minute: '2-digit' });
-      const hCode = getWeatherCodeSvgInfo(data.hourly.weathercode[i], false);
+      
+      let isHourDay = true;
+      if (data.hourly.is_day && data.hourly.is_day[i] !== undefined) {
+        isHourDay = (data.hourly.is_day[i] === 1);
+      } else if (data.daily && data.daily.sunrise && data.daily.sunset) {
+        const hTimeMs = timeObj.getTime();
+        const dStr = data.hourly.time[i].slice(0, 10);
+        const dayIdx = Math.max(0, data.daily.time ? data.daily.time.indexOf(dStr) : 0);
+        const riseMs = new Date(data.daily.sunrise[dayIdx] || data.daily.sunrise[0]).getTime();
+        const setMs = new Date(data.daily.sunset[dayIdx] || data.daily.sunset[0]).getTime();
+        isHourDay = (hTimeMs >= riseMs && hTimeMs < setMs);
+      }
+
+      const hCode = getWeatherCodeSvgInfo(data.hourly.weathercode[i], false, isHourDay);
       const hTemp = Math.round(data.hourly.temperature_2m[i]);
       const hRain = data.hourly.precipitation_probability ? data.hourly.precipitation_probability[i] : 0;
 
@@ -1001,21 +1021,30 @@ function getWindInfo(degrees, lang) {
   return { name: windName, dir: windDir };
 }
 
-function getWeatherCodeSvgInfo(code, isLarge = false) {
+function getWeatherCodeSvgInfo(code, isLarge = false, isDay = true) {
   const size = isLarge ? 76 : 26;
   const stroke = isLarge ? 1.6 : 1.8;
   const en = appLang === 'en';
 
   if (code === 0) {
     return {
-      description: en ? 'Clear' : 'Sereno',
-      svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`
+      description: en ? (isDay ? 'Clear' : 'Clear Night') : (isDay ? 'Sereno' : 'Sereno'),
+      svg: isDay
+        ? `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`
+        : `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`
     };
   }
   if (code >= 1 && code <= 3) {
+    let desc = en ? (code === 1 ? 'Mainly Clear' : 'Partly Cloudy') : (code === 1 ? 'Quasi sereno' : 'Poco nuvoloso');
+    if (code === 3) desc = en ? 'Overcast' : 'Nuvoloso';
+    
+    let svgStr = `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>`;
+    if (code === 1 && !isDay) {
+      svgStr = `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+    }
     return {
-      description: en ? 'Partly Cloudy' : 'Poco nuvoloso',
-      svg: `<svg viewBox="0 0 24 24" width="${size}" height="${size}" stroke="currentColor" stroke-width="${stroke}" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>`
+      description: desc,
+      svg: svgStr
     };
   }
   if (code >= 45 && code <= 48) {
