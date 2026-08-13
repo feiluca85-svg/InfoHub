@@ -1,0 +1,12 @@
+{
+  "appId": "com.feiluca85.glancefocus",
+  "appName": "FocusQuest",
+  "webDir": "www",
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0a0f1d",
+      "overlaysWebView": false
+    }
+  }
+}

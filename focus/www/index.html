@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0f1d">
+  <meta name="description" content="FocusQuest - To-Do & Focus Gamificato Anti-Procrastinazione">
+  <title>FocusQuest - Le Tue Attività, il Tuo Gioco</title>
+
+  <!-- PWA & iOS Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FocusQuest">
+  <meta name="application-name" content="FocusQuest">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <link rel="shortcut icon" href="icon.svg" type="image/svg+xml">
+
+  <!-- Fonts & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Cinzel:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+  <!-- Canvas per coriandoli celebrativi -->
+  <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
+
+  <div id="app" class="app-container">
+    
+    <!-- Top RPG Status HUD -->
+    <header class="hud-header">
+      <div class="hud-top-bar">
+        <div class="user-avatar-badge" id="avatarBadge" title="Profilo Eroe">
+          <span class="avatar-icon" id="heroAvatarIcon">⚔️</span>
+          <div class="level-indicator">
+            <span class="level-text">LIV</span>
+            <span class="level-num" id="userLevel">1</span>
+          </div>
+        </div>
+
+        <div class="user-rank-info">
+          <div class="user-title-row">
+            <h1 class="app-brand">focusquest</h1>
+            <span class="rank-title" id="rankTitle">Novizio del Focus</span>
+          </div>
+          
+          <!-- XP Progress Bar -->
+          <div class="xp-bar-container" title="Progresso livello">
+            <div class="xp-bar-fill" id="xpBarFill" style="width: 25%;"></div>
+            <span class="xp-bar-label" id="xpBarLabel">50 / 200 XP</span>
+          </div>
+        </div>
+
+        <div class="hud-actions">
+          <button id="soundToggleBtn" class="hud-icon-btn" title="Audio ed Effetti" aria-label="Audio">
+            <svg id="soundIconOn" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <svg id="soundIconOff" class="hidden" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Stats Ticker -->
+      <div class="hud-stats-ribbon">
+        <div class="stat-pill gold-pill" id="goldPill" title="Monete d'Oro per il Negozio Premi">
+          <span class="stat-emoji">🪙</span>
+          <span class="stat-val" id="goldCount">50</span>
+          <span class="stat-lbl">monete</span>
+        </div>
+
+        <div class="stat-pill streak-pill" id="streakPill" title="Serie di giorni consecutivi attivi">
+          <span class="stat-emoji">🔥</span>
+          <span class="stat-val" id="streakCount">1</span>
+          <span class="stat-lbl">giorno</span>
+        </div>
+
+        <div class="stat-pill frog-pill" id="frogPill" title="Stato della Rana del Giorno">
+          <span class="stat-emoji">🐸</span>
+          <span class="stat-val" id="frogStatusText">Pronta</span>
+        </div>
+      </div>
+
+      <!-- Pivot Tabs Navigation -->
+      <nav class="pivot-nav" id="pivotNav">
+        <button class="pivot-tab active" data-tab="questsTab">
+          <span class="tab-icon">🗡️</span>
+          <span class="tab-name">Quest</span>
+        </button>
+        <button class="pivot-tab" data-tab="rewardsTab">
+          <span class="tab-icon">🎁</span>
+          <span class="tab-name">Premi</span>
+        </button>
+        <button class="pivot-tab" data-tab="focusTab">
+          <span class="tab-icon">⏳</span>
+          <span class="tab-name">Focus</span>
+        </button>
+        <button class="pivot-tab sos-tab-btn" data-tab="sosTab">
+          <span class="tab-icon">⚡</span>
+          <span class="tab-name">SOS Blocco</span>
+        </button>
+        <button class="pivot-tab" data-tab="trophiesTab">
+          <span class="tab-icon">📊</span>
+          <span class="tab-name">Trofei</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- ============================================== -->
+      <!-- TAB 1: QUESTS (To-Do & Attività) -->
+      <!-- ============================================== -->
+      <section id="questsTab" class="view-tab active">
+        
+        <!-- Daily Frog Banner (Eat That Frog) -->
+        <div id="frogBanner" class="frog-banner">
+          <div class="frog-banner-icon">🐸</div>
+          <div class="frog-banner-content">
+            <div class="frog-badge-row">
+              <span class="frog-badge">EAT THAT FROG • MISSIONE DEL GIORNO</span>
+              <span class="frog-reward-tag">2x RICOMPENSA</span>
+            </div>
+            <h3 class="frog-title" id="frogBannerTitle">Nessuna Rana selezionata per oggi</h3>
+            <p class="frog-desc" id="frogBannerDesc">Scegli il compito più tosto o che stai rimandando: fallo subito per vincere il trofeo del giorno!</p>
+          </div>
+          <button id="frogActionBtn" class="frog-action-btn" title="Azione Rana">Imposta</button>
+        </div>
+
+        <!-- Quick Add Section -->
+        <div class="quick-add-card">
+          <div class="quick-input-row">
+            <input type="text" id="quickTaskInput" placeholder="Aggiungi una nuova attività o sfida..." autocomplete="off">
+            <button id="openNewTaskModalBtn" class="btn-primary add-task-btn" title="Crea nuova quest">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Aggiungi</span>
+            </button>
+          </div>
+
+          <!-- Difficulty Preset Selector -->
+          <div class="quick-preset-row">
+            <span class="preset-label">Difficoltà:</span>
+            <div class="preset-chips" id="quickDifficultySelector">
+              <button type="button" class="preset-chip diff-easy active" data-diff="easy" title="Micro-compito da pochi minuti">
+                🟢 Facile (+15 XP / +5 🪙)
+              </button>
+              <button type="button" class="preset-chip diff-medium" data-diff="medium" title="Compito standard">
+                🟡 Media (+35 XP / +15 🪙)
+              </button>
+              <button type="button" class="preset-chip diff-boss" data-diff="boss" title="Compito difficile / Boss Fight procrastinata">
+                🔴 Boss Fight (+80 XP / +40 🪙)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="filter-chips-bar" id="questFilterBar">
+          <button class="filter-chip active" data-filter="active">In Corso (<span id="activeCount">0</span>)</button>
+          <button class="filter-chip" data-filter="frog">🐸 La Rana</button>
+          <button class="filter-chip" data-filter="boss">🔴 Boss Fight</button>
+          <button class="filter-chip" data-filter="today">📅 Oggi</button>
+          <button class="filter-chip" data-filter="completed">✅ Fatte (<span id="completedCount">0</span>)</button>
+        </div>
+
+        <!-- Task List -->
+        <div id="questList" class="quest-list">
+          <!-- Dynamic cards injected via JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyQuestState" class="empty-state hidden">
+          <div class="empty-icon">🛡️</div>
+          <h3>Nessuna quest in questo elenco</h3>
+          <p>Sei in pari con tutte le attività! Aggiungine una nuova o goditi una meritata ricompensa nel Negozio Premi.</p>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 2: REWARDS SHOP (Negozio Ricompense Reali) -->
+      <!-- ============================================== -->
+      <section id="rewardsTab" class="view-tab">
+        <div class="shop-hero-card">
+          <div class="shop-balance-info">
+            <span class="shop-subtitle">IL TUO FORZIERE</span>
+            <div class="shop-gold-display">
+              <span class="shop-gold-icon">🪙</span>
+              <span class="shop-gold-amount" id="shopGoldDisplay">50</span>
+              <span class="shop-gold-unit">Monete d'Oro</span>
+            </div>
+            <p class="shop-hint">Guadagna monete completando le quest e spendile qui per i tuoi premi reali!</p>
+          </div>
+          <button id="addCustomRewardBtn" class="btn-secondary add-reward-btn">
+            + Crea Nuovo Premio
+          </button>
+        </div>
+
+        <div class="section-title-row">
+          <h2>Premi Personali Disponibili</h2>
+          <span class="section-badge">Principio di Premack</span>
+        </div>
+
+        <!-- Rewards Grid -->
+        <div id="rewardsGrid" class="rewards-grid">
+          <!-- Dynamic reward cards injected via JS -->
+        </div>
+
+        <!-- Claimed History -->
+        <div class="claimed-section">
+          <div class="claimed-header" id="toggleClaimedHistory">
+            <h3>📜 Storico Premi Riscattati (<span id="claimedCount">0</span>)</h3>
+            <span class="toggle-arrow">▼</span>
+          </div>
+          <div id="claimedHistoryList" class="claimed-history-list hidden">
+            <!-- Dynamic history items -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 3: FOCUS ARENA (Pomodoro & Suoni Ambientali) -->
+      <!-- ============================================== -->
+      <section id="focusTab" class="view-tab">
+        <div class="focus-arena-card">
+          
+          <!-- Focus Linked Quest Banner -->
+          <div id="focusLinkedTaskBanner" class="focus-linked-banner hidden">
+            <span class="focus-badge">QUEST ATTIVA</span>
+            <span class="focus-task-title" id="focusLinkedTaskTitle">Completare la relazione</span>
+            <button id="clearFocusLinkedTaskBtn" class="clear-focus-btn" title="Scollega">&times;</button>
+          </div>
+
+          <!-- Timer Presets -->
+          <div class="timer-presets" id="timerPresets">
+            <button class="timer-preset-btn" data-min="5">⚡ 5 Min (SOS)</button>
+            <button class="timer-preset-btn active" data-min="25">⏳ 25 Min (Pomodoro)</button>
+            <button class="timer-preset-btn" data-min="50">🔥 50 Min (Deep Work)</button>
+            <button class="timer-preset-btn" data-min="5" data-type="break">☕ 5 Min Pausa</button>
+          </div>
+
+          <!-- Circular Graphic Timer -->
+          <div class="timer-visual-container">
+            <svg class="timer-svg" viewBox="0 0 260 260">
+              <circle class="timer-track" cx="130" cy="130" r="110"></circle>
+              <circle class="timer-progress" id="timerProgressCircle" cx="130" cy="130" r="110" stroke-dasharray="691.15" stroke-dashoffset="0"></circle>
+            </svg>
+
+            <div class="timer-inner-content">
+              <div class="crystal-stage-icon" id="focusGrowthIcon">🌱</div>
+              <div class="timer-time-display" id="timerTimeDisplay">25:00</div>
+              <div class="timer-stage-label" id="focusGrowthLabel">Seme Piantato</div>
+              <div class="timer-reward-preview">+50 XP • +20 🪙</div>
+            </div>
+          </div>
+
+          <!-- Timer Action Controls -->
+          <div class="timer-controls">
+            <button id="startTimerBtn" class="btn-primary timer-btn-large">
+              <span id="startTimerText">Inizia Focus</span>
+            </button>
+            <button id="resetTimerBtn" class="btn-secondary timer-btn-small" title="Azzera">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Ambient Audio Synthesizer (Zero dependencies, Pure Web Audio) -->
+          <div class="ambient-sound-card">
+            <div class="ambient-sound-header">
+              <div class="sound-title-group">
+                <span class="ambient-icon">🎧</span>
+                <span class="ambient-label">Sottofondo Concentrazione (Web Audio)</span>
+              </div>
+              <div class="volume-slider-group">
+                <span>Vol</span>
+                <input type="range" id="ambientVolume" min="0" max="1" step="0.05" value="0.5">
+              </div>
+            </div>
+
+            <div class="ambient-sound-buttons" id="ambientButtons">
+              <button class="sound-btn active" data-sound="none">🔇 Silenzio</button>
+              <button class="sound-btn" data-sound="rain">🌧️ Pioggia</button>
+              <button class="sound-btn" data-sound="waves">🌊 Onde Mare</button>
+              <button class="sound-btn" data-sound="alpha">🧠 Onde Alfa 432Hz</button>
+              <button class="sound-btn" data-sound="whitenoise">💨 White Noise</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 4: SOS PROCRASTINAZIONE (Percorso Guidato) -->
+      <!-- ============================================== -->
+      <section id="sosTab" class="view-tab">
+        <div class="sos-container">
+          <div class="sos-header-card">
+            <div class="sos-icon-glow">⚡</div>
+            <h2>SOS Procrastinazione</h2>
+            <p class="sos-lead">Non riesci a iniziare? Sei paralizzato o distratto? È normale: la mente teme lo sforzo iniziale. <strong>Superiamolo in 3 passi da 60 secondi.</strong></p>
+          </div>
+
+          <!-- Step 1: The Resistance -->
+          <div class="sos-step-card" id="sosStep1">
+            <div class="step-num-badge">PASSO 1 DI 3</div>
+            <h3>Cosa stai evitando di fare in questo momento?</h3>
+            <p class="step-desc">Dargli un nome toglie metà dell'ansia.</p>
+            <input type="text" id="sosTaskInput" placeholder="Es. Iniziare a studiare cap. 4, fare la dichiarazione..." autocomplete="off">
+            <button id="sosNext1Btn" class="btn-primary full-width-btn">Ho scelto il compito ➔</button>
+          </div>
+
+          <!-- Step 2: Micro Breakdown -->
+          <div class="sos-step-card hidden" id="sosStep2">
+            <div class="step-num-badge">PASSO 2 DI 3</div>
+            <h3>Rendiamolo ridicolmente minuscolo (Regola dei 2 Minuti)</h3>
+            <p class="step-desc">Qual è la prima azione da 60 secondi che non richiede nessuno sforzo mentale?</p>
+            <div class="micro-suggestions">
+              <button class="micro-sug-btn" data-text="Aprire il file / quaderno sulla scrivania">📖 Aprire il documento / quaderno</button>
+              <button class="micro-sug-btn" data-text="Mettere le scarpe da ginnastica">👟 Mettere le scarpe</button>
+              <button class="micro-sug-btn" data-text="Scrivere solo la prima riga o il titolo">✍️ Scrivere la prima frase</button>
+              <button class="micro-sug-btn" data-text="Riordinare solo il tavolo per 1 minuto">🧹 Liberare il tavolo (1 min)</button>
+            </div>
+            <input type="text" id="sosMicroInput" placeholder="La mia prima mini-mossa da 60 secondi..." autocomplete="off">
+            <button id="sosNext2Btn" class="btn-primary full-width-btn">Pronto per il micro-avvio ➔</button>
+          </div>
+
+          <!-- Step 3: 5-Minute Low Friction Launch -->
+          <div class="sos-step-card hidden" id="sosStep3">
+            <div class="step-num-badge">PASSO 3 DI 3</div>
+            <h3>Il Patto dei 5 Minuti 🤝</h3>
+            <div class="pact-box">
+              <p>Lavora solo per <strong>5 minuti</strong> sulla tua micro-mossa.<br>
+              <strong>Se dopo 5 minuti vuoi fermarti, sei autorizzato al 100% a farlo senza sensi di colpa.</strong></p>
+              <small>Spoiler: nel 95% dei casi l'attrito svanisce e continuerai con piacere!</small>
+            </div>
+            <button id="sosLaunch5MinBtn" class="btn-primary launch-glow-btn full-width-btn">
+              🚀 Avvia i 5 Minuti Adesso!
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- TAB 5: TROFEI & STATISTICHE (Victory Hall) -->
+      <!-- ============================================== -->
+      <section id="trophiesTab" class="view-tab">
+        
+        <!-- Hero Stats Cards -->
+        <div class="stats-overview-grid">
+          <div class="stat-card">
+            <span class="stat-card-icon">⚔️</span>
+            <span class="stat-card-number" id="statCompletedTotal">0</span>
+            <span class="stat-card-label">Quest Completate</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-card-icon">⏱️</span>
+            <span class="stat-card-number" id="statFocusMinutes">0</span>
+            <span class="stat-card-label">Minuti di Focus</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-card-icon">🪙</span>
+            <span class="stat-card-number" id="statGoldEarned">0</span>
+            <span class="stat-card-label">Monete Totali</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-card-icon">🐸</span>
+            <span class="stat-card-number" id="statFrogsEaten">0</span>
+            <span class="stat-card-label">Rane Mangiate</span>
+          </div>
+        </div>
+
+        <!-- RPG Rank Ladder -->
+        <div class="rank-ladder-card">
+          <h3>🏆 Scala dei Ranghi Eroe</h3>
+          <div class="rank-ladder-list" id="rankLadderList">
+            <!-- Dynamic ladder generated via JS -->
+          </div>
+        </div>
+
+        <!-- Badges & Achievements -->
+        <div class="badges-card">
+          <h3>🎖️ Medaglie e Traguardi</h3>
+          <div class="badges-grid" id="badgesGrid">
+            <!-- Dynamic badges generated via JS -->
+          </div>
+        </div>
+
+        <!-- Victory History Log -->
+        <div class="victory-log-card">
+          <h3>🛡️ Registro delle Vittorie Recenti</h3>
+          <div id="victoryLogList" class="victory-log-list">
+            <!-- Dynamic log entries -->
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ============================================== -->
+    <!-- MODALS & DIALOGS -->
+    <!-- ============================================== -->
+
+    <!-- New / Edit Task Modal -->
+    <div id="taskModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modalTaskTitle">Nuova Quest</h3>
+          <button id="closeTaskModalBtn" class="modal-close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="modalTaskInput">Nome dell'Attività *</label>
+            <input type="text" id="modalTaskInput" placeholder="Es. Finire il report per il cliente..." autocomplete="off">
+          </div>
+
+          <div class="form-group">
+            <label>Difficoltà & Ricompensa</label>
+            <div class="diff-select-grid" id="modalDiffSelector">
+              <button type="button" class="diff-btn diff-easy active" data-diff="easy">
+                <span class="diff-title">🟢 Facile</span>
+                <span class="diff-reward">+15 XP • +5 🪙</span>
+              </button>
+              <button type="button" class="diff-btn diff-medium" data-diff="medium">
+                <span class="diff-title">🟡 Media</span>
+                <span class="diff-reward">+35 XP • +15 🪙</span>
+              </button>
+              <button type="button" class="diff-btn diff-boss" data-diff="boss">
+                <span class="diff-title">🔴 Boss Fight</span>
+                <span class="diff-reward">+80 XP • +40 🪙</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="modalTaskCategory">Categoria</label>
+            <select id="modalTaskCategory" class="metro-select">
+              <option value="work">💼 Lavoro & Progetti</option>
+              <option value="study">📚 Studio & Formazione</option>
+              <option value="home">🏠 Casa & Commissioni</option>
+              <option value="health">🏃 Salute & Benessere</option>
+              <option value="mind">🧘 Crescita & Hobby</option>
+            </select>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label class="custom-checkbox-container">
+              <input type="checkbox" id="modalFrogCheckbox">
+              <span class="checkbox-checkmark"></span>
+              <span class="checkbox-label">🐸 Imposta come <strong>La Rana del Giorno</strong> (2x Ricompensa)</span>
+            </label>
+          </div>
+
+          <!-- Micro Sub-tasks Section -->
+          <div class="form-group">
+            <div class="subtask-header-row">
+              <label>Micro-Step (Regola dei 2 Minuti)</label>
+              <button type="button" id="addSubtaskInputBtn" class="btn-link">+ Aggiungi Step</button>
+            </div>
+            <div id="modalSubtaskContainer" class="subtask-container">
+              <!-- Subtask inputs dynamically added -->
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="cancelTaskModalBtn" class="btn-secondary">Annulla</button>
+          <button id="saveTaskModalBtn" class="btn-primary">Salva Quest</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Reward Modal -->
+    <div id="rewardModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Nuovo Premio Personale</h3>
+          <button id="closeRewardModalBtn" class="modal-close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="modalRewardTitle">Nome del Premio *</label>
+            <input type="text" id="modalRewardTitle" placeholder="Es. 1 ora di PlayStation, Cena sushi..." autocomplete="off">
+          </div>
+
+          <div class="form-group">
+            <label for="modalRewardCost">Costo in Monete d'Oro 🪙 *</label>
+            <input type="number" id="modalRewardCost" min="5" max="1000" step="5" value="30">
+            <small class="form-hint">Consiglio: imposta costi proporzionati allo sforzo (es. 25-50 monete per premi giornalieri).</small>
+          </div>
+
+          <div class="form-group">
+            <label for="modalRewardIcon">Icona / Emoji</label>
+            <div class="emoji-picker-row" id="rewardEmojiPicker">
+              <button type="button" class="emoji-chip active" data-emoji="🎮">🎮</button>
+              <button type="button" class="emoji-chip" data-emoji="🍿">🍿</button>
+              <button type="button" class="emoji-chip" data-emoji="☕">☕</button>
+              <button type="button" class="emoji-chip" data-emoji="🍕">🍕</button>
+              <button type="button" class="emoji-chip" data-emoji="🍦">🍦</button>
+              <button type="button" class="emoji-chip" data-emoji="🛍️">🛍️</button>
+              <button type="button" class="emoji-chip" data-emoji="🛌">🛌</button>
+              <button type="button" class="emoji-chip" data-emoji="🎉">🎉</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="cancelRewardModalBtn" class="btn-secondary">Annulla</button>
+          <button id="saveRewardModalBtn" class="btn-primary">Aggiungi al Negozio</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Celebration Level Up Modal -->
+    <div id="levelUpModal" class="modal-overlay hidden">
+      <div class="modal-card levelup-card">
+        <div class="levelup-glow">🌟</div>
+        <h2 class="levelup-title">LEVEL UP!</h2>
+        <p class="levelup-subtitle">Hai raggiunto il livello <span id="levelUpNewLevel">2</span></p>
+        <div class="levelup-rank-badge" id="levelUpNewRank">Guerriero del Focus</div>
+        <p class="levelup-message">La tua disciplina sta crescendo. Continua così e nessuna scusa potrà fermarti!</p>
+        <div class="levelup-reward-box">
+          <span>Bonus Sbloccato:</span>
+          <strong>+50 Monete d'Oro 🪙</strong>
+        </div>
+        <button id="closeLevelUpModalBtn" class="btn-primary full-width-btn">Avanti Eroe! ⚔️</button>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
