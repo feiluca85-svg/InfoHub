@@ -107,6 +107,13 @@ function saveActiveCityState(city) {
   if (city.id.startsWith('gps_')) {
     localStorage.setItem('GLANCE_METEO_GPS_CITY', JSON.stringify(city));
   }
+  
+  // Sync with Capacitor Preferences for Native Widget
+  if (window.Capacitor && window.Capacitor.Plugins.Preferences) {
+    window.Capacitor.Plugins.Preferences.set({ key: 'ACTIVE_CITY_LAT', value: city.lat.toString() });
+    window.Capacitor.Plugins.Preferences.set({ key: 'ACTIVE_CITY_LON', value: city.lon.toString() });
+    window.Capacitor.Plugins.Preferences.set({ key: 'ACTIVE_CITY_NAME', value: city.name });
+  }
 }
 
 function setupEventListeners() {

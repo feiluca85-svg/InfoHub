@@ -27,7 +27,7 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
-        <receiver android:name=".MeteoWidgetProvider" android:exported="true">
+        <receiver android:name=".MeteoWidgetProvider" android:exported="true" android:label="Meteo">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

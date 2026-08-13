@@ -1,5 +1,11 @@
 {
   "appId": "com.feiluca85.glancemeteo",
   "appName": "Meteo",
-  "webDir": "www"
-}
+  "webDir": "www",
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#000000",
+      "overlaysWebView": false
+    }
+  }

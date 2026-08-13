@@ -19,16 +19,12 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:orientation="vertical">
-            <TextView
+            <ImageView
                 android:id="@+id/widget_main_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="☀️"
-                android:textSize="64sp"
-                android:shadowColor="#80000000"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="3" />
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_sun"
+                android:layout_marginBottom="4dp" />
             <TextView
                 android:id="@+id/widget_temp"
                 android:layout_width="wrap_content"
@@ -130,18 +126,13 @@
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="3" />
-            <TextView
+            <ImageView
                 android:id="@+id/widget_day1_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
-                android:text="☁️"
-                android:textSize="24sp"
-                android:shadowColor="#80000000"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="3" />
+                android:src="@drawable/ic_cloud" />
             <TextView
                 android:id="@+id/widget_day1_temps"
                 android:layout_width="wrap_content"
@@ -175,18 +166,13 @@
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="3" />
-            <TextView
+            <ImageView
                 android:id="@+id/widget_day2_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
-                android:text="☁️"
-                android:textSize="24sp"
-                android:shadowColor="#80000000"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="3" />
+                android:src="@drawable/ic_cloud" />
             <TextView
                 android:id="@+id/widget_day2_temps"
                 android:layout_width="wrap_content"
@@ -220,18 +206,13 @@
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="3" />
-            <TextView
+            <ImageView
                 android:id="@+id/widget_day3_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
-                android:text="☁️"
-                android:textSize="24sp"
-                android:shadowColor="#80000000"
-                android:shadowDx="1"
-                android:shadowDy="1"
-                android:shadowRadius="3" />
+                android:src="@drawable/ic_cloud" />
             <TextView
                 android:id="@+id/widget_day3_temps"
                 android:layout_width="wrap_content"

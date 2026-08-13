@@ -12,7 +12,9 @@
   "type": "commonjs",
   "dependencies": {
     "@capacitor/core": "^8.5.0",
-    "@capacitor/geolocation": "^8.2.2"
+    "@capacitor/geolocation": "^8.2.2",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.3"
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.0",
