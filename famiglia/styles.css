@@ -1,30 +1,30 @@
 /* ==========================================================================
-   FamTito - Authentic Windows Phone 8 Metro UI Design System
-   Inspired by Nokia Lumia / WP8 Panorama & Pivot (Segoe UI Typography)
+   Tribù - Authentic Windows Phone 8.1 Metro UI Design System
+   Inspired by Nokia Lumia / WP8.1 Panorama, Pivot & Live Tiles (Segoe UI Typography)
    ========================================================================== */
 
 :root {
-  /* Dynamic Windows Phone Accent Color (Default: Cobalt Blue) */
-  --accent-color: #0078d7;
+  /* Dynamic Windows Phone 8.1 Accent Color (Default: Cobalt Blue) */
+  --accent-color: #0050ef;
   --accent-hover: #1b8beb;
-  --accent-faint: rgba(0, 120, 215, 0.2);
+  --accent-faint: rgba(0, 80, 239, 0.25);
 
-  /* Pitch Black OLED Theme (WP8 Dark) */
+  /* Pitch Black OLED Theme (WP8.1 Dark) */
   --bg-main: #000000;
-  --bg-surface: #111111;
-  --bg-surface-hover: #1a1a1a;
-  --bg-input: #161616;
-  --bg-dialog: #0a0a0a;
+  --bg-surface: #121212;
+  --bg-surface-hover: #1c1c1c;
+  --bg-input: #181818;
+  --bg-dialog: #0c0c0c;
   --bg-appbar: #000000;
 
   --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.65);
-  --text-dim: rgba(255, 255, 255, 0.35);
-  --text-faint: rgba(255, 255, 255, 0.2);
+  --text-secondary: rgba(255, 255, 255, 0.72);
+  --text-dim: rgba(255, 255, 255, 0.42);
+  --text-faint: rgba(255, 255, 255, 0.25);
 
-  --border-subtle: rgba(255, 255, 255, 0.1);
-  --border-medium: rgba(255, 255, 255, 0.22);
-  --border-bold: rgba(255, 255, 255, 0.85);
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-medium: rgba(255, 255, 255, 0.28);
+  --border-bold: rgba(255, 255, 255, 0.9);
 
   --font-family: 'Outfit', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -37,23 +37,23 @@
   --sab: env(safe-area-inset-bottom, 0px);
 }
 
-/* Light Mode (Pure White WP8 Light) */
+/* Light Mode (Pure White WP8.1 Light) */
 body.theme-light {
   --bg-main: #ffffff;
-  --bg-surface: #f4f4f4;
-  --bg-surface-hover: #eaeaea;
+  --bg-surface: #f2f2f2;
+  --bg-surface-hover: #e6e6e6;
   --bg-input: #ffffff;
   --bg-dialog: #ffffff;
-  --bg-appbar: #f4f4f4;
+  --bg-appbar: #f2f2f2;
 
   --text-primary: #000000;
-  --text-secondary: rgba(0, 0, 0, 0.65);
-  --text-dim: rgba(0, 0, 0, 0.35);
-  --text-faint: rgba(0, 0, 0, 0.2);
+  --text-secondary: rgba(0, 0, 0, 0.72);
+  --text-dim: rgba(0, 0, 0, 0.42);
+  --text-faint: rgba(0, 0, 0, 0.25);
 
-  --border-subtle: rgba(0, 0, 0, 0.1);
-  --border-medium: rgba(0, 0, 0, 0.22);
-  --border-bold: rgba(0, 0, 0, 0.85);
+  --border-subtle: rgba(0, 0, 0, 0.12);
+  --border-medium: rgba(0, 0, 0, 0.28);
+  --border-bold: rgba(0, 0, 0, 0.9);
 }
 
 /* Reset & Global */
@@ -76,6 +76,8 @@ html, body {
   background-color: var(--bg-main);
   color: var(--text-primary);
   font-family: var(--font-family);
+  font-size: 16px; /* Slightly larger text */
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -90,7 +92,7 @@ html, body {
 }
 
 /* ==========================================================================
-   1. WP8 METRO PANORAMA PIVOT HEADER (GIANT LOWERCASE TITLES)
+   1. WP8 METRO PANORAMA PIVOT HEADER
    ========================================================================== */
 
 .metro-header {
@@ -108,54 +110,55 @@ html, body {
 }
 
 .app-kicker {
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 2.5px;
+  letter-spacing: 3px;
   color: var(--text-secondary);
 }
 
 .header-right-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .cloud-status-badge {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--text-secondary);
   border: 1px solid var(--border-subtle);
 }
 
 .status-indicator-dot {
-  width: 7px;
-  height: 7px;
-  background: #107c41; /* Green connected */
+  width: 8px;
+  height: 8px;
+  background: #008a00; /* Green connected */
   border-radius: 50%;
 }
 
 .status-indicator-dot.offline {
-  background: #e81123;
+  background: #a20025;
 }
 
 .metro-header-icon-btn {
   background: transparent;
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   transition: all 0.15s ease;
 }
 
@@ -178,7 +181,7 @@ html, body {
 
 .pivot-titles-track {
   display: flex;
-  gap: 28px;
+  gap: 32px;
   white-space: nowrap;
 }
 
@@ -187,7 +190,7 @@ html, body {
   border: none;
   color: var(--text-dim);
   font-family: var(--font-family);
-  font-size: 3rem; /* Huge WP8 Segoe Light style */
+  font-size: 3.2rem; /* Giant Segoe Light style */
   font-weight: 200;
   text-transform: lowercase;
   letter-spacing: -0.04em;
@@ -232,7 +235,7 @@ html, body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 12px 20px calc(76px + var(--sab)) 20px;
+  padding: 14px 20px calc(76px + var(--sab)) 20px;
 }
 
 .slide-content-wrapper {
@@ -244,14 +247,14 @@ html, body {
 }
 
 /* ==========================================================================
-   3. CLEAN WP8 MINIMALIST CONTROLS & LISTS
+   3. CLEAN WP8 CONTROLS & DYNAMIC MEMBER FILTER
    ========================================================================== */
 
-/* Sub-Filter Minimalist Links */
+/* Sub-Filter Row */
 .wp8-sub-filter-row {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   padding-bottom: 2px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -262,27 +265,29 @@ html, body {
 }
 
 .sub-filter-label {
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 600;
   text-transform: lowercase;
   color: var(--text-dim);
   letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .sub-filter-buttons {
   display: flex;
-  gap: 14px;
+  gap: 16px;
+  align-items: center;
 }
 
 .filter-link {
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 0.95rem;
+  font-size: 1.05rem; /* Larger font */
   font-weight: 300;
   text-transform: lowercase;
   cursor: pointer;
-  padding: 2px 0;
+  padding: 3px 0;
   position: relative;
   transition: color 0.15s ease;
   white-space: nowrap;
@@ -307,20 +312,41 @@ html, body {
   background: var(--accent-color);
 }
 
-/* WP8 Flat Input Card (Minimalist) */
+/* Add member plus button on filter ribbon */
+.add-member-plus-btn {
+  background: transparent;
+  border: 1px dashed var(--border-medium);
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.add-member-plus-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* WP8 Flat Input Card */
 .wp8-input-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  padding: 12px 14px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .input-line-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .input-line-row input {
@@ -329,10 +355,10 @@ html, body {
   border: none;
   border-bottom: 2px solid var(--border-medium);
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 1.1rem; /* Larger font */
   font-weight: 300;
   font-family: inherit;
-  padding: 6px 2px;
+  padding: 8px 2px;
   outline: none;
   border-radius: 0;
   transition: border-color 0.2s ease;
@@ -346,42 +372,43 @@ html, body {
   background: transparent;
   border: 1px solid var(--border-medium);
   color: var(--text-primary);
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
   flex-shrink: 0;
   transition: all 0.15s ease;
 }
 
 .wp8-inline-btn:active, .wp8-inline-btn.recording {
-  background: #e81123;
-  border-color: #e81123;
+  background: #a20025;
+  border-color: #a20025;
   color: #ffffff;
 }
 
-.wp8-btn-accent {
+/* WP8 Plus-Only Action Button (Requirement 4) */
+.wp8-btn-plus-only {
   background: var(--accent-color);
   border: none;
   color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: lowercase;
-  padding: 0 16px;
-  height: 36px;
-  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  font-size: 17px;
+  border-radius: 0;
   transition: opacity 0.15s ease;
 }
 
-.wp8-btn-accent:active {
+.wp8-btn-plus-only:active {
   opacity: 0.8;
+  transform: scale(0.94);
 }
 
 /* Meta Select Row */
@@ -400,7 +427,7 @@ html, body {
 }
 
 .meta-label {
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   color: var(--text-dim);
   text-transform: lowercase;
 }
@@ -409,9 +436,9 @@ html, body {
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-family: inherit;
-  padding: 3px 8px;
+  padding: 4px 10px;
   outline: none;
   border-radius: 0;
 }
@@ -420,10 +447,10 @@ html, body {
   background: transparent;
   border: 1px solid var(--border-medium);
   color: var(--text-secondary);
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-transform: lowercase;
-  padding: 3px 10px;
+  padding: 4px 12px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -433,8 +460,8 @@ html, body {
 }
 
 .wp8-urgent-flag.active {
-  background: #e81123;
-  border-color: #e81123;
+  background: #a20025;
+  border-color: #a20025;
   color: #ffffff;
 }
 
@@ -455,10 +482,10 @@ html, body {
   background: transparent;
   border: 1px solid var(--border-subtle);
   color: var(--text-dim);
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   font-weight: 400;
   text-transform: lowercase;
-  padding: 5px 12px;
+  padding: 6px 14px;
   cursor: pointer;
   white-space: nowrap;
   display: inline-flex;
@@ -486,16 +513,16 @@ html, body {
 .wp8-tasks-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .wp8-task-item {
   background: var(--bg-surface);
   border-left: 3px solid transparent;
-  padding: 14px 16px;
+  padding: 16px 18px;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 16px;
   transition: background-color 0.15s ease;
   position: relative;
 }
@@ -505,7 +532,7 @@ html, body {
 }
 
 .wp8-task-item.is-urgent {
-  border-left-color: #e81123;
+  border-left-color: #a20025;
 }
 
 .wp8-task-item.is-completed {
@@ -519,8 +546,8 @@ html, body {
 
 /* Sharp WP8 Square Checkbox */
 .wp8-checkbox {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border: 2px solid var(--border-bold);
   background: transparent;
   display: flex;
@@ -528,8 +555,8 @@ html, body {
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  margin-top: 1px;
-  font-size: 13px;
+  margin-top: 2px;
+  font-size: 14px;
   border-radius: 0;
   transition: all 0.12s ease;
 }
@@ -550,27 +577,27 @@ html, body {
 }
 
 .task-text {
-  font-size: 1.05rem;
+  font-size: 1.15rem; /* Larger and crisper */
   font-weight: 300;
   color: var(--text-primary);
   word-break: break-word;
-  line-height: 1.35;
-  margin-bottom: 4px;
+  line-height: 1.4;
+  margin-bottom: 5px;
 }
 
 .task-info-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
-  font-size: 0.76rem;
+  font-size: 0.85rem; /* Larger text */
   color: var(--text-secondary);
 }
 
 .meta-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .meta-tag.tag-member {
@@ -579,14 +606,14 @@ html, body {
 }
 
 .meta-tag.tag-urgent {
-  color: #e81123;
+  color: #a20025;
   font-weight: 700;
 }
 
 .task-side-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -594,7 +621,7 @@ html, body {
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 14px;
+  font-size: 15px;
   padding: 6px;
   cursor: pointer;
   transition: color 0.15s ease;
@@ -605,17 +632,17 @@ html, body {
 }
 
 .wp8-icon-action.delete-action:hover {
-  color: #e81123;
+  color: #a20025;
 }
 
 .share-to-family-link {
   background: none;
   border: 1px solid var(--border-medium);
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: lowercase;
-  padding: 3px 8px;
+  padding: 4px 10px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -633,11 +660,11 @@ html, body {
 .wp8-completed-box {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .completed-summary-row {
-  padding: 12px 16px;
+  padding: 14px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -646,7 +673,7 @@ html, body {
 }
 
 .completed-title {
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 400;
   text-transform: lowercase;
 }
@@ -654,66 +681,66 @@ html, body {
 .completed-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .wp8-link-btn {
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   text-transform: lowercase;
   cursor: pointer;
   text-decoration: underline;
 }
 
 .wp8-link-btn:hover {
-  color: #e81123;
+  color: #a20025;
 }
 
 .fold-arrow {
-  font-size: 12px;
+  font-size: 13px;
   transition: transform 0.2s ease;
 }
 
 .completed-items-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 0 16px 14px 16px;
+  gap: 3px;
+  padding: 0 18px 16px 18px;
 }
 
 /* WP8 Empty States */
 .wp8-empty-state {
-  padding: 48px 20px;
+  padding: 56px 20px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--text-dim);
 }
 
 .wp8-empty-state i {
-  font-size: 36px;
+  font-size: 40px;
   color: var(--accent-color);
   margin-bottom: 4px;
 }
 
 .wp8-empty-state h3 {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 200;
   text-transform: lowercase;
   color: var(--text-primary);
 }
 
 .wp8-empty-state p {
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   color: var(--text-secondary);
 }
 
 /* ==========================================================================
-   5. TAB 3: IDEE & NOTE (BOLD WP8 METRO TILES)
+   5. TAB 3: IDEE & NOTE
    ========================================================================== */
 
 .wp8-idea-title-input {
@@ -721,9 +748,9 @@ html, body {
   border: none;
   border-bottom: 2px solid var(--border-medium);
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 500;
-  padding: 6px 2px;
+  padding: 8px 2px;
   outline: none;
   border-radius: 0;
 }
@@ -733,9 +760,9 @@ html, body {
   border: none;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   font-family: inherit;
-  padding: 6px 2px;
+  padding: 8px 2px;
   outline: none;
   resize: vertical;
   border-radius: 0;
@@ -756,23 +783,24 @@ html, body {
 }
 
 .color-picker-dot {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: 2px solid transparent;
   cursor: pointer;
-  border-radius: 0; /* Sharp square */
+  border-radius: 0;
   transition: transform 0.15s ease;
 }
 
-.color-picker-dot.dot-yellow { background: #d89b00; }
-.color-picker-dot.dot-blue   { background: #0078d7; }
-.color-picker-dot.dot-green  { background: #107c41; }
-.color-picker-dot.dot-pink   { background: #e81123; }
-.color-picker-dot.dot-purple { background: #881798; }
+.color-picker-dot.dot-yellow { background: #f0a30a; }
+.color-picker-dot.dot-blue   { background: #0050ef; }
+.color-picker-dot.dot-green  { background: #008a00; }
+.color-picker-dot.dot-pink   { background: #a20025; }
+.color-picker-dot.dot-purple { background: #6a00ff; }
+.color-picker-dot.dot-orange { background: #f09609; }
 
 .color-picker-dot.active {
   border-color: #ffffff;
-  transform: scale(1.15);
+  transform: scale(1.18);
 }
 
 .idea-right-actions {
@@ -786,10 +814,10 @@ html, body {
   background: transparent;
   border: 1px solid var(--border-medium);
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   text-transform: lowercase;
-  padding: 0 10px;
-  height: 36px;
+  padding: 0 12px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -797,8 +825,8 @@ html, body {
 }
 
 .wp8-pin-btn.active {
-  background: #f7630c;
-  border-color: #f7630c;
+  background: #f09609;
+  border-color: #f09609;
   color: #ffffff;
 }
 
@@ -806,16 +834,16 @@ html, body {
 .wp8-ideas-tiles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .wp8-metro-tile {
   background: var(--bg-surface);
-  border-left: 4px solid #0078d7;
-  padding: 16px;
+  border-left: 4px solid var(--accent-color);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   transition: transform 0.15s ease;
 }
 
@@ -824,14 +852,15 @@ html, body {
   background: var(--bg-surface-hover);
 }
 
-.wp8-metro-tile.tile-yellow { border-left-color: #d89b00; }
-.wp8-metro-tile.tile-blue   { border-left-color: #0078d7; }
-.wp8-metro-tile.tile-green  { border-left-color: #107c41; }
-.wp8-metro-tile.tile-pink   { border-left-color: #e81123; }
-.wp8-metro-tile.tile-purple { border-left-color: #881798; }
+.wp8-metro-tile.tile-yellow { border-left-color: #f0a30a; }
+.wp8-metro-tile.tile-blue   { border-left-color: #0050ef; }
+.wp8-metro-tile.tile-green  { border-left-color: #008a00; }
+.wp8-metro-tile.tile-pink   { border-left-color: #a20025; }
+.wp8-metro-tile.tile-purple { border-left-color: #6a00ff; }
+.wp8-metro-tile.tile-orange { border-left-color: #f09609; }
 
 .wp8-metro-tile.is-pinned {
-  border-right: 3px solid #f7630c;
+  border-right: 3px solid #f09609;
 }
 
 .tile-top-row {
@@ -842,21 +871,21 @@ html, body {
 }
 
 .tile-headline {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 500;
   color: var(--text-primary);
   word-break: break-word;
 }
 
 .tile-pin-icon {
-  color: #f7630c;
-  font-size: 13px;
+  color: #f09609;
+  font-size: 14px;
 }
 
 .tile-content-text {
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
-  line-height: 1.45;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -865,9 +894,9 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 8px;
+  padding-top: 10px;
   border-top: 1px solid var(--border-subtle);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 .tile-date-label {
@@ -883,10 +912,10 @@ html, body {
   background: var(--accent-color);
   border: none;
   color: #ffffff;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: lowercase;
-  padding: 3px 8px;
+  padding: 4px 10px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -902,7 +931,7 @@ html, body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(56px + var(--sab));
+  height: calc(58px + var(--sab));
   background: var(--bg-appbar);
   border-top: 1px solid var(--border-subtle);
   display: flex;
@@ -916,20 +945,20 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 22px;
 }
 
 .appbar-circle-btn {
   background: transparent;
   border: 1px solid var(--border-bold);
   color: var(--text-primary);
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -944,17 +973,13 @@ html, body {
   background: none;
   border: none;
   color: var(--text-secondary);
-  font-size: 18px;
+  font-size: 20px;
   padding: 8px;
   cursor: pointer;
 }
 
-.appbar-dots-btn:hover {
-  color: var(--text-primary);
-}
-
 /* ==========================================================================
-   7. MODALS & SHEETS
+   7. FULL WP8.1 PALETTE & MODALS
    ========================================================================== */
 
 .wp8-modal-overlay {
@@ -963,7 +988,7 @@ html, body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.88);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: 1000;
@@ -983,13 +1008,13 @@ html, body {
   background: var(--bg-dialog);
   border: 1px solid var(--border-medium);
   width: 100%;
-  max-width: 480px;
+  max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
 
 .sheet-header {
@@ -999,7 +1024,7 @@ html, body {
 }
 
 .sheet-kicker {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--accent-color);
   letter-spacing: 2px;
@@ -1007,7 +1032,7 @@ html, body {
 }
 
 .sheet-title {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 200;
   text-transform: lowercase;
   color: var(--text-primary);
@@ -1020,7 +1045,7 @@ html, body {
   background: none;
   border: none;
   color: var(--text-secondary);
-  font-size: 28px;
+  font-size: 30px;
   cursor: pointer;
   line-height: 1;
 }
@@ -1028,62 +1053,26 @@ html, body {
 .sheet-body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .sheet-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .sheet-label {
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   font-weight: 600;
   text-transform: lowercase;
   color: var(--text-primary);
 }
 
 .sheet-help {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-/* WP8 Member Grid */
-.wp8-member-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.member-select-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-  padding: 12px 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  border-radius: 0;
-  transition: all 0.15s ease;
-}
-
-.member-select-card i {
-  font-size: 20px;
-}
-
-.member-select-card span {
-  font-size: 0.8rem;
-  text-transform: lowercase;
-}
-
-.member-select-card.active {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
-  color: #ffffff;
+  line-height: 1.45;
 }
 
 .wp8-dialog-input {
@@ -1091,8 +1080,8 @@ html, body {
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  padding: 8px 12px;
-  font-size: 0.95rem;
+  padding: 10px 14px;
+  font-size: 1.05rem;
   font-family: inherit;
   outline: none;
   border-radius: 0;
@@ -1100,7 +1089,7 @@ html, body {
 
 .code-font {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -1112,23 +1101,187 @@ html, body {
 
 .code-presets-row {
   display: flex;
-  gap: 12px;
+  gap: 14px;
 }
 
-.wp8-server-note {
-  background: rgba(16, 124, 65, 0.15);
-  border-left: 3px solid #107c41;
-  padding: 10px 12px;
+.wp8-btn-accent {
+  background: var(--accent-color);
+  border: none;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: lowercase;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.wp8-btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  text-transform: lowercase;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+/* Live App Icon Preview (Requirement 2) */
+.icon-preview-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 14px 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
+}
+
+.live-tile-preview {
+  width: 64px;
+  height: 64px;
+  background: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  transition: background-color 0.2s ease;
+}
+
+.live-tile-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.live-tile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.live-tile-info strong {
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.live-tile-info small {
   font-size: 0.8rem;
   color: var(--text-secondary);
 }
 
-.wp8-server-note i {
-  color: #107c41;
-  font-size: 16px;
+/* Full 15-Color WP8.1 Palette Grid (Requirement 6) */
+.wp8-full-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.palette-tile {
+  height: 44px;
+  border: 2px solid transparent;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-transform: lowercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  transition: transform 0.12s ease;
+}
+
+.palette-tile:active {
+  transform: scale(0.95);
+}
+
+.palette-tile.active {
+  border-color: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+/* Dynamic Members List in Modal (Requirement 7) */
+.section-title-with-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wp8-inline-add-btn {
+  background: none;
+  border: 1px solid var(--border-medium);
+  color: var(--accent-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: lowercase;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+.dynamic-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.member-row-item {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.member-row-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+}
+
+.member-row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.name-edit-row {
+  display: flex;
+  gap: 8px;
+}
+
+/* Quick Role Chips */
+.quick-role-chips {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.role-chip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.role-chip:hover, .role-chip.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #ffffff;
+}
+
+/* Toggles Column */
+.toggles-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .theme-choice-row {
@@ -1141,12 +1294,12 @@ html, body {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  padding: 10px 12px;
+  padding: 12px 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  gap: 10px;
+  font-size: 0.95rem;
   text-transform: lowercase;
   cursor: pointer;
 }
@@ -1157,51 +1310,79 @@ html, body {
   color: #ffffff;
 }
 
-.accent-palette-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+.wp8-server-note {
+  background: rgba(0, 138, 0, 0.15);
+  border-left: 3px solid #008a00;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
 }
 
-.accent-tile {
-  height: 42px;
-  border: 2px solid transparent;
+.wp8-server-note i {
+  color: #008a00;
+  font-size: 18px;
+}
+
+/* Voice Dictation Modal (Requirement 5) */
+.voice-modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+}
+
+.voice-mic-wave {
+  width: 72px;
+  height: 72px;
+  background: var(--accent-color);
   color: #ffffff;
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: lowercase;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 28px;
+  border-radius: 50%;
+  animation: pulseVoice 1.4s infinite;
 }
 
-.accent-tile.active {
-  border-color: #ffffff;
+@keyframes pulseVoice {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 80, 239, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(0, 80, 239, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 80, 239, 0); }
+}
+
+.voice-status-text {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.voice-transcription-preview {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  padding: 12px 16px;
+  width: 100%;
+  min-height: 60px;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-style: italic;
+  word-break: break-word;
 }
 
 .sheet-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-}
-
-.wp8-btn-outline {
-  background: transparent;
-  border: 1px solid var(--border-medium);
-  color: var(--text-primary);
-  font-size: 0.88rem;
-  text-transform: lowercase;
-  padding: 8px 18px;
-  cursor: pointer;
+  gap: 10px;
 }
 
 /* Convert Idea Dialog */
 .convert-preview-quote {
   background: var(--bg-surface);
   border-left: 3px solid var(--accent-color);
-  padding: 10px 12px;
-  font-size: 0.95rem;
+  padding: 12px 14px;
+  font-size: 1.05rem;
   font-style: italic;
   color: var(--text-primary);
 }
@@ -1209,17 +1390,17 @@ html, body {
 .convert-options-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .wp8-convert-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  padding: 14px;
+  padding: 16px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   cursor: pointer;
   text-align: left;
   transition: all 0.15s ease;
@@ -1231,33 +1412,33 @@ html, body {
 }
 
 .wp8-convert-card i {
-  font-size: 24px;
+  font-size: 26px;
 }
 
 .wp8-convert-card strong {
   display: block;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   text-transform: lowercase;
 }
 
 .wp8-convert-card small {
-  font-size: 0.75rem;
-  opacity: 0.8;
+  font-size: 0.82rem;
+  opacity: 0.85;
 }
 
-/* WP8 Toast Notification */
+/* Toast */
 .wp8-toast {
   position: fixed;
-  bottom: calc(68px + var(--sab));
+  bottom: calc(72px + var(--sab));
   left: 50%;
   transform: translateX(-50%);
-  background: #1e1e1e;
+  background: #1a1a1a;
   border: 1px solid var(--accent-color);
   color: #ffffff;
-  padding: 8px 16px;
-  font-size: 0.85rem;
+  padding: 10px 20px;
+  font-size: 0.95rem;
   font-weight: 500;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.85);
   z-index: 2000;
   pointer-events: none;
   animation: toastSlide 0.2s ease-out;
@@ -1275,12 +1456,12 @@ html, body {
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .pivot-title-btn {
-    font-size: 2.6rem;
+    font-size: 2.8rem;
   }
   .carousel-slide {
-    padding: 10px 14px calc(76px + var(--sab)) 14px;
+    padding: 12px 16px calc(76px + var(--sab)) 16px;
   }
-  .wp8-ideas-tiles-grid {
-    grid-template-columns: 1fr;
+  .wp8-full-palette-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }

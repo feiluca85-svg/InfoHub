@@ -1,7 +1,7 @@
 {
-  "name": "FamTito - Famiglia & To-Do",
-  "short_name": "FamTito",
-  "description": "To-Do List di Famiglia Condivisa in Tempo Reale, Note & To-Do Personali",
+  "name": "Tribù - Famiglia & To-Do",
+  "short_name": "Tribù",
+  "description": "To-Do List di Famiglia Condivisa, Note e Produttività in Stile WP8.1",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#000000",

@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="FamTito - To-Do List di Famiglia Condivisa in Stile Windows Phone 8 Metro UI">
-  <title>FamTito</title>
+  <meta name="description" content="Tribù - To-Do List di Famiglia Condivisa in Stile Windows Phone 8.1 Metro UI">
+  <title>Tribù</title>
 
   <!-- PWA & Mobile Meta Tags -->
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="FamTito">
-  <meta name="application-name" content="FamTito">
+  <meta name="apple-mobile-web-app-title" content="Tribù">
+  <meta name="application-name" content="Tribù">
 
   <!-- Icons -->
   <link rel="apple-touch-icon" href="icon.jpg">
@@ -22,7 +22,7 @@
   <!-- Google Fonts: Outfit (ultra-clean Segoe UI feel), JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   
   <!-- FontAwesome for Authentic Flat Metro Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -42,18 +42,24 @@
     <header class="metro-header">
       <!-- Top Small Brand & Cloud Status -->
       <div class="header-top-row">
-        <span class="app-kicker">FAMTITO</span>
+        <span class="app-kicker">TRIBÙ</span>
         
         <div class="header-right-actions">
           <div class="cloud-status-badge" id="cloudStatusPill" title="Stato Cloud">
             <span class="status-indicator-dot" id="cloudStatusDot"></span>
             <span class="code-label" id="headerFamilyCode">#FAM-TITO</span>
           </div>
-          <button id="familySettingsBtn" class="metro-header-icon-btn" title="Gestisci Famiglia">
-            <i class="fa-solid fa-users"></i>
+          <!-- Notifications Bell -->
+          <button id="headerNotifBtn" class="metro-header-icon-btn" title="Notifiche" aria-label="Notifiche">
+            <i class="fa-solid fa-bell"></i>
           </button>
-          <button id="themeToggleBtn" class="metro-header-icon-btn" title="Personalizza Stile">
+          <!-- Settings / Colors -->
+          <button id="themeToggleBtn" class="metro-header-icon-btn" title="Palette WP8.1 & Icona">
             <i class="fa-solid fa-palette"></i>
+          </button>
+          <!-- Family Management -->
+          <button id="familySettingsBtn" class="metro-header-icon-btn" title="Gestisci Membri">
+            <i class="fa-solid fa-users"></i>
           </button>
         </div>
       </div>
@@ -69,7 +75,7 @@
     </header>
 
     <!-- ============================================== -->
-    <!-- 2. HORIZONTAL SWIPE CAROUSEL (CLEAN & SPACIOUS)-->
+    <!-- 2. HORIZONTAL SWIPE CAROUSEL                   -->
     <!-- ============================================== -->
     <main class="carousel-viewport" id="carouselViewport">
       <div class="carousel-track" id="carouselTrack">
@@ -80,32 +86,31 @@
         <section class="carousel-slide" id="slideFamiglia">
           <div class="slide-content-wrapper">
             
-            <!-- Sleek Member Filter (WP8 Minimalist Text Tabs) -->
+            <!-- Dynamic Member Filter Ribbon (Tutti + Membri Effettivi + Pulsante '+') -->
             <div class="wp8-sub-filter-row">
               <span class="sub-filter-label">membro:</span>
               <div class="sub-filter-buttons" id="familyMemberFilterBar">
                 <button class="filter-link active" data-member="all">tutti</button>
-                <button class="filter-link" data-member="Papà">papà</button>
-                <button class="filter-link" data-member="Mamma">mamma</button>
-                <button class="filter-link" data-member="Figlio">figlio</button>
-                <button class="filter-link" data-member="Figlia">figlia</button>
+                <!-- Dynamic member buttons populated from Firestore -->
               </div>
+              <button id="addMemberFilterBtn" class="add-member-plus-btn" title="Aggiungi o invita un familiare">
+                <i class="fa-solid fa-plus"></i>
+              </button>
             </div>
 
-            <!-- Quick Add Bar (Ultra-clean WP8 Flat Input) -->
+            <!-- Quick Add Bar (Ultra-clean WP8 Flat Input with '+' only button) -->
             <div class="wp8-input-card">
               <div class="input-line-row">
-                <input type="text" id="familyTaskInput" placeholder="aggiungi un'attività di famiglia..." autocomplete="off">
+                <input type="text" id="familyTaskInput" placeholder="cosa c'è da fare per la famiglia..." autocomplete="off">
                 <button id="voiceFamilyTaskBtn" class="wp8-inline-btn" title="Dettatura vocale" aria-label="Microfono">
                   <i class="fa-solid fa-microphone"></i>
                 </button>
-                <button id="addFamilyTaskBtn" class="wp8-btn-accent" title="Aggiungi">
+                <button id="addFamilyTaskBtn" class="wp8-btn-plus-only" title="Aggiungi attività">
                   <i class="fa-solid fa-plus"></i>
-                  <span>aggiungi</span>
                 </button>
               </div>
 
-              <!-- Sleek Meta Dropdowns -->
+              <!-- Meta Dropdowns -->
               <div class="input-meta-row">
                 <div class="meta-field">
                   <span class="meta-label">categoria:</span>
@@ -124,10 +129,7 @@
                   <span class="meta-label">assegna a:</span>
                   <select id="familyAssigneeSelect" class="wp8-select">
                     <option value="Tutti">chiunque</option>
-                    <option value="Papà">papà</option>
-                    <option value="Mamma">mamma</option>
-                    <option value="Figlio">figlio</option>
-                    <option value="Figlia">figlia</option>
+                    <!-- Dynamically populated with active family members -->
                   </select>
                 </div>
 
@@ -138,7 +140,7 @@
               </div>
             </div>
 
-            <!-- Sleek Category Filter Chips (Minimalist) -->
+            <!-- Category Filter Chips -->
             <div class="wp8-category-scroller" id="familyCategoryFilterBar">
               <button class="cat-chip active" data-cat="all">tutte</button>
               <button class="cat-chip" data-cat="spesa"><i class="fa-solid fa-cart-shopping"></i> spesa</button>
@@ -149,9 +151,9 @@
               <button class="cat-chip" data-cat="urgente"><i class="fa-solid fa-bolt"></i> urgenti</button>
             </div>
 
-            <!-- Tasks List Container -->
+            <!-- Tasks List -->
             <div class="wp8-tasks-list" id="familyTasksList">
-              <!-- Dynamically populated -->
+              <!-- Dynamically populated tasks -->
             </div>
 
             <!-- Completed Family Tasks Section -->
@@ -172,7 +174,7 @@
             <div class="wp8-empty-state hidden" id="emptyFamilyState">
               <i class="fa-solid fa-check"></i>
               <h3>tutto completato</h3>
-              <p>nessuna attività in sospeso per la famiglia</p>
+              <p>nessuna attività in sospeso per la tribù</p>
             </div>
 
           </div>
@@ -196,16 +198,15 @@
               </div>
             </div>
 
-            <!-- Quick Add Personal Task -->
+            <!-- Quick Add Personal Task ('+' only) -->
             <div class="wp8-input-card">
               <div class="input-line-row">
                 <input type="text" id="personalTaskInput" placeholder="cosa devi fare tu personalmente..." autocomplete="off">
                 <button id="voicePersonalTaskBtn" class="wp8-inline-btn" title="Dettatura vocale">
                   <i class="fa-solid fa-microphone"></i>
                 </button>
-                <button id="addPersonalTaskBtn" class="wp8-btn-accent">
+                <button id="addPersonalTaskBtn" class="wp8-btn-plus-only" title="Aggiungi">
                   <i class="fa-solid fa-plus"></i>
-                  <span>aggiungi</span>
                 </button>
               </div>
 
@@ -277,7 +278,7 @@
         <section class="carousel-slide" id="slideIdee">
           <div class="slide-content-wrapper">
             
-            <!-- Quick Add Idea -->
+            <!-- Quick Add Idea ('+' only) -->
             <div class="wp8-input-card">
               <input type="text" id="ideaTitleInput" class="wp8-idea-title-input" placeholder="titolo dell'idea o appunto..." autocomplete="off">
               <textarea id="ideaContentInput" class="wp8-idea-text-input" placeholder="dettagli, pensiero o lista..." rows="2"></textarea>
@@ -285,10 +286,11 @@
               <div class="idea-action-row">
                 <div class="metro-color-dots" id="ideaColorSelector">
                   <button type="button" class="color-picker-dot dot-yellow active" data-color="yellow" title="Giallo"></button>
-                  <button type="button" class="color-picker-dot dot-blue" data-color="blue" title="Blu"></button>
-                  <button type="button" class="color-picker-dot dot-green" data-color="green" title="Verde"></button>
+                  <button type="button" class="color-picker-dot dot-blue" data-color="blue" title="Cobalto"></button>
+                  <button type="button" class="color-picker-dot dot-green" data-color="green" title="Smeraldo"></button>
                   <button type="button" class="color-picker-dot dot-pink" data-color="pink" title="Crimson"></button>
                   <button type="button" class="color-picker-dot dot-purple" data-color="purple" title="Viola"></button>
+                  <button type="button" class="color-picker-dot dot-orange" data-color="orange" title="Mango"></button>
                 </div>
 
                 <div class="idea-right-actions">
@@ -299,9 +301,8 @@
                   <button id="voiceIdeaBtn" class="wp8-inline-btn" title="Dettatura">
                     <i class="fa-solid fa-microphone"></i>
                   </button>
-                  <button id="addIdeaBtn" class="wp8-btn-accent">
+                  <button id="addIdeaBtn" class="wp8-btn-plus-only" title="Salva Idea">
                     <i class="fa-solid fa-plus"></i>
-                    <span>salva</span>
                   </button>
                 </div>
               </div>
@@ -362,55 +363,43 @@
     </footer>
 
     <!-- ============================================== -->
-    <!-- 4. MODALS (WP8 CLEAN DESIGN)                   -->
+    <!-- 4. MODALS & DIALOGS                            -->
     <!-- ============================================== -->
 
-    <!-- Family Settings & Profile Modal -->
+    <!-- Dynamic Family & Member Management Modal -->
     <div id="familySettingsModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
-          <span class="sheet-kicker">GESTIONE FAMIGLIA</span>
-          <h2 class="sheet-title">profilo & cloud</h2>
+          <span class="sheet-kicker">GESTIONE TRIBÙ</span>
+          <h2 class="sheet-title">membri & cloud</h2>
           <button id="closeFamilyModalBtn" class="sheet-close-btn">&times;</button>
         </div>
 
         <div class="sheet-body">
-          <!-- Member Selector -->
+          <!-- Your Profile Identity -->
           <div class="sheet-section">
-            <label class="sheet-label">chi sei in famiglia?</label>
-            <div class="wp8-member-grid" id="profilePickerGrid">
-              <button type="button" class="member-select-card active" data-name="Papà" data-role="papà">
-                <i class="fa-solid fa-user"></i>
-                <span>Papà</span>
-              </button>
-              <button type="button" class="member-select-card" data-name="Mamma" data-role="mamma">
-                <i class="fa-solid fa-user"></i>
-                <span>Mamma</span>
-              </button>
-              <button type="button" class="member-select-card" data-name="Figlio" data-role="figlio">
-                <i class="fa-solid fa-child"></i>
-                <span>Figlio</span>
-              </button>
-              <button type="button" class="member-select-card" data-name="Figlia" data-role="figlia">
-                <i class="fa-solid fa-child-dress"></i>
-                <span>Figlia</span>
-              </button>
-              <button type="button" class="member-select-card" data-name="Nonno" data-role="nonno">
-                <i class="fa-solid fa-glasses"></i>
-                <span>Nonno</span>
-              </button>
-              <button type="button" class="member-select-card" data-name="Nonna" data-role="nonna">
-                <i class="fa-solid fa-heart"></i>
-                <span>Nonna</span>
-              </button>
+            <label class="sheet-label">il tuo nome in famiglia</label>
+            <div class="name-edit-row">
+              <input type="text" id="customMemberNameInput" class="wp8-dialog-input" placeholder="Il tuo nome (es. Papà, Mamma, Chiara)...">
+              <button id="saveMemberNameBtn" class="wp8-btn-accent">salva</button>
             </div>
-            <input type="text" id="customMemberNameInput" class="wp8-dialog-input" placeholder="oppure scrivi il tuo nome...">
           </div>
 
-          <!-- Family Code -->
+          <!-- Dynamic Active Family Members List -->
           <div class="sheet-section">
-            <label class="sheet-label">codice famiglia (cloud)</label>
-            <p class="sheet-help">Tutti i familiari con lo stesso codice vedono e aggiornano la lista in tempo reale:</p>
+            <div class="section-title-with-btn">
+              <label class="sheet-label">membri attivi della tribù</label>
+              <button id="openAddMemberDialogBtn" class="wp8-inline-add-btn">+ aggiungi</button>
+            </div>
+            <div class="dynamic-members-list" id="dynamicFamilyMembersList">
+              <!-- Dynamically populated from Firestore -->
+            </div>
+          </div>
+
+          <!-- Family Cloud Code -->
+          <div class="sheet-section">
+            <label class="sheet-label">codice sincronizzazione (cloud)</label>
+            <p class="sheet-help">Chiunque inserisca questo codice sul proprio telefono si aggrega istantaneamente alla tribù:</p>
             <div class="code-action-row">
               <input type="text" id="familyCodeInput" class="wp8-dialog-input code-font" value="FAM-TITO" autocomplete="off" autocapitalize="characters">
               <button id="saveFamilyCodeBtn" class="wp8-btn-accent">collega</button>
@@ -421,7 +410,7 @@
             </div>
           </div>
 
-          <!-- Cloud status note -->
+          <!-- Server connection status -->
           <div class="wp8-server-note">
             <i class="fa-solid fa-cloud"></i>
             <span>Server AppTito: sincronizzazione istantanea bidirezionale</span>
@@ -434,16 +423,84 @@
       </div>
     </div>
 
-    <!-- Theme Modal -->
+    <!-- Quick Add / Invite Member Sub-Modal -->
+    <div id="addMemberModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet">
+        <div class="sheet-header">
+          <span class="sheet-kicker">NUOVO MEMBRO</span>
+          <h2 class="sheet-title">aggiungi alla tribù</h2>
+          <button id="closeAddMemberModalBtn" class="sheet-close-btn">&times;</button>
+        </div>
+
+        <div class="sheet-body">
+          <label class="sheet-label">nome o ruolo del familiare:</label>
+          <input type="text" id="newMemberNameInput" class="wp8-dialog-input" placeholder="es. Mamma, Chiara, Marco, Nonna..." autocomplete="off">
+          
+          <div class="sheet-section">
+            <label class="sheet-label">oppure seleziona un ruolo rapido:</label>
+            <div class="quick-role-chips" id="quickRoleChips">
+              <button type="button" class="role-chip" data-role="Papà"><i class="fa-solid fa-user"></i> Papà</button>
+              <button type="button" class="role-chip" data-role="Mamma"><i class="fa-solid fa-user"></i> Mamma</button>
+              <button type="button" class="role-chip" data-role="Figlio"><i class="fa-solid fa-child"></i> Figlio</button>
+              <button type="button" class="role-chip" data-role="Figlia"><i class="fa-solid fa-child-dress"></i> Figlia (12 anni)</button>
+              <button type="button" class="role-chip" data-role="Nonno"><i class="fa-solid fa-glasses"></i> Nonno</button>
+              <button type="button" class="role-chip" data-role="Nonna"><i class="fa-solid fa-heart"></i> Nonna</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sheet-footer">
+          <button id="cancelAddMemberBtn" class="wp8-btn-outline">annulla</button>
+          <button id="confirmAddMemberBtn" class="wp8-btn-accent">aggiungi alla tribù</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WP8.1 Full Palette & App Icon Settings Modal -->
     <div id="themeModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
-          <span class="sheet-kicker">IMPOSTAZIONI</span>
-          <h2 class="sheet-title">personalizzazione</h2>
+          <span class="sheet-kicker">PERSONALIZZAZIONE WP8.1</span>
+          <h2 class="sheet-title">colori & icona</h2>
           <button id="closeThemeModalBtn" class="sheet-close-btn">&times;</button>
         </div>
 
         <div class="sheet-body">
+          
+          <!-- Live Icon Preview -->
+          <div class="icon-preview-box">
+            <div class="live-tile-preview" id="liveTilePreview">
+              <img src="icon.jpg" alt="Icona Tribù" id="liveTileIconImg">
+            </div>
+            <div class="live-tile-info">
+              <strong>Colore Icona & Accento</strong>
+              <small>Scegli tra i 15 celebri colori Nokia Lumia / Windows Phone 8.1</small>
+            </div>
+          </div>
+
+          <!-- Full WP8.1 Official 15-Color Palette -->
+          <div class="sheet-section">
+            <label class="sheet-label">palette ufficiale windows phone 8.1</label>
+            <div class="wp8-full-palette-grid" id="accentPaletteGrid">
+              <button type="button" class="palette-tile active" data-accent="#0050ef" style="background:#0050ef;">cobalto</button>
+              <button type="button" class="palette-tile" data-accent="#008a00" style="background:#008a00;">smeraldo</button>
+              <button type="button" class="palette-tile" data-accent="#f09609" style="background:#f09609;">mango</button>
+              <button type="button" class="palette-tile" data-accent="#a20025" style="background:#a20025;">crimson</button>
+              <button type="button" class="palette-tile" data-accent="#d80073" style="background:#d80073;">magenta</button>
+              <button type="button" class="palette-tile" data-accent="#1ba1e2" style="background:#1ba1e2;">ciano</button>
+              <button type="button" class="palette-tile" data-accent="#a4c400" style="background:#a4c400;">lime</button>
+              <button type="button" class="palette-tile" data-accent="#6a00ff" style="background:#6a00ff;">viola</button>
+              <button type="button" class="palette-tile" data-accent="#f0a30a" style="background:#f0a30a;">ambra</button>
+              <button type="button" class="palette-tile" data-accent="#4390df" style="background:#4390df;">acciaio</button>
+              <button type="button" class="palette-tile" data-accent="#fa6800" style="background:#fa6800;">mandarino</button>
+              <button type="button" class="palette-tile" data-accent="#e671b8" style="background:#e671b8;">rosa</button>
+              <button type="button" class="palette-tile" data-accent="#6b69d6" style="background:#6b69d6;">indaco</button>
+              <button type="button" class="palette-tile" data-accent="#6d8764" style="background:#6d8764;">oliva</button>
+              <button type="button" class="palette-tile" data-accent="#825a2c" style="background:#825a2c;">talpa</button>
+            </div>
+          </div>
+
+          <!-- Theme Background Mode -->
           <div class="sheet-section">
             <label class="sheet-label">tema sfondo</label>
             <div class="theme-choice-row">
@@ -456,29 +513,49 @@
             </div>
           </div>
 
+          <!-- Notifications & Audio -->
           <div class="sheet-section">
-            <label class="sheet-label">colore d'accento windows phone</label>
-            <div class="accent-palette-grid" id="accentPaletteGrid">
-              <button type="button" class="accent-tile active" data-accent="#0078d7" style="background:#0078d7;">cobalto</button>
-              <button type="button" class="accent-tile" data-accent="#107c41" style="background:#107c41;">smeraldo</button>
-              <button type="button" class="accent-tile" data-accent="#f7630c" style="background:#f7630c;">mango</button>
-              <button type="button" class="accent-tile" data-accent="#e81123" style="background:#e81123;">crimson</button>
-              <button type="button" class="accent-tile" data-accent="#881798" style="background:#881798;">magenta</button>
-              <button type="button" class="accent-tile" data-accent="#00b7c3" style="background:#00b7c3;">ciano</button>
+            <label class="sheet-label">notifiche e suoni</label>
+            <div class="toggles-column">
+              <button type="button" class="wp8-theme-btn" id="toggleNotifBtn">
+                <i class="fa-solid fa-bell" id="notifStatusIcon"></i>
+                <span id="notifStatusText">attiva notifiche push</span>
+              </button>
+              <button type="button" class="wp8-theme-btn" id="toggleSoundBtn">
+                <i class="fa-solid fa-volume-high" id="soundStatusIcon"></i>
+                <span id="soundStatusText">effetti sonori attivi</span>
+              </button>
             </div>
           </div>
 
-          <div class="sheet-section">
-            <label class="sheet-label">audio e suoni</label>
-            <button type="button" class="wp8-theme-btn" id="toggleSoundBtn">
-              <i class="fa-solid fa-volume-high" id="soundStatusIcon"></i>
-              <span id="soundStatusText">effetti sonori attivi</span>
-            </button>
-          </div>
         </div>
 
         <div class="sheet-footer">
           <button id="closeThemeModalFooterBtn" class="wp8-btn-accent">fatto</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Voice Speech Dictation Modal (Fallback & Interactive Visualizer) -->
+    <div id="voiceModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet text-center">
+        <div class="sheet-header">
+          <span class="sheet-kicker">DETTATURA VOCALE</span>
+          <h2 class="sheet-title">parla ora</h2>
+          <button id="closeVoiceModalBtn" class="sheet-close-btn">&times;</button>
+        </div>
+
+        <div class="sheet-body voice-modal-body">
+          <div class="voice-mic-wave" id="voiceWaveAnimation">
+            <i class="fa-solid fa-microphone"></i>
+          </div>
+          <p class="voice-status-text" id="voiceStatusPrompt">In ascolto... Detta la tua attività o spesa</p>
+          <div class="voice-transcription-preview" id="voiceTranscriptionResult">"..."</div>
+        </div>
+
+        <div class="sheet-footer">
+          <button id="cancelVoiceBtn" class="wp8-btn-outline">annulla</button>
+          <button id="confirmVoiceBtn" class="wp8-btn-accent">inserisci testo</button>
         </div>
       </div>
     </div>
@@ -500,7 +577,7 @@
             <button type="button" id="convertDestFamilyBtn" class="wp8-convert-card">
               <i class="fa-solid fa-users"></i>
               <div>
-                <strong>famiglia (condivisa)</strong>
+                <strong>tribù (condivisa)</strong>
                 <small>visibile a tutti i membri di casa</small>
               </div>
             </button>
