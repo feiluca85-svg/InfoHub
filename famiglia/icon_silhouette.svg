@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!-- Windows Phone 8.1 Metro Silhouette: Father, Mother, 12yo Daughter with Notebook -->
+  <g fill="#ffffff">
+    <!-- Father (Left) -->
+    <circle cx="54" cy="46" r="14"/>
+    <path d="M40 68 C34 68 30 73 30 80 L30 118 C30 122 33 126 37 126 L45 126 L45 158 C45 162 48 166 53 166 C57 166 61 162 61 158 L61 126 L67 126 C71 126 74 122 74 118 L74 80 C74 73 70 68 64 68 Z"/>
+
+    <!-- Mother (Right) -->
+    <circle cx="138" cy="48" r="13"/>
+    <path d="M125 69 C120 69 116 73 116 79 L116 112 C116 115 118 118 121 119 L126 142 L126 158 C126 162 129 166 134 166 C138 166 142 162 142 158 L142 142 L147 119 C150 118 152 115 152 112 L152 79 C152 73 148 69 143 69 Z"/>
+
+    <!-- 12-Year-Old Daughter (Center with ponytail and to-do notebook) -->
+    <circle cx="96" cy="62" r="11"/>
+    <!-- Ponytail hair detail -->
+    <path d="M106 58 C112 58 116 63 115 69 C111 67 107 65 106 63 Z"/>
+    <!-- Body -->
+    <path d="M84 81 C80 81 77 84 77 89 L77 120 L84 158 C84 162 87 165 91 165 C95 165 98 162 98 158 L98 126 L100 126 L100 158 C100 162 103 165 107 165 C111 165 114 162 114 158 L121 120 L121 89 C121 84 118 81 114 81 Z"/>
+
+    <!-- Shared To-Do Checklist Icon Badge -->
+    <rect x="83" y="94" width="26" height="24" rx="2" fill="#ffffff"/>
+    <rect x="85" y="96" width="22" height="20" rx="1" fill="currentColor" opacity="0.2"/>
+    <!-- Checkmark inside Badge -->
+    <path d="M89 105 L93 109 L103 99" stroke="#ffffff" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter" fill="none"/>
+  </g>
+</svg>

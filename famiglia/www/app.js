@@ -1,12 +1,12 @@
 /**
  * Tribù - Authentic Windows Phone 8.1 Metro UI Engine
  * Features:
- * - Brand 'tribù' Home Reset Button
+ * - Brand 'tribù' Home Reset Button (Segoe UI Light Typography)
  * - 3 Centered Application Bar Buttons
  * - Perfectly Symmetrical Add Submenu with Bottom-Right 'Salva'
- * - Real-Time Audio-Analyzed Voice Dictation Engine
- * - Monumental Pivot Tab Typography & Custom Category Border Colors
- * - App Icon & Theme Accent Customization
+ * - Native & Web Speech Dictation with Live Audio Analyzer
+ * - Dynamic Live Tile Icon Background Color Customization
+ * - App Icon & Theme Accent Synchronization
  */
 
 // =============================================================================
@@ -333,8 +333,8 @@ function triggerTribNotification(title, body) {
     try {
       new Notification(title, {
         body: body,
-        icon: 'icon-192.png',
-        badge: 'icon-192.png'
+        icon: 'icon_silhouette.svg',
+        badge: 'icon_silhouette.svg'
       });
     } catch (e) {
       console.log("System notification note:", e);
@@ -637,7 +637,7 @@ function addCustomCategory(name) {
 }
 
 // =============================================================================
-// 7. ROBUST SPEECH DICTATION (Microphone Engine - Requirement 4)
+// 7. ROBUST NATIVE & WEB SPEECH DICTATION
 // =============================================================================
 
 let recognition = null;
@@ -693,7 +693,30 @@ async function startVoiceDictation(targetInput) {
   txtArea.value = targetInput.value || '';
   txtArea.focus();
 
-  // 1. Request microphone via getUserMedia for hardware activation
+  // Try Native Capacitor Speech Recognition if available on Android
+  const NativeSpeech = window.Capacitor?.Plugins?.SpeechRecognition;
+  if (NativeSpeech) {
+    try {
+      const hasPerm = await NativeSpeech.hasPermission();
+      if (!hasPerm.permission) {
+        await NativeSpeech.requestPermission();
+      }
+      const result = await NativeSpeech.start({
+        language: "it-IT",
+        maxResults: 1,
+        prompt: "Cosa c'è da fare per la tribù?",
+        popup: true
+      });
+      if (result && result.matches && result.matches.length > 0) {
+        txtArea.value = result.matches[0];
+      }
+      return;
+    } catch (nativeErr) {
+      console.log("Native speech note:", nativeErr);
+    }
+  }
+
+  // Fallback to Web Speech API & getUserMedia
   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     try {
       liveAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -702,7 +725,6 @@ async function startVoiceDictation(targetInput) {
     }
   }
 
-  // 2. Start speech recognizer
   if (recognition) {
     try {
       recognition.start();
@@ -1299,9 +1321,13 @@ function applyTheme() {
   document.body.className = themeSettings.mode === 'light' ? 'theme-light' : 'theme-dark';
   document.documentElement.style.setProperty('--accent-color', themeSettings.accent || '#0050ef');
 
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.setAttribute('content', themeSettings.accent || '#000000');
+
   document.getElementById('btnDarkMode').classList.toggle('active', themeSettings.mode === 'dark');
   document.getElementById('btnLightMode').classList.toggle('active', themeSettings.mode === 'light');
 
+  // Dynamically update Live Tile Preview Background Color
   const liveTile = document.getElementById('liveTilePreview');
   if (liveTile) {
     liveTile.style.backgroundColor = themeSettings.accent || '#0050ef';
@@ -1320,7 +1346,7 @@ function applyTheme() {
 }
 
 function setupEventListeners() {
-  // 7) Brand Home Button (Clicking 'tribù' returns to home)
+  // Brand Home Button (Clicking 'tribù' returns to home)
   const homeBtn = document.getElementById('brandHomeBtn');
   if (homeBtn) {
     homeBtn.addEventListener('click', () => {
@@ -1356,10 +1382,10 @@ function setupEventListeners() {
     });
   });
 
-  // 1) Bell Toggle in Header
+  // Bell Toggle in Header
   document.getElementById('headerNotifBtn').addEventListener('click', toggleNotifications);
 
-  // 2) Gear Icon for Settings / Colors
+  // Gear Icon for Settings / Colors
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
     document.getElementById('themeModal').classList.remove('hidden');
   });
@@ -1431,7 +1457,7 @@ function setupEventListeners() {
     });
   }
 
-  // Cancel buttons in Submenus (Requirement 3)
+  // Cancel buttons in Submenus
   document.getElementById('cancelFamilyTaskBtn').addEventListener('click', () => {
     document.getElementById('familyInputCard').classList.add('hidden');
     SoundFX.click();
@@ -1516,7 +1542,7 @@ function setupEventListeners() {
     }
   });
 
-  // 2) Bottom 3 Centered Application Bar Buttons
+  // Bottom 3 Centered Application Bar Buttons
   document.getElementById('appbarAddBtn').addEventListener('click', () => {
     SoundFX.click();
     if (activeTabSlide === 0) {
@@ -1564,7 +1590,7 @@ function setupEventListeners() {
     startVoiceDictation(document.getElementById('ideaTitleInput'));
   });
 
-  // Voice modal confirm/cancel (Requirement 4)
+  // Voice modal confirm/cancel
   document.getElementById('closeVoiceModalBtn').addEventListener('click', () => {
     stopVoiceDictation();
     document.getElementById('voiceModal').classList.add('hidden');
@@ -1716,7 +1742,7 @@ function setupEventListeners() {
     SoundFX.click();
   });
 
-  // 15-Color WP8.1 Palette selection (Requirement 1)
+  // 15-Color WP8.1 Palette selection
   document.querySelectorAll('#accentPaletteGrid .palette-tile').forEach(tile => {
     tile.addEventListener('click', () => {
       themeSettings.accent = tile.dataset.accent;
