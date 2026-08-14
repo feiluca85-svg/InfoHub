@@ -617,6 +617,15 @@
                 <span id="soundStatusText">effetti sonori attivi</span>
               </button>
             </div>
+          <!-- Version Info & App Update Button -->
+          <div class="sheet-section version-update-box">
+            <div class="version-row-meta">
+              <span class="sheet-label">versione:</span>
+              <strong id="appVersionCodeLabel" class="version-badge">v1.2.0 (Lumia Amber)</strong>
+            </div>
+            <button type="button" class="wp8-btn-accent update-btn-full" id="btnCheckAppUpdate">
+              <i class="fa-solid fa-arrows-rotate"></i> controlla aggiornamenti
+            </button>
           </div>
 
         </div>
@@ -627,7 +636,7 @@
       </div>
     </div>
 
-    <!-- 4) Enhanced Voice Speech Dictation Modal with Audio Meter -->
+    <!-- Enhanced Voice Speech Dictation Modal with Audio Meter -->
     <div id="voiceModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet text-center">
         <div class="sheet-header">
@@ -648,6 +657,7 @@
           </div>
 
           <p class="voice-status-text" id="voiceStatusPrompt">In ascolto... Parla ora chiaramente!</p>
+          <p class="voice-hint-sub"><i class="fa-solid fa-keyboard"></i> <strong>Nota:</strong> Puoi anche toccare il microfono sulla tastiera (Gboard) per dettare direttamente.</p>
           
           <!-- Live editable transcription box -->
           <textarea id="voiceTranscriptionResult" class="voice-transcription-input" placeholder="Il testo pronunciato apparirà qui... puoi anche scriverlo o modificarlo subito" rows="3"></textarea>

@@ -1546,3 +1546,45 @@ html, body {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* Version & Update Styles */
+.version-update-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.version-row-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.version-badge {
+  font-size: 0.95rem;
+  color: var(--accent-color);
+  font-family: var(--font-mono);
+}
+
+.update-btn-full {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.voice-hint-sub {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border-left: 2px solid var(--accent-color);
+  padding: 8px 10px;
+  text-align: left;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+

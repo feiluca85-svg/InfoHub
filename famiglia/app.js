@@ -1370,6 +1370,24 @@ function setupEventListeners() {
     document.getElementById('themeModal').classList.add('hidden');
   });
 
+  // App Update Check Button
+  const updateBtn = document.getElementById('btnCheckAppUpdate');
+  if (updateBtn) {
+    updateBtn.addEventListener('click', () => {
+      SoundFX.pop();
+      showToast("verifica aggiornamenti...");
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => caches.delete(name));
+        });
+      }
+      initFirebaseSync();
+      setTimeout(() => {
+        showToast("Tribù v1.2.0 (Lumia Amber) - Versione più recente attiva!");
+      }, 1000);
+    });
+  }
+
   document.getElementById('familySettingsBtn').addEventListener('click', () => {
     document.getElementById('familySettingsModal').classList.remove('hidden');
   });
