@@ -974,10 +974,50 @@ html, body {
   border-left: 4px solid var(--accent-color);
   padding: 14px 16px;
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.map-header-top-row {
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
+  width: 100%;
+}
+
+.map-interval-selector-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.interval-picker-label {
+  font-size: 0.84rem;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wp8-select-interval {
+  background: #111111;
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.88rem;
+  padding: 6px 10px;
+  border-radius: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.wp8-select-interval:focus {
+  border-color: var(--accent-color);
 }
 
 .map-header-left {
@@ -1303,6 +1343,54 @@ body.theme-dark .leaflet-tile {
   padding: 14px;
 }
 
+.section-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wp8-lock-btn {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-dim);
+  padding: 4px 10px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  border-radius: 0;
+  font-size: 0.82rem;
+  font-family: inherit;
+  transition: all 0.12s ease;
+}
+
+.wp8-lock-btn.unlocked {
+  background: #a20025;
+  border-color: #a20025;
+  color: #ffffff;
+}
+
+.wp8-icon-delete-tribe {
+  background: transparent;
+  border: 1px solid #e81123;
+  color: #e81123;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 0;
+  margin-left: 8px;
+  transition: all 0.12s ease;
+}
+
+.wp8-icon-delete-tribe:hover {
+  background: #e81123;
+  color: #ffffff;
+}
+
 .tribes-saved-list {
   display: flex;
   flex-direction: column;
@@ -1318,6 +1406,12 @@ body.theme-dark .leaflet-tile {
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
+}
+
+.tribe-item-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .tribe-item-card.is-active {
@@ -1505,6 +1599,33 @@ body.theme-dark .leaflet-tile {
 .name-edit-row {
   display: flex;
   gap: 8px;
+}
+
+/* Fun Emojis Avatar Grid */
+.avatar-fun-emojis-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.avatar-fun-btn {
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 1.6rem;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all 0.1s ease;
+}
+
+.avatar-fun-btn:hover, .avatar-fun-btn.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  transform: scale(1.1);
 }
 
 /* Avatar WP8.1 Grid */

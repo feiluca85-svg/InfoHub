@@ -41,7 +41,7 @@ try {
 // 2. STATE STORAGE & DEFAULTS
 // =============================================================================
 
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.5.0";
 
 const WP8_GLYPHS = {
   'wp8:user': 'fa-solid fa-user',
@@ -63,8 +63,8 @@ const WP8_GLYPHS = {
 };
 
 let userProfile = {
-  name: 'Papà',
-  avatar: 'wp8:user'
+  name: 'Babbo',
+  avatar: '🧔'
 };
 
 let themeSettings = {
@@ -81,9 +81,10 @@ let savedTribes = [
   { name: 'Tribù Principale', code: 'FAM-TITO' }
 ];
 
-let dynamicFamilyMembers = ['Papà'];
+let dynamicFamilyMembers = ['Babbo'];
 let memberAliases = {}; // Private nicknames on this smartphone
-let memberAvatars = { 'Papà': 'wp8:user' }; // Cloud avatars
+let memberAvatars = { 'Babbo': '🧔' }; // Cloud avatars
+let isTribeLockOpen = false; // Security lock to delete tribes
 
 let customCategories = ['spesa', 'casa', 'bollette', 'figli', 'salute', 'urgente', 'altro'];
 
@@ -115,8 +116,8 @@ let familyTasks = [
     id: 'f_task_2',
     title: 'Pagare bolletta luce entro giovedì',
     category: 'bollette',
-    assignee: 'Papà',
-    addedBy: 'Papà',
+    assignee: 'Babbo',
+    addedBy: 'Babbo',
     priority: 'urgente',
     dueDate: '2026-08-20',
     dueTime: '18:00',
@@ -1318,17 +1319,19 @@ function renderFamilyMapMarkers() {
 
       bounds.push([loc.lat, loc.lng]);
 
-      // Add or update marker on Leaflet map
+      // Add or update marker on Leaflet map (Proper Avatar Icon Fix)
       if (familyLeafletMap && typeof L !== 'undefined') {
+        const markerAvatarHtml = getMemberAvatarHtml(member, 36);
         const customIcon = L.divIcon({
           className: 'wp8-leaflet-marker',
-          html: `<div style="background:var(--accent-color); color:#fff; width:36px; height:36px; border:2px solid #fff; display:flex; align-items:center; justify-content:center; font-size:1.2rem; box-shadow:0 3px 10px rgba(0,0,0,0.6);">${memberAvatars[member] || dispName.charAt(0).toUpperCase()}</div>`,
+          html: `<div style="width:36px; height:36px; border:2px solid #fff; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(0,0,0,0.6); overflow:hidden;">${markerAvatarHtml}</div>`,
           iconSize: [36, 36],
           iconAnchor: [18, 18]
         });
 
         if (mapMarkers[member]) {
           mapMarkers[member].setLatLng([loc.lat, loc.lng]);
+          mapMarkers[member].setIcon(customIcon);
         } else {
           const marker = L.marker([loc.lat, loc.lng], { icon: customIcon }).addTo(familyLeafletMap);
           marker.bindPopup(`<strong>${dispName}</strong><br><small>Ultimo agg: ${timeStr}</small>`);
@@ -1412,17 +1415,32 @@ function renderFamilySettingsModal() {
     myAvatarDisplay.innerHTML = getMemberAvatarHtml(userProfile.name, 44);
   }
 
-  // Render Saved Tribes List
+  // Render Saved Tribes List with Security Lock Deletion Support
   if (tribesListContainer) {
-    tribesListContainer.innerHTML = savedTribes.map(tr => `
-      <div class="tribe-item-card ${tr.code === currentFamilyCode ? 'is-active' : ''}" data-code="${tr.code}">
-        <div>
-          <span class="tribe-item-name">${tr.name}</span>
-          <span class="tribe-item-code">(${tr.code})</span>
+    tribesListContainer.innerHTML = savedTribes.map(tr => {
+      const isActive = (tr.code === currentFamilyCode);
+      const isRemovable = !isActive && savedTribes.length > 1;
+
+      return `
+        <div class="tribe-item-card ${isActive ? 'is-active' : ''}" data-code="${tr.code}">
+          <div>
+            <span class="tribe-item-name">${escapeHtml(tr.name)}</span>
+            <span class="tribe-item-code">(${escapeHtml(tr.code)})</span>
+          </div>
+          <div class="tribe-item-right">
+            ${isActive 
+              ? '<span style="color:var(--accent-color);font-weight:700;">● attiva</span>' 
+              : '<button type="button" class="wp8-link-btn switch-tribe-btn" data-code="'+tr.code+'" data-name="'+tr.name+'">passa qui</button>'
+            }
+            ${(isTribeLockOpen && isRemovable) ? `
+              <button type="button" class="wp8-icon-delete-tribe delete-tribe-btn" data-code="${tr.code}" data-name="${tr.name}" title="Elimina tribù">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            ` : ''}
+          </div>
         </div>
-        ${tr.code === currentFamilyCode ? '<span style="color:var(--accent-color);font-weight:700;">● attiva</span>' : '<button type="button" class="wp8-link-btn switch-tribe-btn" data-code="'+tr.code+'" data-name="'+tr.name+'">passa qui</button>'}
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     tribesListContainer.querySelectorAll('.switch-tribe-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -1430,6 +1448,15 @@ function renderFamilySettingsModal() {
         const code = btn.getAttribute('data-code');
         const name = btn.getAttribute('data-name');
         switchActiveTribe(code, name);
+      });
+    });
+
+    tribesListContainer.querySelectorAll('.delete-tribe-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const code = btn.getAttribute('data-code');
+        const name = btn.getAttribute('data-name');
+        deleteSavedTribe(code, name);
       });
     });
   }
@@ -1526,58 +1553,66 @@ function openCategoryColorModal(cat) {
 // 10.5. AUTOMATIC GPS SHARING ENGINE (Every 15 Minutes / On Motion)
 // =============================================================================
 
+// =============================================================================
+// 11. GPS AUTO-UPDATE INTERVAL ENGINE (1 Min to Never) & TRIBE LOCK
+// =============================================================================
+
 let autoGpsTimer = null;
 let autoGpsWatchId = null;
-let autoGpsEnabled = false;
+let autoGpsIntervalMinutes = 15; // default 15 min
 
 function loadAutoGpsState() {
   try {
-    autoGpsEnabled = (localStorage.getItem('tribu_auto_gps') === 'true');
-    updateAutoGpsUi();
-    if (autoGpsEnabled) {
-      startAutoGpsSharing();
+    const saved = localStorage.getItem('tribu_gps_interval_min');
+    if (saved !== null) {
+      autoGpsIntervalMinutes = parseInt(saved, 10);
     }
-  } catch (e) {}
-}
-
-function updateAutoGpsUi() {
-  const statusEl = document.getElementById('autoGpsStatusText');
-  const btn = document.getElementById('toggleAutoGpsBtn');
-  if (statusEl) {
-    statusEl.textContent = autoGpsEnabled ? 'ATTIVO' : 'NO';
-    statusEl.style.color = autoGpsEnabled ? 'var(--accent-color)' : 'var(--text-dim)';
-  }
-  if (btn) {
-    btn.classList.toggle('active', autoGpsEnabled);
-  }
-}
-
-function toggleAutoGpsSharing() {
-  autoGpsEnabled = !autoGpsEnabled;
-  try {
-    localStorage.setItem('tribu_auto_gps', autoGpsEnabled ? 'true' : 'false');
-  } catch (e) {}
-  updateAutoGpsUi();
-
-  if (autoGpsEnabled) {
+    const selectEl = document.getElementById('gpsIntervalSelect');
+    if (selectEl) {
+      selectEl.value = autoGpsIntervalMinutes.toString();
+    }
     startAutoGpsSharing();
+  } catch (e) {}
+}
+
+function setGpsInterval(minutes) {
+  autoGpsIntervalMinutes = parseInt(minutes, 10);
+  try {
+    localStorage.setItem('tribu_gps_interval_min', autoGpsIntervalMinutes.toString());
+  } catch (e) {}
+  startAutoGpsSharing();
+  if (autoGpsIntervalMinutes > 0) {
+    showToast(`aggiornamento impostato ogni ${autoGpsIntervalMinutes} min`);
     SoundFX.complete();
-    showToast("condivisione GPS ogni 15 min attiva");
   } else {
-    stopAutoGpsSharing();
+    showToast("aggiornamento automatico disattivato (solo manuale)");
     SoundFX.pop();
-    showToast("condivisione automatica disattivata");
+  }
+}
+
+function stopAutoGpsSharing() {
+  if (autoGpsTimer) {
+    clearInterval(autoGpsTimer);
+    autoGpsTimer = null;
+  }
+  if (autoGpsWatchId !== null && navigator.geolocation && navigator.geolocation.clearWatch) {
+    navigator.geolocation.clearWatch(autoGpsWatchId);
+    autoGpsWatchId = null;
   }
 }
 
 function startAutoGpsSharing() {
   stopAutoGpsSharing();
-  updateMyGPSLocation(true); // First silent GPS read
+  if (autoGpsIntervalMinutes <= 0) {
+    return; // manual only
+  }
 
-  // Timer interval: 15 minutes = 900000ms
+  updateMyGPSLocation(true); // Initial silent reading
+
+  // Set recurring interval timer
   autoGpsTimer = setInterval(() => {
     updateMyGPSLocation(true);
-  }, 15 * 60 * 1000);
+  }, autoGpsIntervalMinutes * 60 * 1000);
 
   if (navigator.geolocation && navigator.geolocation.watchPosition) {
     autoGpsWatchId = navigator.geolocation.watchPosition(
@@ -1595,6 +1630,39 @@ function startAutoGpsSharing() {
       },
       { enableHighAccuracy: false, maximumAge: 60000, timeout: 20000 }
     );
+  }
+}
+
+function toggleTribeLock() {
+  isTribeLockOpen = !isTribeLockOpen;
+  const lockIcon = document.getElementById('tribeLockIcon');
+  const lockBtn = document.getElementById('btnToggleTribeLock');
+
+  const lockLabel = document.getElementById('tribeLockLabel');
+
+  if (isTribeLockOpen) {
+    if (lockIcon) lockIcon.className = 'fa-solid fa-lock-open';
+    if (lockBtn) lockBtn.classList.add('unlocked');
+    if (lockLabel) lockLabel.textContent = 'sbloccato';
+    SoundFX.click();
+    showToast("Permesso eliminazione tribù attivo");
+  } else {
+    if (lockIcon) lockIcon.className = 'fa-solid fa-lock';
+    if (lockBtn) lockBtn.classList.remove('unlocked');
+    if (lockLabel) lockLabel.textContent = 'blocca';
+    SoundFX.pop();
+    showToast("Eliminazione tribù protetta (lucchetto chiuso)");
+  }
+  renderFamilySettingsModal();
+}
+
+function deleteSavedTribe(code, name) {
+  if (confirm(`Sei sicuro di voler eliminare la tribù "${name}" (${code}) da questo dispositivo?`)) {
+    savedTribes = savedTribes.filter(t => t.code !== code);
+    saveLocalState();
+    renderFamilySettingsModal();
+    SoundFX.pop();
+    showToast(`Tribù "${name}" eliminata`);
   }
 }
 
@@ -2004,6 +2072,37 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('avatarPickerModal')?.classList.add('hidden');
   });
 
+  // Tribe Deletion Lock Toggle
+  safeListen('btnToggleTribeLock', 'click', toggleTribeLock);
+
+  // GPS Interval Selector Listener
+  safeListen('gpsIntervalSelect', 'change', (e) => {
+    setGpsInterval(e.target.value);
+  });
+
+  // Fun Emoji Avatars Grid Handler
+  document.querySelectorAll('#avatarFunEmojisGrid .avatar-fun-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const emoji = btn.getAttribute('data-avatar');
+      if (avatarTargetType === 'my') {
+        userProfile.avatar = emoji;
+        memberAvatars[userProfile.name] = emoji;
+      } else {
+        memberAvatars[avatarTargetType] = emoji;
+      }
+      saveLocalState();
+      pushFamilyStateToCloud();
+      renderFamilySettingsModal();
+      renderFamilyMembersFilterBar();
+      renderFamilyTasks();
+      renderFamilyMapMarkers();
+      document.getElementById('avatarPickerModal')?.classList.add('hidden');
+      SoundFX.complete();
+      showToast("avatar aggiornato!");
+    });
+  });
+
+  // WP8 Silhouette Avatars Grid Handler
   document.querySelectorAll('#avatarEmojisGrid .avatar-emoji-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const emoji = btn.getAttribute('data-avatar');
@@ -2017,6 +2116,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pushFamilyStateToCloud();
       renderFamilySettingsModal();
       renderFamilyMembersFilterBar();
+      renderFamilyTasks();
       renderFamilyMapMarkers();
       document.getElementById('avatarPickerModal')?.classList.add('hidden');
       SoundFX.complete();

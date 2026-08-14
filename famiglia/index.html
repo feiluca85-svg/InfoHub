@@ -8,7 +8,7 @@
   <title>Tribù</title>
 
   <!-- PWA & Mobile Meta Tags -->
-  <link rel="manifest" href="manifest.json?v=1.4.0">
+  <link rel="manifest" href="manifest.json?v=1.5.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -19,8 +19,8 @@
   <meta name="application-name" content="Tribù">
 
   <!-- Icons -->
-  <link rel="apple-touch-icon" href="icon.jpg?v=1.4.0">
-  <link rel="icon" href="icon.jpg?v=1.4.0" type="image/jpeg">
+  <link rel="apple-touch-icon" href="icon.jpg?v=1.5.0">
+  <link rel="icon" href="icon.jpg?v=1.5.0" type="image/jpeg">
 
   <!-- Google Fonts: Outfit & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +36,7 @@
   <!-- Standalone QRCode Engine for 100% Offline Instant QR Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=1.4.0">
+  <link rel="stylesheet" href="styles.css?v=1.5.0">
 
   <!-- Firebase Compatibility SDKs (AppTito Cloud Backend) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -397,19 +397,31 @@
         <section class="carousel-slide" id="slideMappa">
           <div class="slide-content-wrapper">
             
-            <!-- Map Top Action Card -->
+            <!-- Map Top Action Card with Configurable GPS Interval -->
             <div class="wp8-map-header-card">
-              <div class="map-header-left">
-                <span class="sub-filter-label">la tua posizione:</span>
-                <strong id="myLocationStatusLabel" class="location-status-text">non aggiornata</strong>
-              </div>
-              <div class="map-header-actions-col">
+              <div class="map-header-top-row">
+                <div class="map-header-left">
+                  <span class="sub-filter-label">la tua posizione:</span>
+                  <strong id="myLocationStatusLabel" class="location-status-text">non aggiornata</strong>
+                </div>
                 <button type="button" id="btnUpdateMyGPS" class="wp8-btn-accent location-refresh-btn" title="Aggiorna dove sei">
                   <i class="fa-solid fa-location-crosshairs"></i> aggiorna ora
                 </button>
-                <button type="button" id="toggleAutoGpsBtn" class="wp8-btn-outline auto-gps-btn" title="Attiva/Disattiva aggiornamento automatico">
-                  <i class="fa-solid fa-arrows-spin"></i> auto ogni 15 min: <strong id="autoGpsStatusText">NO</strong>
-                </button>
+              </div>
+              
+              <div class="map-interval-selector-row">
+                <label for="gpsIntervalSelect" class="interval-picker-label">
+                  <i class="fa-solid fa-arrows-spin"></i> auto aggiornamento:
+                </label>
+                <select id="gpsIntervalSelect" class="wp8-select-interval">
+                  <option value="1">ogni 1 minuto</option>
+                  <option value="5">ogni 5 minuti</option>
+                  <option value="10">ogni 10 minuti</option>
+                  <option value="15" selected>ogni 15 minuti</option>
+                  <option value="30">ogni 30 minuti</option>
+                  <option value="60">ogni 1 ora</option>
+                  <option value="0">mai (solo manuale)</option>
+                </select>
               </div>
             </div>
 
@@ -475,7 +487,13 @@
           <div class="sheet-section multi-tribe-box">
             <div class="section-title-with-btn">
               <label class="sheet-label">le tue tribù</label>
-              <button id="btnOpenCreateTribeModal" class="wp8-inline-add-btn">+ nuova tribù</button>
+              <div class="section-title-actions">
+                <button type="button" id="btnToggleTribeLock" class="wp8-lock-btn" title="Blocca/Sblocca eliminazione tribù">
+                  <i class="fa-solid fa-lock" id="tribeLockIcon"></i>
+                  <span id="tribeLockLabel">blocca</span>
+                </button>
+                <button id="btnOpenCreateTribeModal" class="wp8-inline-add-btn">+ nuova tribù</button>
+              </div>
             </div>
             <div class="tribes-saved-list" id="savedTribesList">
               <!-- Dynamically populated -->
@@ -496,7 +514,7 @@
             <label class="sheet-label">il tuo profilo in questa tribù</label>
             <div class="profile-card-edit">
               <div class="profile-avatar-box" id="myProfileAvatarPreview">
-                <span id="myAvatarDisplay">👨‍🦱</span>
+                <span id="myAvatarDisplay">🧔</span>
               </div>
               <div class="profile-name-col">
                 <input type="text" id="customMemberNameInput" class="wp8-dialog-input" placeholder="Il tuo nome...">
@@ -596,13 +614,50 @@
             </button>
           </div>
 
+          <!-- Fun Emoji Avatars Section -->
+          <div class="sheet-section">
+            <label class="sheet-label">emoji simpatiche & avatar:</label>
+            <div class="avatar-fun-emojis-grid" id="avatarFunEmojisGrid">
+              <button type="button" class="avatar-fun-btn" data-avatar="🧔" title="Babbo">🧔</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="👩" title="Mamma">👩</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="👧" title="Figlia (12 anni)">👧</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="👦" title="Figlio">👦</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="👶" title="Bimbo">👶</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="👴" title="Nonno">👴</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="👵" title="Nonna">👵</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🐶" title="Cane">🐶</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🐱" title="Gatto">🐱</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🦊" title="Volpe">🦊</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🐼" title="Panda">🐼</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🦁" title="Leone">🦁</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🦄" title="Unicorno">🦄</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🦖" title="Dinosauro">🦖</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🍕" title="Pizza">🍕</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🍦" title="Gelato">🍦</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🚀" title="Razzo">🚀</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🎮" title="Videogioco">🎮</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🎸" title="Musica">🎸</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="⚽" title="Calcio">⚽</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🏀" title="Basket">🏀</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🚗" title="Macchina">🚗</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="👑" title="Corona">👑</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🌟" title="Stella">🌟</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="💖" title="Cuore">💖</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="⚡" title="Fulmine">⚡</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🕶️" title="Occhiali">🕶️</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🧙‍♂️" title="Mago">🧙‍♂️</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🏖️" title="Mare">🏖️</button>
+              <button type="button" class="avatar-fun-btn" data-avatar="🏕️" title="Campeggio">🏕️</button>
+            </div>
+          </div>
+
           <!-- Preset WP8.1 Metro Vector Silhouette Avatars -->
           <div class="sheet-section">
-            <label class="sheet-label">oppure scegli un'icona metro wp8.1:</label>
+            <label class="sheet-label">oppure icone silhouette wp8.1:</label>
             <div class="avatar-emojis-grid" id="avatarEmojisGrid">
-              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:user" title="Papà / Uomo">
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:user" title="Babbo / Uomo">
                 <i class="fa-solid fa-user"></i>
-                <span>papà</span>
+                <span>babbo</span>
               </button>
               <button type="button" class="avatar-emoji-btn" data-avatar="wp8:female" title="Mamma / Donna">
                 <i class="fa-solid fa-person-dress"></i>
@@ -689,7 +744,7 @@
           <div class="sheet-section">
             <label class="sheet-label">oppure seleziona un ruolo rapido:</label>
             <div class="quick-role-chips" id="quickRoleChips">
-              <button type="button" class="role-chip" data-role="Papà"><i class="fa-solid fa-user"></i> Papà</button>
+              <button type="button" class="role-chip" data-role="Babbo"><i class="fa-solid fa-user"></i> Babbo</button>
               <button type="button" class="role-chip" data-role="Mamma"><i class="fa-solid fa-user"></i> Mamma</button>
               <button type="button" class="role-chip" data-role="Figlio"><i class="fa-solid fa-child"></i> Figlio</button>
               <button type="button" class="role-chip" data-role="Figlia"><i class="fa-solid fa-child-dress"></i> Figlia (12 anni)</button>
@@ -844,7 +899,7 @@
           <div class="sheet-section version-update-box">
             <div class="version-row-meta">
               <span class="sheet-label">versione installata:</span>
-              <strong id="appVersionCodeLabel" class="version-badge">1.4.0</strong>
+              <strong id="appVersionCodeLabel" class="version-badge">1.5.0</strong>
             </div>
             <button type="button" id="btnManualCheckUpdate" class="wp8-btn-outline" style="width:100%; margin-top:8px; font-size:0.88rem;">
               <i class="fa-solid fa-rotate"></i> verifica aggiornamenti cloud
@@ -935,6 +990,6 @@
 
   </div>
 
-  <script src="app.js?v=1.4.0"></script>
+  <script src="app.js?v=1.5.0"></script>
 </body>
 </html>
