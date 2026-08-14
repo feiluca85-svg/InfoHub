@@ -1,0 +1,15 @@
+{
+  "name": "famtito",
+  "version": "1.0.0",
+  "description": "FamTito - App di Famiglia To-Do e Idee in stile Windows Phone 8",
+  "main": "index.html",
+  "scripts": {
+    "sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.3",
+    "@capacitor/cli": "^8.0.3",
+    "@capacitor/core": "^8.0.3",
+    "@capacitor/status-bar": "^8.0.3"
+  }
+}

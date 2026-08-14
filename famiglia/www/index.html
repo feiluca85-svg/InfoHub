@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0078d7">
+  <meta name="description" content="FamTito - To-Do List di Famiglia Condivisa in Tempo Reale, Note & To-Do Personali">
+  <title>FamTito - To-Do Famiglia & Idee</title>
+
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FamTito">
+  <meta name="application-name" content="FamTito">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon" href="icon.jpg">
+  <link rel="icon" href="icon.jpg" type="image/jpeg">
+
+  <!-- Google Fonts: Outfit, Segoe UI feel, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome for crisp Metro vector icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Firebase Compatibility SDKs (AppTito Cloud Backend) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="theme-dark">
+
+  <div id="app" class="app-root">
+    
+    <!-- ============================================== -->
+    <!-- 1. WP8 METRO PANORAMA HEADER                   -->
+    <!-- ============================================== -->
+    <header class="metro-header">
+      <div class="header-top-row">
+        <div class="brand-group">
+          <span class="brand-sub-title">HUB FAMIGLIA</span>
+          <h1 class="brand-title">FamTito</h1>
+        </div>
+
+        <div class="header-actions">
+          <!-- Voice Dictation Button -->
+          <button id="globalVoiceBtn" class="metro-icon-btn" title="Dettatura vocale" aria-label="Dettatura vocale">
+            <i class="fa-solid fa-microphone"></i>
+          </button>
+          <!-- Theme & Accent Picker -->
+          <button id="themeToggleBtn" class="metro-icon-btn" title="Personalizza Tema e Colore" aria-label="Tema">
+            <i class="fa-solid fa-palette"></i>
+          </button>
+          <!-- Family & Member Profile Button -->
+          <button id="familyProfileBtn" class="metro-icon-btn member-avatar-btn" title="Profilo e Codice Famiglia" aria-label="Profilo">
+            <span id="currentMemberAvatarHeader">🧔</span>
+            <span class="cloud-status-dot" id="cloudStatusDot" title="Cloud Attivo"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Metro Panoramic Tab Bar (Clickable & updates with swipe) -->
+      <nav class="metro-pivot-nav" id="metroPivotNav">
+        <button class="pivot-item active" data-index="0">
+          <span class="pivot-text">famiglia</span>
+          <span class="pivot-badge" id="badgeFamilyCount">0</span>
+        </button>
+        <button class="pivot-item" data-index="1">
+          <span class="pivot-text">personale</span>
+          <span class="pivot-badge" id="badgePersonalCount">0</span>
+        </button>
+        <button class="pivot-item" data-index="2">
+          <span class="pivot-text">idee & note</span>
+          <span class="pivot-badge" id="badgeIdeasCount">0</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- ============================================== -->
+    <!-- 2. HORIZONTAL SWIPE CAROUSEL CONTAINER         -->
+    <!-- ============================================== -->
+    <main class="carousel-viewport" id="carouselViewport">
+      <div class="carousel-track" id="carouselTrack">
+
+        <!-- ============================================== -->
+        <!-- TAB 1: FAMIGLIA (Condivisa in tempo reale)     -->
+        <!-- ============================================== -->
+        <section class="carousel-slide" id="slideFamiglia">
+          <div class="slide-content-wrapper">
+            
+            <!-- Family Live Status Bar -->
+            <div class="family-status-card" id="familyStatusCard">
+              <div class="family-status-left">
+                <span class="cloud-icon" id="cloudSyncIcon">☁️</span>
+                <div class="family-status-info">
+                  <div class="family-name-row">
+                    <strong id="activeFamilyName">Famiglia Tito</strong>
+                    <span class="family-code-tag" id="activeFamilyCodeDisplay">#FAM-TITO</span>
+                  </div>
+                  <span class="family-sync-subtitle" id="familySyncSubtitle">Sincronizzato in tempo reale</span>
+                </div>
+              </div>
+              <button class="change-family-btn" id="openFamilySettingsBtn" title="Gestisci Famiglia e Membri">
+                <i class="fa-solid fa-users-gear"></i>
+              </button>
+            </div>
+
+            <!-- Member Filter Ribbon (Chi fa cosa) -->
+            <div class="members-ribbon-row">
+              <span class="ribbon-label">Filtra:</span>
+              <div class="members-chips-container" id="familyMemberFilterBar">
+                <button class="member-chip active" data-member="all">
+                  <span>👨‍👩‍👧‍👦</span><span>Tutti</span>
+                </button>
+                <button class="member-chip" data-member="Papà">
+                  <span>🧔</span><span>Papà</span>
+                </button>
+                <button class="member-chip" data-member="Mamma">
+                  <span>👩</span><span>Mamma</span>
+                </button>
+                <button class="member-chip" data-member="Figlio">
+                  <span>👦</span><span>Figlio</span>
+                </button>
+                <button class="member-chip" data-member="Figlia">
+                  <span>👧</span><span>Figlia</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Add Family Task -->
+            <div class="metro-add-card">
+              <div class="add-input-row">
+                <input type="text" id="familyTaskInput" placeholder="Cosa c'è da fare o comprare per la famiglia..." autocomplete="off">
+                <button id="voiceFamilyTaskBtn" class="action-mini-btn" title="Detta voce">
+                  <i class="fa-solid fa-microphone"></i>
+                </button>
+                <button id="addFamilyTaskBtn" class="metro-submit-btn">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>Aggiungi</span>
+                </button>
+              </div>
+
+              <!-- Category & Assignment Pills -->
+              <div class="add-meta-options-row">
+                <div class="meta-select-group">
+                  <label for="familyCategorySelect">Categoria:</label>
+                  <select id="familyCategorySelect" class="metro-select">
+                    <option value="spesa">🛒 Spesa</option>
+                    <option value="casa">🏠 Casa</option>
+                    <option value="bollette">📄 Bollette</option>
+                    <option value="figli">🎒 Figli / Scuola</option>
+                    <option value="salute">💊 Farmacia / Salute</option>
+                    <option value="urgente">🚨 Urgente</option>
+                    <option value="altro">📌 Altro</option>
+                  </select>
+                </div>
+
+                <div class="meta-select-group">
+                  <label for="familyAssigneeSelect">Assegna a:</label>
+                  <select id="familyAssigneeSelect" class="metro-select">
+                    <option value="Tutti">👨‍👩‍👧‍👦 Chiunque</option>
+                    <option value="Papà">🧔 Papà</option>
+                    <option value="Mamma">👩 Mamma</option>
+                    <option value="Figlio">👦 Figlio</option>
+                    <option value="Figlia">👧 Figlia</option>
+                  </select>
+                </div>
+
+                <button type="button" id="toggleUrgentFamilyBtn" class="urgent-toggle-chip" title="Contrassegna come urgente">
+                  <i class="fa-solid fa-fire"></i>
+                  <span>Urgente</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Category Filter Ribbon -->
+            <div class="category-filter-bar" id="familyCategoryFilterBar">
+              <button class="cat-filter-chip active" data-cat="all">Tutte</button>
+              <button class="cat-filter-chip" data-cat="spesa">🛒 Spesa</button>
+              <button class="cat-filter-chip" data-cat="casa">🏠 Casa</button>
+              <button class="cat-filter-chip" data-cat="bollette">📄 Bollette</button>
+              <button class="cat-filter-chip" data-cat="figli">🎒 Figli</button>
+              <button class="cat-filter-chip" data-cat="salute">💊 Salute</button>
+              <button class="cat-filter-chip" data-cat="urgente">🚨 Urgente</button>
+            </div>
+
+            <!-- Shared Tasks List Container -->
+            <div class="tasks-container" id="familyTasksList">
+              <!-- Dynamically populated tasks -->
+            </div>
+
+            <!-- Completed Family Tasks Section -->
+            <div class="completed-section" id="familyCompletedSection">
+              <div class="completed-header" id="toggleFamilyCompleted">
+                <span>✅ Cose già fatte (<span id="familyCompletedCount">0</span>)</span>
+                <div class="completed-header-actions">
+                  <button id="clearFamilyCompletedBtn" class="btn-clear-completed" title="Elimina tutte le completate">Svuota</button>
+                  <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </div>
+              </div>
+              <div class="completed-list hidden" id="familyCompletedList">
+                <!-- Completed items -->
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state-card hidden" id="emptyFamilyState">
+              <i class="fa-solid fa-circle-check empty-state-icon"></i>
+              <h3>Tutto Fatto!</h3>
+              <p>Nessun compito rimasto per la famiglia. Aggiungi qualcosa con la barra in alto o riposati!</p>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: PERSONALE (Privata sul dispositivo)     -->
+        <!-- ============================================== -->
+        <section class="carousel-slide" id="slidePersonale">
+          <div class="slide-content-wrapper">
+            
+            <div class="slide-banner personal-banner">
+              <div class="banner-icon">🔒</div>
+              <div class="banner-content">
+                <h3>Le Mie Cose da Fare</h3>
+                <p>Lista privata sul tuo dispositivo. Puoi spostare qualsiasi compito nella lista di famiglia con 1 tocco.</p>
+              </div>
+            </div>
+
+            <!-- Quick Add Personal Task -->
+            <div class="metro-add-card">
+              <div class="add-input-row">
+                <input type="text" id="personalTaskInput" placeholder="Cosa devi fare tu personalmente..." autocomplete="off">
+                <button id="voicePersonalTaskBtn" class="action-mini-btn" title="Detta voce">
+                  <i class="fa-solid fa-microphone"></i>
+                </button>
+                <button id="addPersonalTaskBtn" class="metro-submit-btn">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>Aggiungi</span>
+                </button>
+              </div>
+
+              <div class="add-meta-options-row">
+                <div class="meta-select-group">
+                  <label for="personalPrioritySelect">Priorità:</label>
+                  <select id="personalPrioritySelect" class="metro-select">
+                    <option value="normale">🟢 Normale</option>
+                    <option value="media">🟡 Media</option>
+                    <option value="alta">🔴 Alta</option>
+                  </select>
+                </div>
+
+                <div class="meta-select-group">
+                  <label for="personalDueDateSelect">Scadenza:</label>
+                  <select id="personalDueDateSelect" class="metro-select">
+                    <option value="oggi">📅 Oggi</option>
+                    <option value="domani">🌅 Domani</option>
+                    <option value="settimana">🗓️ Questa settimana</option>
+                    <option value="nessuna">♾️ Nessuna</option>
+                  </select>
+                </div>
+
+                <div class="meta-select-group">
+                  <label for="personalCategorySelect">Tag:</label>
+                  <select id="personalCategorySelect" class="metro-select">
+                    <option value="lavoro">💼 Lavoro</option>
+                    <option value="studio">📚 Studio</option>
+                    <option value="salute">🏃 Sport & Salute</option>
+                    <option value="svago">🎮 Svago</option>
+                    <option value="personale">🎯 Obiettivi</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filter Chips for Personal -->
+            <div class="category-filter-bar" id="personalFilterBar">
+              <button class="cat-filter-chip active" data-filter="all">Tutti (<span id="personalActiveTotal">0</span>)</button>
+              <button class="cat-filter-chip" data-filter="oggi">📅 Oggi</button>
+              <button class="cat-filter-chip" data-filter="alta">🔴 Alta Priorità</button>
+              <button class="cat-filter-chip" data-filter="lavoro">💼 Lavoro</button>
+              <button class="cat-filter-chip" data-filter="personale">🎯 Personale</button>
+            </div>
+
+            <!-- Personal Task List -->
+            <div class="tasks-container" id="personalTasksList">
+              <!-- Dynamically populated personal tasks -->
+            </div>
+
+            <!-- Completed Personal Tasks Section -->
+            <div class="completed-section" id="personalCompletedSection">
+              <div class="completed-header" id="togglePersonalCompleted">
+                <span>✅ Cose personali completate (<span id="personalCompletedCount">0</span>)</span>
+                <div class="completed-header-actions">
+                  <button id="clearPersonalCompletedBtn" class="btn-clear-completed" title="Elimina tutte le completate">Svuota</button>
+                  <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                </div>
+              </div>
+              <div class="completed-list hidden" id="personalCompletedList">
+                <!-- Completed items -->
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state-card hidden" id="emptyPersonalState">
+              <i class="fa-solid fa-feather-pointed empty-state-icon"></i>
+              <h3>Nessuna attività personale</h3>
+              <p>Non hai compiti personali in sospeso. Aggiungine uno con la barra in alto!</p>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 3: IDEE & NOTE (Scratchpad / Brain Dump)  -->
+        <!-- ============================================== -->
+        <section class="carousel-slide" id="slideIdee">
+          <div class="slide-content-wrapper">
+            
+            <div class="slide-banner ideas-banner">
+              <div class="banner-icon">💡</div>
+              <div class="banner-content">
+                <h3>Bacheca Idee & Note</h3>
+                <p>Cattura pensieri, spunti, liste regali e appunti al volo. Trasforma qualsiasi idea in To-Do con 1 clic!</p>
+              </div>
+            </div>
+
+            <!-- Quick Add Idea Card -->
+            <div class="metro-add-card idea-creator-card">
+              <input type="text" id="ideaTitleInput" placeholder="Titolo dell'idea o appunto..." autocomplete="off">
+              <textarea id="ideaContentInput" placeholder="Scrivi qui i dettagli, una lista o il tuo pensiero..." rows="2"></textarea>
+              
+              <div class="idea-creator-footer">
+                <div class="idea-color-selector" id="ideaColorSelector">
+                  <button type="button" class="color-dot color-yellow active" data-color="yellow" title="Giallo Post-it"></button>
+                  <button type="button" class="color-dot color-blue" data-color="blue" title="Blu Cobalto"></button>
+                  <button type="button" class="color-dot color-green" data-color="green" title="Verde Smeraldo"></button>
+                  <button type="button" class="color-dot color-pink" data-color="pink" title="Rosa Acceso"></button>
+                  <button type="button" class="color-dot color-purple" data-color="purple" title="Viola"></button>
+                </div>
+
+                <div class="idea-footer-actions">
+                  <button type="button" id="togglePinIdeaBtn" class="pin-toggle-btn" title="Fissa in alto">
+                    <i class="fa-solid fa-thumbtack"></i>
+                    <span>In Primo Piano</span>
+                  </button>
+                  <button id="voiceIdeaBtn" class="action-mini-btn" title="Dettatura vocale">
+                    <i class="fa-solid fa-microphone"></i>
+                  </button>
+                  <button id="addIdeaBtn" class="metro-submit-btn">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span>Salva Idea</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ideas Filter Bar -->
+            <div class="category-filter-bar" id="ideasFilterBar">
+              <button class="cat-filter-chip active" data-filter="all">Tutte (<span id="ideasTotalCount">0</span>)</button>
+              <button class="cat-filter-chip" data-filter="pinned">📌 Fissate</button>
+              <button class="cat-filter-chip" data-filter="yellow">🟡 Gialle</button>
+              <button class="cat-filter-chip" data-filter="blue">🔵 Blu</button>
+              <button class="cat-filter-chip" data-filter="green">🟢 Verdi</button>
+            </div>
+
+            <!-- Metro Tiles Grid for Ideas -->
+            <div class="ideas-masonry-grid" id="ideasListGrid">
+              <!-- Dynamically populated ideas cards -->
+            </div>
+
+            <!-- Empty State for Ideas -->
+            <div class="empty-state-card hidden" id="emptyIdeasState">
+              <i class="fa-solid fa-lightbulb empty-state-icon"></i>
+              <h3>Nessuna idea annotata</h3>
+              <p>Usa il campo in alto per salvare i tuoi spunti o detta la tua prima idea col microfono!</p>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- 3. MODALS & DIALOGS                            -->
+    <!-- ============================================== -->
+
+    <!-- Family Settings & Profile Modal -->
+    <div id="familySettingsModal" class="metro-modal-overlay hidden">
+      <div class="metro-modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-kicker">GESTIONE CONDIVISIONE</span>
+            <h3>Famiglia & Profilo</h3>
+          </div>
+          <button id="closeFamilyModalBtn" class="metro-close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          
+          <!-- 1. Who Are You? Member Selector -->
+          <div class="form-section">
+            <label class="section-label">Chi sei in Famiglia? (Il tuo Avatar)</label>
+            <div class="profile-picker-grid" id="profilePickerGrid">
+              <button type="button" class="profile-choice active" data-name="Papà" data-avatar="🧔">
+                <span class="choice-avatar">🧔</span>
+                <span class="choice-name">Papà</span>
+              </button>
+              <button type="button" class="profile-choice" data-name="Mamma" data-avatar="👩">
+                <span class="choice-avatar">👩</span>
+                <span class="choice-name">Mamma</span>
+              </button>
+              <button type="button" class="profile-choice" data-name="Figlio" data-avatar="👦">
+                <span class="choice-avatar">👦</span>
+                <span class="choice-name">Figlio</span>
+              </button>
+              <button type="button" class="profile-choice" data-name="Figlia" data-avatar="👧">
+                <span class="choice-avatar">👧</span>
+                <span class="choice-name">Figlia</span>
+              </button>
+              <button type="button" class="profile-choice" data-name="Nonno" data-avatar="👴">
+                <span class="choice-avatar">👴</span>
+                <span class="choice-name">Nonno</span>
+              </button>
+              <button type="button" class="profile-choice" data-name="Nonna" data-avatar="👵">
+                <span class="choice-avatar">👵</span>
+                <span class="choice-name">Nonna</span>
+              </button>
+            </div>
+            <div class="custom-name-row">
+              <input type="text" id="customMemberNameInput" placeholder="Oppure scrivi il tuo nome...">
+            </div>
+          </div>
+
+          <!-- 2. Family Sync Code -->
+          <div class="form-section">
+            <label class="section-label">Codice Sincronizzazione Famiglia (Cloud)</label>
+            <p class="section-help-text">Tutti i familiari che inseriscono lo stesso codice vedranno e aggiorneranno la stessa lista in tempo reale:</p>
+            
+            <div class="family-code-input-row">
+              <input type="text" id="familyCodeInput" value="FAM-TITO" placeholder="Es. FAM-ROSSI-77" autocomplete="off" autocapitalize="characters">
+              <button id="saveFamilyCodeBtn" class="metro-action-btn">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+                <span>Collega</span>
+              </button>
+            </div>
+            <div class="quick-code-presets">
+              <button type="button" class="code-preset-btn" data-code="FAM-TITO">Predefinito (FAM-TITO)</button>
+              <button type="button" class="code-preset-btn" id="generateRandomCodeBtn">Genera Codice Casuale</button>
+            </div>
+          </div>
+
+          <!-- 3. Server Info -->
+          <div class="server-badge-card">
+            <i class="fa-solid fa-database"></i>
+            <div class="server-badge-info">
+              <span>Server Cloud: <strong>Firebase AppTito Backend</strong></span>
+              <small>Sincronizzazione istantanea bidirezionale crittografata</small>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button id="closeFamilyModalFooterBtn" class="metro-btn-secondary">Chiudi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme & Colors Modal -->
+    <div id="themeModal" class="metro-modal-overlay hidden">
+      <div class="metro-modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-kicker">PERSONALIZZAZIONE</span>
+            <h3>Colori & Stile Metro</h3>
+          </div>
+          <button id="closeThemeModalBtn" class="metro-close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-section">
+            <label class="section-label">Modalità Schermo</label>
+            <div class="theme-mode-toggle-row">
+              <button type="button" class="mode-toggle-btn active" id="btnDarkMode">
+                <i class="fa-solid fa-moon"></i>
+                <span>Nero OLED (Scuro)</span>
+              </button>
+              <button type="button" class="mode-toggle-btn" id="btnLightMode">
+                <i class="fa-solid fa-sun"></i>
+                <span>Bianco Puro (Chiaro)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <label class="section-label">Colore d'Accento Windows Phone</label>
+            <div class="accent-palette-grid" id="accentPaletteGrid">
+              <button type="button" class="accent-choice active" data-accent="#0078d7" style="background:#0078d7;">
+                <span>Cobalto</span>
+              </button>
+              <button type="button" class="accent-choice" data-accent="#107c41" style="background:#107c41;">
+                <span>Smeraldo</span>
+              </button>
+              <button type="button" class="accent-choice" data-accent="#f7630c" style="background:#f7630c;">
+                <span>Mango</span>
+              </button>
+              <button type="button" class="accent-choice" data-accent="#e81123" style="background:#e81123;">
+                <span>Crimson</span>
+              </button>
+              <button type="button" class="accent-choice" data-accent="#881798" style="background:#881798;">
+                <span>Magenta</span>
+              </button>
+              <button type="button" class="accent-choice" data-accent="#00b7c3" style="background:#00b7c3;">
+                <span>Ciano</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <label class="section-label">Effetti Sonori Web Audio</label>
+            <button type="button" class="sound-switch-btn" id="toggleSoundBtn">
+              <i class="fa-solid fa-volume-high" id="soundStatusIcon"></i>
+              <span id="soundStatusText">Audio Attivo (Click e Chimes)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="closeThemeModalFooterBtn" class="metro-btn-primary">Fatto</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Convert Idea to To-Do Modal -->
+    <div id="convertIdeaModal" class="metro-modal-overlay hidden">
+      <div class="metro-modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-kicker">TRASFORMA IN TO-DO</span>
+            <h3>Converti Idea</h3>
+          </div>
+          <button id="closeConvertModalBtn" class="metro-close-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p id="convertIdeaPreviewText" class="convert-preview-box"></p>
+
+          <label class="section-label">Dove vuoi inserire questa attività?</label>
+          <div class="convert-dest-buttons">
+            <button type="button" id="convertDestFamilyBtn" class="convert-dest-btn">
+              <span class="dest-icon">👨‍👩‍👧‍👦</span>
+              <div class="dest-info">
+                <strong>Lista Famiglia (Condivisa)</strong>
+                <small>Visibile a tutti i membri</small>
+              </div>
+            </button>
+
+            <button type="button" id="convertDestPersonalBtn" class="convert-dest-btn">
+              <span class="dest-icon">👤</span>
+              <div class="dest-info">
+                <strong>Lista Personale (Privata)</strong>
+                <small>Solo sul tuo telefono</small>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Overlay -->
+    <div id="metroToast" class="metro-toast hidden">
+      <span class="toast-icon" id="metroToastIcon">✨</span>
+      <span class="toast-message" id="metroToastMessage">Operazione completata</span>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FamTito</string>
+    <string name="title_activity_main">FamTito</string>
+    <string name="package_name">com.hub.famtito</string>
+    <string name="custom_url_scheme">com.hub.famtito</string>
+</resources>
