@@ -1501,11 +1501,98 @@ function openCategoryColorModal(cat) {
     tile.classList.toggle('active', tile.getAttribute('data-catcolor') === current);
   });
 
-  document.getElementById('categoryColorModal').classList.remove('hidden');
+  document.getElementById('categoryColorModal')?.classList.remove('hidden');
+}
+
+// =============================================================================
+// 10.5. AUTOMATIC GPS SHARING ENGINE (Every 15 Minutes / On Motion)
+// =============================================================================
+
+let autoGpsTimer = null;
+let autoGpsWatchId = null;
+let autoGpsEnabled = false;
+
+function loadAutoGpsState() {
+  try {
+    autoGpsEnabled = (localStorage.getItem('tribu_auto_gps') === 'true');
+    updateAutoGpsUi();
+    if (autoGpsEnabled) {
+      startAutoGpsSharing();
+    }
+  } catch (e) {}
+}
+
+function updateAutoGpsUi() {
+  const statusEl = document.getElementById('autoGpsStatusText');
+  const btn = document.getElementById('toggleAutoGpsBtn');
+  if (statusEl) {
+    statusEl.textContent = autoGpsEnabled ? 'ATTIVO' : 'NO';
+    statusEl.style.color = autoGpsEnabled ? 'var(--accent-color)' : 'var(--text-dim)';
+  }
+  if (btn) {
+    btn.classList.toggle('active', autoGpsEnabled);
+  }
+}
+
+function toggleAutoGpsSharing() {
+  autoGpsEnabled = !autoGpsEnabled;
+  try {
+    localStorage.setItem('tribu_auto_gps', autoGpsEnabled ? 'true' : 'false');
+  } catch (e) {}
+  updateAutoGpsUi();
+
+  if (autoGpsEnabled) {
+    startAutoGpsSharing();
+    SoundFX.complete();
+    showToast("condivisione GPS ogni 15 min attiva");
+  } else {
+    stopAutoGpsSharing();
+    SoundFX.pop();
+    showToast("condivisione automatica disattivata");
+  }
+}
+
+function startAutoGpsSharing() {
+  stopAutoGpsSharing();
+  updateMyGPSLocation(true); // First silent GPS read
+
+  // Timer interval: 15 minutes = 900000ms
+  autoGpsTimer = setInterval(() => {
+    updateMyGPSLocation(true);
+  }, 15 * 60 * 1000);
+
+  if (navigator.geolocation && navigator.geolocation.watchPosition) {
+    autoGpsWatchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const last = familyLocations[userProfile.name];
+        // If moved more than ~80 meters
+        if (!last || Math.abs(last.lat - lat) > 0.0008 || Math.abs(last.lng - lng) > 0.0008) {
+          updateMyGPSLocation(true);
+        }
+      },
+      (err) => {
+        console.warn("WatchPosition info:", err);
+      },
+      { enableHighAccuracy: false, maximumAge: 60000, timeout: 20000 }
+    );
+  }
+}
+
+function stopAutoGpsSharing() {
+  if (autoGpsTimer) {
+    clearInterval(autoGpsTimer);
+    autoGpsTimer = null;
+  }
+  if (autoGpsWatchId !== null && navigator.geolocation) {
+    navigator.geolocation.clearWatch(autoGpsWatchId);
+    autoGpsWatchId = null;
+  }
 }
 
 function openShareQRModal() {
-  const qrImg = document.getElementById('qrCodeImage');
+  const qrBox = document.getElementById('qrCodeContainer');
   const qrName = document.getElementById('qrTribeName');
   const qrCode = document.getElementById('qrTribeCode');
 
@@ -1513,11 +1600,41 @@ function openShareQRModal() {
   if (qrCode) qrCode.textContent = currentFamilyCode;
 
   const appShareUrl = `https://feiluca85-svg.github.io/InfoHub/famiglia/?code=${encodeURIComponent(currentFamilyCode)}`;
-  if (qrImg) {
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(appShareUrl)}`;
+  
+  if (qrBox) {
+    qrBox.innerHTML = '';
+    let rendered = false;
+
+    // 1) Try standard client-side vector QRCodeJS
+    if (typeof QRCode !== 'undefined') {
+      try {
+        new QRCode(qrBox, {
+          text: appShareUrl,
+          width: 220,
+          height: 220,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+        rendered = true;
+      } catch (err) {
+        console.warn("QRCodeJS generation error:", err);
+      }
+    }
+
+    // 2) Fallback to direct QR image renderer
+    if (!rendered || qrBox.children.length === 0) {
+      const qrImg = document.createElement('img');
+      qrImg.id = 'qrCodeImage';
+      qrImg.alt = 'QR Code Condivisione Tribù';
+      qrImg.style.width = '220px';
+      qrImg.style.height = '220px';
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(appShareUrl)}`;
+      qrBox.appendChild(qrImg);
+    }
   }
 
-  document.getElementById('shareQRModal').classList.remove('hidden');
+  document.getElementById('shareQRModal')?.classList.remove('hidden');
   SoundFX.click();
 }
 
@@ -1614,6 +1731,7 @@ document.addEventListener('DOMContentLoaded', () => {
   checkUrlParamsForCode();
   applyTheme();
   initFirebaseSync();
+  loadAutoGpsState();
   renderAllViews();
   setupTouchSwipe();
 
@@ -1631,6 +1749,9 @@ document.addEventListener('DOMContentLoaded', () => {
   safeListen('closeThemeModalFooterBtn', 'click', () => {
     document.getElementById('themeModal')?.classList.add('hidden');
   });
+
+  // Auto GPS Sharing
+  safeListen('toggleAutoGpsBtn', 'click', toggleAutoGpsSharing);
 
   // QR Code Share
   safeListen('btnOpenShareQRModal', 'click', () => {
