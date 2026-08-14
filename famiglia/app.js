@@ -1,10 +1,10 @@
 /**
- * FamTito - Core Application Engine & Real-Time Sync System
- * Windows Phone 8 Metro UI, 3 Horizontal Swipeable Tabs, AppTito Cloud Backend.
+ * FamTito - Authentic Windows Phone 8 Metro UI Engine
+ * Features: Giant Lowercase Pivot Tabs, Flat Monochrome Icons, AppTito Cloud Sync.
  */
 
 // =============================================================================
-// 1. FIREBASE INITIALIZATION (AppTito Cloud Backend)
+// 1. FIREBASE CONFIGURATION (AppTito Cloud Backend)
 // =============================================================================
 
 const firebaseConfig = {
@@ -28,7 +28,7 @@ try {
     db = firebase.firestore();
   }
 } catch (err) {
-  console.warn("Firebase initialization warning:", err);
+  console.warn("Firebase warning:", err);
 }
 
 // =============================================================================
@@ -37,7 +37,7 @@ try {
 
 let userProfile = {
   name: 'Papà',
-  avatar: '🧔'
+  role: 'papà'
 };
 
 let themeSettings = {
@@ -55,7 +55,7 @@ let familyTasks = [
     title: 'Comprare latte parzialmente scremato e pane fresco',
     category: 'spesa',
     assignee: 'Tutti',
-    addedBy: 'Mamma 👩',
+    addedBy: 'Mamma',
     isUrgent: false,
     completed: false,
     createdAt: Date.now() - 3600000
@@ -65,7 +65,7 @@ let familyTasks = [
     title: 'Pagare bolletta luce entro giovedì',
     category: 'bollette',
     assignee: 'Papà',
-    addedBy: 'Papà 🧔',
+    addedBy: 'Papà',
     isUrgent: true,
     completed: false,
     createdAt: Date.now() - 7200000
@@ -75,10 +75,10 @@ let familyTasks = [
     title: 'Passare in farmacia per lo sciroppo',
     category: 'salute',
     assignee: 'Papà',
-    addedBy: 'Mamma 👩',
+    addedBy: 'Mamma',
     isUrgent: false,
     completed: true,
-    completedBy: 'Papà 🧔',
+    completedBy: 'Papà',
     completedAt: Date.now() - 1800000
   }
 ];
@@ -107,7 +107,7 @@ let personalTasks = [
 let ideasList = [
   {
     id: 'idea_1',
-    title: 'Idea Regalo Compleanno Mamma 🎁',
+    title: 'Idea Regalo Compleanno Mamma',
     content: 'Cofanetto terme relax oppure la borsa in pelle che ha visto in vetrina.',
     color: 'yellow',
     isPinned: true,
@@ -115,7 +115,7 @@ let ideasList = [
   },
   {
     id: 'idea_2',
-    title: 'Gita fuori porta nel weekend 🌲',
+    title: 'Gita fuori porta nel weekend',
     content: 'Passeggiata al lago con pranzo al sacco se c\'è bel tempo.',
     color: 'green',
     isPinned: false,
@@ -162,7 +162,7 @@ function loadLocalData() {
     const savedFamily = localStorage.getItem('famtito_family_tasks_' + currentFamilyCode);
     if (savedFamily) familyTasks = JSON.parse(savedFamily);
   } catch (e) {
-    console.error("Errore lettura localStorage:", e);
+    console.error("Errore localStorage:", e);
   }
 }
 
@@ -176,13 +176,13 @@ function saveLocalData() {
     localStorage.setItem('famtito_ideas', JSON.stringify(ideasList));
     localStorage.setItem('famtito_family_tasks_' + currentFamilyCode, JSON.stringify(familyTasks));
   } catch (e) {
-    console.error("Errore salvataggio localStorage:", e);
+    console.error("Errore salvataggio:", e);
   }
 }
 
 function initFirebaseSync() {
   if (!db) {
-    updateCloudStatus(false, "Offline (Solo locale)");
+    updateCloudStatus(false);
     return;
   }
 
@@ -190,7 +190,7 @@ function initFirebaseSync() {
     unsubscribeFamilyListener();
   }
 
-  updateCloudStatus(true, "Connessione a " + currentFamilyCode + "...");
+  updateCloudStatus(true);
   familyDocRef = db.collection("famtito_family_todos").doc(currentFamilyCode);
 
   unsubscribeFamilyListener = familyDocRef.onSnapshot((doc) => {
@@ -204,16 +204,14 @@ function initFirebaseSync() {
       }
       saveLocalData();
       renderFamilyTasks();
-      updateBadges();
-      updateCloudStatus(true, "Sincronizzato in tempo reale");
+      updateCloudStatus(true);
     } else {
-      // Document does not exist yet on cloud, upload current local state
       pushFamilyTasksToCloud();
-      updateCloudStatus(true, "Nuova Famiglia creata sul Cloud");
+      updateCloudStatus(true);
     }
   }, (error) => {
-    console.warn("Sync warning:", error);
-    updateCloudStatus(false, "Offline (Modifiche salvate in locale)");
+    console.warn("Sync error:", error);
+    updateCloudStatus(false);
   });
 }
 
@@ -224,26 +222,24 @@ function pushFamilyTasksToCloud() {
       familyName: activeFamilyName,
       familyCode: currentFamilyCode,
       lastUpdated: Date.now(),
-      updatedBy: `${userProfile.name} ${userProfile.avatar}`,
+      updatedBy: userProfile.name,
       tasks: familyTasks
     }, { merge: true }).catch(err => {
-      console.warn("Cloud push error:", err);
+      console.warn("Push error:", err);
     });
   }
 }
 
-function updateCloudStatus(isOnline, subtitleText) {
+function updateCloudStatus(isOnline) {
   const dot = document.getElementById('cloudStatusDot');
-  const icon = document.getElementById('cloudSyncIcon');
-  const sub = document.getElementById('familySyncSubtitle');
+  const tag = document.getElementById('headerFamilyCode');
 
   if (dot) dot.classList.toggle('offline', !isOnline);
-  if (icon) icon.textContent = isOnline ? '☁️' : '📡';
-  if (sub) sub.textContent = subtitleText || (isOnline ? "Sincronizzato in tempo reale" : "Offline");
+  if (tag) tag.textContent = `#${currentFamilyCode}`;
 }
 
 // =============================================================================
-// 4. WEB AUDIO SYNTHESIZER (Pure JS, Zero File Latency)
+// 4. WEB AUDIO SYNTHESIZER (Pure Web Audio)
 // =============================================================================
 
 let audioCtx = null;
@@ -266,32 +262,32 @@ const SoundFX = {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(480, ctx.currentTime);
-    gain.gain.setValueAtTime(0.06, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+    osc.frequency.setValueAtTime(520, ctx.currentTime);
+    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.035);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.04);
+    osc.stop(ctx.currentTime + 0.035);
   },
 
   complete() {
     if (!themeSettings.sound) return;
     const ctx = getAudioContext();
     if (!ctx) return;
-    const notes = [587.33, 880]; // D5, A5
+    const notes = [587.33, 880];
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
       osc.frequency.value = freq;
       const startTime = ctx.currentTime + (idx * 0.07);
-      gain.gain.setValueAtTime(0.2, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+      gain.gain.setValueAtTime(0.18, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(startTime);
-      osc.stop(startTime + 0.35);
+      osc.stop(startTime + 0.3);
     });
   },
 
@@ -302,27 +298,37 @@ const SoundFX = {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(620, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.12, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    osc.frequency.setValueAtTime(600, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.07);
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.08);
+    osc.stop(ctx.currentTime + 0.07);
   }
 };
 
 // =============================================================================
-// 5. SMART CATEGORY AUTO-DETECTION
+// 5. SMART CATEGORY AUTO-DETECTION & VECTOR ICONS
 // =============================================================================
 
+const CATEGORY_MAP = {
+  spesa:    { name: 'spesa',    icon: 'fa-cart-shopping' },
+  casa:     { name: 'casa',     icon: 'fa-house' },
+  bollette: { name: 'bollette', icon: 'fa-file-invoice' },
+  figli:    { name: 'figli',    icon: 'fa-graduation-cap' },
+  salute:   { name: 'salute',   icon: 'fa-kit-medical' },
+  urgente:  { name: 'urgente',  icon: 'fa-bolt' },
+  altro:    { name: 'altro',    icon: 'fa-tag' }
+};
+
 const CATEGORY_KEYWORDS = {
-  spesa: ['latte', 'pane', 'uova', 'burro', 'pasta', 'riso', 'formaggio', 'mela', 'mele', 'frutta', 'verdura', 'carne', 'pesce', 'biscotti', 'acqua', 'olio', 'caffè', 'caffe', 'supermercato', 'pomodori', 'insalata', 'zucchero', 'farina', 'yogurt', 'prosciutto', 'spesa', 'detersivo', 'sapone', 'carta igienica'],
-  bollette: ['luce', 'gas', 'enel', 'bolletta', 'bollette', 'affitto', 'condominio', 'assicurazione', 'wifi', 'internet', 'rata', 'tributi', 'tari', 'fattura', 'f24', 'banca', 'mutuo', 'canone'],
-  casa: ['lampadina', 'pulizie', 'bucato', 'lavatrice', 'lavastoviglie', 'piatti', 'riparare', 'rubinetto', 'balcone', 'cantina', 'garage', 'letto', 'mobili', 'giardino', 'aspirapolvere', 'ferro da stiro', 'idraulico', 'elettricista'],
-  figli: ['scuola', 'compiti', 'libri', 'quaderno', 'zaino', 'mensa', 'palestra', 'catechismo', 'pediatra', 'vestiti', 'gioco', 'maestra', 'prof', 'gita', 'matite', 'colori'],
-  salute: ['farmacia', 'medicine', 'tachipirina', 'sciroppo', 'visita', 'dentista', 'dottore', 'ricetta', 'analisi', 'terapia', 'termometro', 'garze', 'cerotti']
+  spesa: ['latte', 'pane', 'uova', 'burro', 'pasta', 'riso', 'formaggio', 'mela', 'mele', 'frutta', 'verdura', 'carne', 'pesce', 'biscotti', 'acqua', 'olio', 'caffè', 'caffe', 'supermercato', 'pomodori', 'insalata', 'zucchero', 'farina', 'yogurt', 'prosciutto', 'spesa', 'detersivo', 'sapone'],
+  bollette: ['luce', 'gas', 'enel', 'bolletta', 'bollette', 'affitto', 'condominio', 'assicurazione', 'wifi', 'internet', 'rata', 'tributi', 'tari', 'fattura', 'f24', 'mutuo'],
+  casa: ['lampadina', 'pulizie', 'bucato', 'lavatrice', 'lavastoviglie', 'piatti', 'riparare', 'rubinetto', 'balcone', 'cantina', 'garage', 'letto', 'mobili', 'aspirapolvere'],
+  figli: ['scuola', 'compiti', 'libri', 'quaderno', 'zaino', 'mensa', 'palestra', 'catechismo', 'pediatra', 'vestiti', 'maestra'],
+  salute: ['farmacia', 'medicine', 'tachipirina', 'sciroppo', 'visita', 'dentista', 'dottore', 'ricetta', 'analisi', 'termometro']
 };
 
 function autoDetectCategory(text) {
@@ -353,16 +359,14 @@ function setupSpeechRecognition() {
   recognition.interimResults = false;
 
   recognition.onstart = () => {
-    document.querySelectorAll('.action-mini-btn, #globalVoiceBtn').forEach(b => b.classList.add('recording'));
-    showToast("Ascolto in corso... Parla ora 🎙️");
+    document.querySelectorAll('.wp8-inline-btn, #appbarVoiceBtn').forEach(b => b.classList.add('recording'));
+    showToast("ascolto in corso... parla ora");
   };
 
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
     if (activeVoiceTargetInput) {
       activeVoiceTargetInput.value = transcript;
-      
-      // Auto-trigger category check for family input
       if (activeVoiceTargetInput.id === 'familyTaskInput') {
         const detected = autoDetectCategory(transcript);
         if (detected) {
@@ -370,23 +374,22 @@ function setupSpeechRecognition() {
         }
       }
     }
-    showToast(`Dettato: "${transcript}"`, "✨");
+    showToast(`dettato: "${transcript}"`);
     SoundFX.pop();
   };
 
-  recognition.onerror = (e) => {
-    console.log("Voice error:", e);
-    showToast("Nessuna voce rilevata", "⚠️");
+  recognition.onerror = () => {
+    showToast("nessuna voce rilevata");
   };
 
   recognition.onend = () => {
-    document.querySelectorAll('.action-mini-btn, #globalVoiceBtn').forEach(b => b.classList.remove('recording'));
+    document.querySelectorAll('.wp8-inline-btn, #appbarVoiceBtn').forEach(b => b.classList.remove('recording'));
   };
 }
 
 function startVoiceDictation(targetInput) {
   if (!recognition) {
-    showToast("Dettatura vocale non supportata su questo browser", "⚠️");
+    showToast("dettatura vocale non disponibile");
     return;
   }
   activeVoiceTargetInput = targetInput;
@@ -398,7 +401,7 @@ function startVoiceDictation(targetInput) {
 }
 
 // =============================================================================
-// 7. HORIZONTAL SWIPE & CAROUSEL ENGINE
+// 7. HORIZONTAL SWIPE & GIANT WP8 PIVOT ENGINE
 // =============================================================================
 
 function goToSlide(index) {
@@ -411,11 +414,19 @@ function goToSlide(index) {
     track.style.transform = `translateX(-${index * 33.3333}%)`;
   }
 
-  // Update Pivot Nav
-  const pivotButtons = document.querySelectorAll('#metroPivotNav .pivot-item');
+  // Update Pivot Titles (Giant WP8 Lowercase)
+  const pivotButtons = document.querySelectorAll('#pivotTitlesTrack .pivot-title-btn');
   pivotButtons.forEach((btn, i) => {
     btn.classList.toggle('active', i === index);
   });
+
+  // Scroll titles row slightly for panorama peek effect
+  const scroller = document.getElementById('pivotTitlesScroller');
+  if (scroller) {
+    if (index === 0) scroller.scrollTo({ left: 0, behavior: 'smooth' });
+    else if (index === 1) scroller.scrollTo({ left: 100, behavior: 'smooth' });
+    else if (index === 2) scroller.scrollTo({ left: 240, behavior: 'smooth' });
+  }
 
   SoundFX.click();
 }
@@ -441,8 +452,7 @@ function setupTouchSwipe() {
     const diffX = e.changedTouches[0].clientX - startX;
     const diffY = e.changedTouches[0].clientY - startY;
 
-    // Must be predominantly horizontal gesture
-    if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
+    if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.3) {
       if (diffX < 0 && activeTabSlide < 2) {
         goToSlide(activeTabSlide + 1); // Swipe Left -> Next tab
       } else if (diffX > 0 && activeTabSlide > 0) {
@@ -453,18 +463,8 @@ function setupTouchSwipe() {
 }
 
 // =============================================================================
-// 8. TAB 1: RENDERING FAMIGLIA (Condivisa)
+// 8. TAB 1: RENDERING FAMIGLIA (Clean WP8 Rows)
 // =============================================================================
-
-const CATEGORY_MAP = {
-  spesa: { name: 'Spesa', icon: '🛒' },
-  casa: { name: 'Casa', icon: '🏠' },
-  bollette: { name: 'Bollette', icon: '📄' },
-  figli: { name: 'Figli', icon: '🎒' },
-  salute: { name: 'Salute', icon: '💊' },
-  urgente: { name: 'Urgente', icon: '🚨' },
-  altro: { name: 'Altro', icon: '📌' }
-};
 
 function renderFamilyTasks() {
   const container = document.getElementById('familyTasksList');
@@ -474,7 +474,6 @@ function renderFamilyTasks() {
 
   if (!container) return;
 
-  // Filter tasks
   const activeTasks = familyTasks.filter(t => !t.completed);
   const completedTasks = familyTasks.filter(t => t.completed);
 
@@ -490,7 +489,7 @@ function renderFamilyTasks() {
   } else {
     emptyState.classList.add('hidden');
     filtered.forEach(t => {
-      container.appendChild(createFamilyTaskCard(t));
+      container.appendChild(createFamilyTaskItem(t));
     });
   }
 
@@ -498,48 +497,45 @@ function renderFamilyTasks() {
   completedCountElem.textContent = completedTasks.length;
   completedList.innerHTML = '';
   completedTasks.forEach(t => {
-    completedList.appendChild(createFamilyTaskCard(t));
+    completedList.appendChild(createFamilyTaskItem(t));
   });
-
-  document.getElementById('activeFamilyName').textContent = activeFamilyName;
-  document.getElementById('activeFamilyCodeDisplay').textContent = `#${currentFamilyCode}`;
 }
 
-function createFamilyTaskCard(task) {
+function createFamilyTaskItem(task) {
   const cat = CATEGORY_MAP[task.category] || CATEGORY_MAP.altro;
-  const card = document.createElement('div');
-  card.className = `metro-task-card ${task.isUrgent ? 'is-urgent' : ''} ${task.completed ? 'is-completed' : ''}`;
-  card.id = `ftask_${task.id}`;
+  const item = document.createElement('div');
+  item.className = `wp8-task-item ${task.isUrgent ? 'is-urgent' : ''} ${task.completed ? 'is-completed' : ''}`;
+  item.id = `ftask_${task.id}`;
 
-  card.innerHTML = `
-    <button class="metro-checkbox-btn" aria-label="Completa compito" title="Segna come fatto">
+  item.innerHTML = `
+    <button class="wp8-checkbox" aria-label="Completa" title="Segna come fatto">
       ${task.completed ? '<i class="fa-solid fa-check"></i>' : ''}
     </button>
-    <div class="task-content-group">
-      <div class="task-title">${escapeHTML(task.title)}</div>
-      <div class="task-meta-row">
-        <span class="task-badge">${cat.icon} ${cat.name}</span>
-        ${task.assignee !== 'Tutti' ? `<span class="task-badge badge-member">👤 ${task.assignee}</span>` : ''}
-        ${task.isUrgent ? `<span class="task-badge badge-urgent"><i class="fa-solid fa-fire"></i> Urgente</span>` : ''}
-        <span class="task-badge" style="opacity:0.75;">Di: ${escapeHTML(task.addedBy || 'Famiglia')}</span>
-        ${task.completed && task.completedBy ? `<span class="task-badge" style="color:#107c41;">Fatto da ${escapeHTML(task.completedBy)}</span>` : ''}
+    <div class="task-body-col">
+      <div class="task-text">${escapeHTML(task.title)}</div>
+      <div class="task-info-meta">
+        <span class="meta-tag"><i class="fa-solid ${cat.icon}"></i> ${cat.name}</span>
+        ${task.assignee !== 'Tutti' ? `<span class="meta-tag tag-member"><i class="fa-solid fa-user"></i> ${task.assignee}</span>` : ''}
+        ${task.isUrgent ? `<span class="meta-tag tag-urgent"><i class="fa-solid fa-bolt"></i> urgente</span>` : ''}
+        <span class="meta-tag" style="opacity:0.65;">di ${escapeHTML(task.addedBy || 'Famiglia')}</span>
+        ${task.completed && task.completedBy ? `<span class="meta-tag" style="color:#107c41;">fatto da ${escapeHTML(task.completedBy)}</span>` : ''}
       </div>
     </div>
-    <div class="task-actions-group">
-      <button class="task-action-btn delete-btn" title="Elimina compito">
+    <div class="task-side-actions">
+      <button class="wp8-icon-action delete-action" title="Elimina">
         <i class="fa-solid fa-trash-can"></i>
       </button>
     </div>
   `;
 
-  // Toggle complete
-  card.querySelector('.metro-checkbox-btn').addEventListener('click', () => {
+  // Checkbox toggle
+  item.querySelector('.wp8-checkbox').addEventListener('click', () => {
     task.completed = !task.completed;
     if (task.completed) {
-      task.completedBy = `${userProfile.name} ${userProfile.avatar}`;
+      task.completedBy = userProfile.name;
       task.completedAt = Date.now();
       SoundFX.complete();
-      showToast(`Completato da ${userProfile.name}! 🎉`, '✅');
+      showToast(`completato da ${userProfile.name}`);
     } else {
       task.completedBy = null;
       task.completedAt = null;
@@ -547,28 +543,26 @@ function createFamilyTaskCard(task) {
     }
     pushFamilyTasksToCloud();
     renderFamilyTasks();
-    updateBadges();
   });
 
   // Delete
-  card.querySelector('.delete-btn').addEventListener('click', (e) => {
+  item.querySelector('.delete-action').addEventListener('click', (e) => {
     e.stopPropagation();
     familyTasks = familyTasks.filter(item => item.id !== task.id);
     SoundFX.click();
     pushFamilyTasksToCloud();
     renderFamilyTasks();
-    updateBadges();
-    showToast("Compito eliminato", "🗑️");
+    showToast("attività eliminata");
   });
 
-  return card;
+  return item;
 }
 
 function addFamilyTask() {
   const input = document.getElementById('familyTaskInput');
   const title = input.value.trim();
   if (!title) {
-    showToast("Inserisci prima cosa c'è da fare!", "⚠️");
+    showToast("inserisci prima cosa c'è da fare");
     return;
   }
 
@@ -580,7 +574,7 @@ function addFamilyTask() {
     title,
     category,
     assignee,
-    addedBy: `${userProfile.name} ${userProfile.avatar}`,
+    addedBy: userProfile.name,
     isUrgent: isUrgentFamily,
     completed: false,
     createdAt: Date.now()
@@ -594,12 +588,11 @@ function addFamilyTask() {
   SoundFX.pop();
   pushFamilyTasksToCloud();
   renderFamilyTasks();
-  updateBadges();
-  showToast("Aggiunto alla lista di Famiglia! 👨‍👩‍👧‍👦", "✨");
+  showToast("aggiunto alla lista di famiglia");
 }
 
 // =============================================================================
-// 9. TAB 2: RENDERING PERSONALE (Privata)
+// 9. TAB 2: RENDERING PERSONALE
 // =============================================================================
 
 function renderPersonalTasks() {
@@ -630,72 +623,71 @@ function renderPersonalTasks() {
   } else {
     emptyState.classList.add('hidden');
     filtered.forEach(t => {
-      container.appendChild(createPersonalTaskCard(t));
+      container.appendChild(createPersonalTaskItem(t));
     });
   }
 
   completedList.innerHTML = '';
   completedTasks.forEach(t => {
-    completedList.appendChild(createPersonalTaskCard(t));
+    completedList.appendChild(createPersonalTaskItem(t));
   });
 }
 
-function createPersonalTaskCard(task) {
-  const card = document.createElement('div');
-  card.className = `metro-task-card ${task.priority === 'alta' ? 'is-urgent' : ''} ${task.completed ? 'is-completed' : ''}`;
-  card.id = `ptask_${task.id}`;
+function createPersonalTaskItem(task) {
+  const item = document.createElement('div');
+  item.className = `wp8-task-item ${task.priority === 'alta' ? 'is-urgent' : ''} ${task.completed ? 'is-completed' : ''}`;
+  item.id = `ptask_${task.id}`;
 
-  const dueLabel = task.dueDate === 'oggi' ? '📅 Oggi' : (task.dueDate === 'domani' ? '🌅 Domani' : (task.dueDate === 'settimana' ? '🗓️ Settimana' : ''));
+  const dueLabel = task.dueDate === 'oggi' ? 'oggi' : (task.dueDate === 'domani' ? 'domani' : (task.dueDate === 'settimana' ? 'questa settimana' : ''));
 
-  card.innerHTML = `
-    <button class="metro-checkbox-btn" aria-label="Completa compito" title="Segna come fatto">
+  item.innerHTML = `
+    <button class="wp8-checkbox" aria-label="Completa" title="Segna come fatto">
       ${task.completed ? '<i class="fa-solid fa-check"></i>' : ''}
     </button>
-    <div class="task-content-group">
-      <div class="task-title">${escapeHTML(task.title)}</div>
-      <div class="task-meta-row">
-        ${dueLabel ? `<span class="task-badge badge-date">${dueLabel}</span>` : ''}
-        ${task.priority === 'alta' ? `<span class="task-badge badge-urgent">🔴 Alta</span>` : ''}
-        <span class="task-badge">🏷️ ${escapeHTML(task.category || 'Personale')}</span>
+    <div class="task-body-col">
+      <div class="task-text">${escapeHTML(task.title)}</div>
+      <div class="task-info-meta">
+        ${dueLabel ? `<span class="meta-tag"><i class="fa-solid fa-calendar"></i> ${dueLabel}</span>` : ''}
+        ${task.priority === 'alta' ? `<span class="meta-tag tag-urgent"><i class="fa-solid fa-bolt"></i> alta</span>` : ''}
+        <span class="meta-tag"><i class="fa-solid fa-tag"></i> ${escapeHTML(task.category || 'personale')}</span>
       </div>
     </div>
-    <div class="task-actions-group">
+    <div class="task-side-actions">
       ${!task.completed ? `
-        <button class="move-to-family-btn" title="Copia/Sposta in Famiglia">
+        <button class="share-to-family-link" title="Condividi con la famiglia">
           <i class="fa-solid fa-share-nodes"></i>
-          <span>Famiglia</span>
+          <span>famiglia</span>
         </button>
       ` : ''}
-      <button class="task-action-btn delete-btn" title="Elimina compito">
+      <button class="wp8-icon-action delete-action" title="Elimina">
         <i class="fa-solid fa-trash-can"></i>
       </button>
     </div>
   `;
 
-  // Toggle complete
-  card.querySelector('.metro-checkbox-btn').addEventListener('click', () => {
+  // Checkbox toggle
+  item.querySelector('.wp8-checkbox').addEventListener('click', () => {
     task.completed = !task.completed;
     if (task.completed) {
       SoundFX.complete();
-      showToast("Compito personale completato! 🎯", "✅");
+      showToast("compito personale completato");
     } else {
       SoundFX.click();
     }
     saveLocalData();
     renderPersonalTasks();
-    updateBadges();
   });
 
   // Move to family
-  const moveBtn = card.querySelector('.move-to-family-btn');
-  if (moveBtn) {
-    moveBtn.addEventListener('click', () => {
+  const shareBtn = item.querySelector('.share-to-family-link');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
       const familyCopy = {
         id: 'f_' + Date.now(),
         title: task.title,
         category: autoDetectCategory(task.title) || 'altro',
         assignee: userProfile.name,
-        addedBy: `${userProfile.name} ${userProfile.avatar}`,
+        addedBy: userProfile.name,
         isUrgent: task.priority === 'alta',
         completed: false,
         createdAt: Date.now()
@@ -703,29 +695,28 @@ function createPersonalTaskCard(task) {
       familyTasks.unshift(familyCopy);
       pushFamilyTasksToCloud();
       SoundFX.pop();
-      showToast("Compito condiviso sulla bacheca di Famiglia! 👨‍👩‍👧‍👦", "🚀");
+      showToast("spostato nella bacheca di famiglia");
     });
   }
 
   // Delete
-  card.querySelector('.delete-btn').addEventListener('click', (e) => {
+  item.querySelector('.delete-action').addEventListener('click', (e) => {
     e.stopPropagation();
     personalTasks = personalTasks.filter(item => item.id !== task.id);
     SoundFX.click();
     saveLocalData();
     renderPersonalTasks();
-    updateBadges();
-    showToast("Compito personale rimosso", "🗑️");
+    showToast("compito personale rimosso");
   });
 
-  return card;
+  return item;
 }
 
 function addPersonalTask() {
   const input = document.getElementById('personalTaskInput');
   const title = input.value.trim();
   if (!title) {
-    showToast("Scrivi prima cosa devi fare!", "⚠️");
+    showToast("scrivi cosa devi fare");
     return;
   }
 
@@ -749,12 +740,11 @@ function addPersonalTask() {
   SoundFX.pop();
   saveLocalData();
   renderPersonalTasks();
-  updateBadges();
-  showToast("Aggiunto alle tue cose personali!", "✨");
+  showToast("aggiunto alla lista personale");
 }
 
 // =============================================================================
-// 10. TAB 3: RENDERING IDEE & NOTE (Scratchpad)
+// 10. TAB 3: RENDERING IDEE & NOTE (Bold WP8 Metro Tiles)
 // =============================================================================
 
 function renderIdeasList() {
@@ -772,7 +762,6 @@ function renderIdeasList() {
     filtered = filtered.filter(i => i.color === ideasActiveFilter);
   }
 
-  // Sort pinned first
   filtered.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
 
   grid.innerHTML = '';
@@ -781,35 +770,35 @@ function renderIdeasList() {
   } else {
     emptyState.classList.add('hidden');
     filtered.forEach(idea => {
-      grid.appendChild(createIdeaCard(idea));
+      grid.appendChild(createIdeaMetroTile(idea));
     });
   }
 }
 
-function createIdeaCard(idea) {
-  const card = document.createElement('div');
-  card.className = `metro-idea-card tile-${idea.color || 'yellow'} ${idea.isPinned ? 'is-pinned' : ''}`;
-  card.id = `idea_${idea.id}`;
+function createIdeaMetroTile(idea) {
+  const tile = document.createElement('div');
+  tile.className = `wp8-metro-tile tile-${idea.color || 'yellow'} ${idea.isPinned ? 'is-pinned' : ''}`;
+  tile.id = `idea_${idea.id}`;
 
   const formattedDate = new Date(idea.createdAt).toLocaleDateString([], { day: 'numeric', month: 'short' });
 
-  card.innerHTML = `
-    <div class="idea-card-header">
-      <h4 class="idea-card-title">${escapeHTML(idea.title)}</h4>
-      ${idea.isPinned ? '<span class="idea-pin-badge" title="Fissata in alto"><i class="fa-solid fa-thumbtack"></i></span>' : ''}
+  tile.innerHTML = `
+    <div class="tile-top-row">
+      <h4 class="tile-headline">${escapeHTML(idea.title)}</h4>
+      ${idea.isPinned ? '<span class="tile-pin-icon"><i class="fa-solid fa-thumbtack"></i></span>' : ''}
     </div>
-    ${idea.content ? `<div class="idea-card-body">${escapeHTML(idea.content)}</div>` : ''}
-    <div class="idea-card-footer">
-      <span class="idea-date-tag">${formattedDate}</span>
-      <div class="idea-actions-group">
-        <button class="btn-convert-todo" title="Trasforma in To-Do">
-          <i class="fa-solid fa-arrow-right-to-bracket"></i>
-          <span>To-Do</span>
+    ${idea.content ? `<div class="tile-content-text">${escapeHTML(idea.content)}</div>` : ''}
+    <div class="tile-footer-row">
+      <span class="tile-date-label">${formattedDate}</span>
+      <div class="tile-actions">
+        <button class="btn-convert-pill" title="Converti in to-do">
+          <i class="fa-solid fa-arrow-right"></i>
+          <span>to-do</span>
         </button>
-        <button class="task-action-btn pin-btn" title="${idea.isPinned ? 'Sblocca' : 'Fissa'}">
+        <button class="wp8-icon-action pin-action" title="${idea.isPinned ? 'Sblocca' : 'Fissa'}">
           <i class="fa-solid fa-thumbtack"></i>
         </button>
-        <button class="task-action-btn delete-btn" title="Elimina appunto">
+        <button class="wp8-icon-action delete-action" title="Elimina">
           <i class="fa-solid fa-trash-can"></i>
         </button>
       </div>
@@ -817,34 +806,32 @@ function createIdeaCard(idea) {
   `;
 
   // Convert to todo
-  card.querySelector('.btn-convert-todo').addEventListener('click', () => {
+  tile.querySelector('.btn-convert-pill').addEventListener('click', () => {
     ideaPendingConversion = idea;
     document.getElementById('convertIdeaPreviewText').textContent = `"${idea.title}"`;
     document.getElementById('convertIdeaModal').classList.remove('hidden');
   });
 
   // Pin
-  card.querySelector('.pin-btn').addEventListener('click', () => {
+  tile.querySelector('.pin-action').addEventListener('click', () => {
     idea.isPinned = !idea.isPinned;
     SoundFX.click();
     saveLocalData();
     renderIdeasList();
-    updateBadges();
-    showToast(idea.isPinned ? "Nota fissata in alto! 📌" : "Nota sbloccata", "📌");
+    showToast(idea.isPinned ? "fissata in alto" : "sbloccata");
   });
 
   // Delete
-  card.querySelector('.delete-btn').addEventListener('click', (e) => {
+  tile.querySelector('.delete-action').addEventListener('click', (e) => {
     e.stopPropagation();
     ideasList = ideasList.filter(item => item.id !== idea.id);
     SoundFX.click();
     saveLocalData();
     renderIdeasList();
-    updateBadges();
-    showToast("Nota eliminata", "🗑️");
+    showToast("idea eliminata");
   });
 
-  return card;
+  return tile;
 }
 
 function addIdeaNote() {
@@ -854,7 +841,7 @@ function addIdeaNote() {
   const content = contentInput.value.trim();
 
   if (!title && !content) {
-    showToast("Scrivi un titolo o il testo dell'idea!", "⚠️");
+    showToast("scrivi un titolo o il testo");
     return;
   }
 
@@ -876,76 +863,64 @@ function addIdeaNote() {
   SoundFX.pop();
   saveLocalData();
   renderIdeasList();
-  updateBadges();
-  showToast("Idea salvata nella bacheca! 💡", "✨");
+  showToast("idea salvata");
 }
 
 // =============================================================================
-// 11. BADGES & UI STATS
+// 11. TOAST NOTIFICATIONS & UTILS
 // =============================================================================
 
-function updateBadges() {
-  const familyActiveCount = familyTasks.filter(t => !t.completed).length;
-  const personalActiveCount = personalTasks.filter(t => !t.completed).length;
-  const ideasCount = ideasList.length;
-
-  document.getElementById('badgeFamilyCount').textContent = familyActiveCount;
-  document.getElementById('badgePersonalCount').textContent = personalActiveCount;
-  document.getElementById('badgeIdeasCount').textContent = ideasCount;
-  document.getElementById('currentMemberAvatarHeader').textContent = userProfile.avatar;
-}
-
-function showToast(message, icon = '✨') {
+function showToast(message) {
   const toast = document.getElementById('metroToast');
   if (!toast) return;
-  document.getElementById('metroToastIcon').textContent = icon;
   document.getElementById('metroToastMessage').textContent = message;
   toast.classList.remove('hidden');
 
   setTimeout(() => {
     toast.classList.add('hidden');
-  }, 2600);
+  }, 2400);
 }
 
 function escapeHTML(str) {
   if (!str) return '';
+  // Strip emojis from text for clean Windows Phone Metro UI
+  const cleanStr = String(str).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
   const div = document.createElement('div');
-  div.textContent = str;
+  div.textContent = cleanStr;
   return div.innerHTML;
 }
 
 // =============================================================================
-// 12. MODALS & EVENT LISTENERS
+// 12. THEME & EVENT LISTENERS
 // =============================================================================
 
 function applyTheme() {
   document.body.className = themeSettings.mode === 'light' ? 'theme-light' : 'theme-dark';
   document.documentElement.style.setProperty('--accent-color', themeSettings.accent || '#0078d7');
 
-  // Update theme modal buttons
   document.getElementById('btnDarkMode').classList.toggle('active', themeSettings.mode === 'dark');
   document.getElementById('btnLightMode').classList.toggle('active', themeSettings.mode === 'light');
 
-  document.querySelectorAll('#accentPaletteGrid .accent-choice').forEach(b => {
+  document.querySelectorAll('#accentPaletteGrid .accent-tile').forEach(b => {
     b.classList.toggle('active', b.dataset.accent === themeSettings.accent);
   });
 
   const soundIcon = document.getElementById('soundStatusIcon');
   const soundText = document.getElementById('soundStatusText');
   if (soundIcon) soundIcon.className = themeSettings.sound ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
-  if (soundText) soundText.textContent = themeSettings.sound ? 'Audio Attivo (Click e Chimes)' : 'Audio Disattivato';
+  if (soundText) soundText.textContent = themeSettings.sound ? 'effetti sonori attivi' : 'audio disattivato';
 }
 
 function setupEventListeners() {
-  // Pivot navigation clicks
-  document.querySelectorAll('#metroPivotNav .pivot-item').forEach(btn => {
+  // Giant WP8 Pivot Titles clicks
+  document.querySelectorAll('#pivotTitlesTrack .pivot-title-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = parseInt(btn.dataset.index, 10);
       goToSlide(idx);
     });
   });
 
-  // Global header buttons
+  // Header quick buttons
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
     document.getElementById('themeModal').classList.remove('hidden');
   });
@@ -956,10 +931,7 @@ function setupEventListeners() {
     document.getElementById('themeModal').classList.add('hidden');
   });
 
-  document.getElementById('familyProfileBtn').addEventListener('click', () => {
-    document.getElementById('familySettingsModal').classList.remove('hidden');
-  });
-  document.getElementById('openFamilySettingsBtn').addEventListener('click', () => {
+  document.getElementById('familySettingsBtn').addEventListener('click', () => {
     document.getElementById('familySettingsModal').classList.remove('hidden');
   });
   document.getElementById('closeFamilyModalBtn').addEventListener('click', () => {
@@ -969,13 +941,32 @@ function setupEventListeners() {
     document.getElementById('familySettingsModal').classList.add('hidden');
   });
 
-  // Voice buttons
-  document.getElementById('globalVoiceBtn').addEventListener('click', () => {
+  // Bottom WP8 Application Bar Actions
+  document.getElementById('appbarAddBtn').addEventListener('click', () => {
+    if (activeTabSlide === 0) document.getElementById('familyTaskInput').focus();
+    else if (activeTabSlide === 1) document.getElementById('personalTaskInput').focus();
+    else document.getElementById('ideaTitleInput').focus();
+    SoundFX.click();
+  });
+
+  document.getElementById('appbarVoiceBtn').addEventListener('click', () => {
     if (activeTabSlide === 0) startVoiceDictation(document.getElementById('familyTaskInput'));
     else if (activeTabSlide === 1) startVoiceDictation(document.getElementById('personalTaskInput'));
     else startVoiceDictation(document.getElementById('ideaTitleInput'));
   });
 
+  document.getElementById('appbarSyncBtn').addEventListener('click', () => {
+    SoundFX.pop();
+    initFirebaseSync();
+    showToast("sincronizzazione in corso...");
+  });
+
+  document.getElementById('appbarMenuBtn').addEventListener('click', () => {
+    document.getElementById('familySettingsModal').classList.remove('hidden');
+    SoundFX.click();
+  });
+
+  // Voice inline buttons
   document.getElementById('voiceFamilyTaskBtn').addEventListener('click', () => {
     startVoiceDictation(document.getElementById('familyTaskInput'));
   });
@@ -986,7 +977,7 @@ function setupEventListeners() {
     startVoiceDictation(document.getElementById('ideaTitleInput'));
   });
 
-  // Auto-detect category while typing in family input
+  // Auto-detect category while typing
   const familyInput = document.getElementById('familyTaskInput');
   familyInput.addEventListener('input', (e) => {
     const detected = autoDetectCategory(e.target.value);
@@ -995,7 +986,7 @@ function setupEventListeners() {
     }
   });
 
-  // Enter keys to submit
+  // Enter keys
   familyInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') addFamilyTask();
   });
@@ -1008,7 +999,7 @@ function setupEventListeners() {
   document.getElementById('addPersonalTaskBtn').addEventListener('click', addPersonalTask);
   document.getElementById('addIdeaBtn').addEventListener('click', addIdeaNote);
 
-  // Urgent toggle for Family
+  // Urgent toggle
   const urgentBtn = document.getElementById('toggleUrgentFamilyBtn');
   urgentBtn.addEventListener('click', () => {
     isUrgentFamily = !isUrgentFamily;
@@ -1016,21 +1007,21 @@ function setupEventListeners() {
     SoundFX.click();
   });
 
-  // Family Member Filter Chips
-  document.querySelectorAll('#familyMemberFilterBar .member-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('#familyMemberFilterBar .member-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      familyMemberFilter = chip.dataset.member;
+  // Member sub-filter links
+  document.querySelectorAll('#familyMemberFilterBar .filter-link').forEach(link => {
+    link.addEventListener('click', () => {
+      document.querySelectorAll('#familyMemberFilterBar .filter-link').forEach(c => c.classList.remove('active'));
+      link.classList.add('active');
+      familyMemberFilter = link.dataset.member;
       SoundFX.click();
       renderFamilyTasks();
     });
   });
 
-  // Family Category Filter Chips
-  document.querySelectorAll('#familyCategoryFilterBar .cat-filter-chip').forEach(chip => {
+  // Category filter chips
+  document.querySelectorAll('#familyCategoryFilterBar .cat-chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.querySelectorAll('#familyCategoryFilterBar .cat-filter-chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('#familyCategoryFilterBar .cat-chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       familyCategoryFilter = chip.dataset.cat;
       SoundFX.click();
@@ -1038,39 +1029,39 @@ function setupEventListeners() {
     });
   });
 
-  // Personal Filter Chips
-  document.querySelectorAll('#personalFilterBar .cat-filter-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('#personalFilterBar .cat-filter-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      personalCategoryFilter = chip.dataset.filter;
+  // Personal filter links
+  document.querySelectorAll('#personalFilterBar .filter-link').forEach(link => {
+    link.addEventListener('click', () => {
+      document.querySelectorAll('#personalFilterBar .filter-link').forEach(c => c.classList.remove('active'));
+      link.classList.add('active');
+      personalCategoryFilter = link.dataset.filter;
       SoundFX.click();
       renderPersonalTasks();
     });
   });
 
-  // Ideas Filter Chips
-  document.querySelectorAll('#ideasFilterBar .cat-filter-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('#ideasFilterBar .cat-filter-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      ideasActiveFilter = chip.dataset.filter;
+  // Ideas filter links
+  document.querySelectorAll('#ideasFilterBar .filter-link').forEach(link => {
+    link.addEventListener('click', () => {
+      document.querySelectorAll('#ideasFilterBar .filter-link').forEach(c => c.classList.remove('active'));
+      link.classList.add('active');
+      ideasActiveFilter = link.dataset.filter;
       SoundFX.click();
       renderIdeasList();
     });
   });
 
-  // Idea Color Selector
-  document.querySelectorAll('#ideaColorSelector .color-dot').forEach(dot => {
+  // Color picker dots for ideas
+  document.querySelectorAll('#ideaColorSelector .color-picker-dot').forEach(dot => {
     dot.addEventListener('click', () => {
-      document.querySelectorAll('#ideaColorSelector .color-dot').forEach(d => d.classList.remove('active'));
+      document.querySelectorAll('#ideaColorSelector .color-picker-dot').forEach(d => d.classList.remove('active'));
       dot.classList.add('active');
       selectedIdeaColor = dot.dataset.color;
       SoundFX.click();
     });
   });
 
-  // Idea Pin Toggle
+  // Pin toggle for idea
   const pinIdeaBtn = document.getElementById('togglePinIdeaBtn');
   pinIdeaBtn.addEventListener('click', () => {
     isIdeaPinned = !isIdeaPinned;
@@ -1088,8 +1079,7 @@ function setupEventListeners() {
     familyTasks = familyTasks.filter(t => !t.completed);
     pushFamilyTasksToCloud();
     renderFamilyTasks();
-    updateBadges();
-    showToast("Completati di Famiglia rimossi", "🗑️");
+    showToast("completati rimossi");
   });
 
   document.getElementById('togglePersonalCompleted').addEventListener('click', () => {
@@ -1101,20 +1091,18 @@ function setupEventListeners() {
     personalTasks = personalTasks.filter(t => !t.completed);
     saveLocalData();
     renderPersonalTasks();
-    updateBadges();
-    showToast("Completati personali rimossi", "🗑️");
+    showToast("completati rimossi");
   });
 
-  // Profile Avatar Picker in Modal
-  document.querySelectorAll('#profilePickerGrid .profile-choice').forEach(choice => {
-    choice.addEventListener('click', () => {
-      document.querySelectorAll('#profilePickerGrid .profile-choice').forEach(c => c.classList.remove('active'));
-      choice.classList.add('active');
-      userProfile.name = choice.dataset.name;
-      userProfile.avatar = choice.dataset.avatar;
+  // Member select in modal
+  document.querySelectorAll('#profilePickerGrid .member-select-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#profilePickerGrid .member-select-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      userProfile.name = card.dataset.name;
+      userProfile.role = card.dataset.role;
       document.getElementById('customMemberNameInput').value = userProfile.name;
       saveLocalData();
-      updateBadges();
       SoundFX.click();
     });
   });
@@ -1127,11 +1115,11 @@ function setupEventListeners() {
     }
   });
 
-  // Family Code in Modal
+  // Family code
   document.getElementById('saveFamilyCodeBtn').addEventListener('click', () => {
     const code = document.getElementById('familyCodeInput').value.trim().toUpperCase();
     if (!code) {
-      showToast("Inserisci un codice valido", "⚠️");
+      showToast("inserisci un codice valido");
       return;
     }
     currentFamilyCode = code;
@@ -1139,7 +1127,7 @@ function setupEventListeners() {
     initFirebaseSync();
     document.getElementById('familySettingsModal').classList.add('hidden');
     SoundFX.pop();
-    showToast(`Collegato a ${code}! ☁️`, "🔗");
+    showToast(`collegato a ${code}`);
   });
 
   document.getElementById('generateRandomCodeBtn').addEventListener('click', () => {
@@ -1155,7 +1143,7 @@ function setupEventListeners() {
     });
   });
 
-  // Theme Switches
+  // Themes
   document.getElementById('btnDarkMode').addEventListener('click', () => {
     themeSettings.mode = 'dark';
     saveLocalData();
@@ -1170,9 +1158,9 @@ function setupEventListeners() {
     SoundFX.click();
   });
 
-  document.querySelectorAll('#accentPaletteGrid .accent-choice').forEach(choice => {
-    choice.addEventListener('click', () => {
-      themeSettings.accent = choice.dataset.accent;
+  document.querySelectorAll('#accentPaletteGrid .accent-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      themeSettings.accent = tile.dataset.accent;
       saveLocalData();
       applyTheme();
       SoundFX.click();
@@ -1184,10 +1172,10 @@ function setupEventListeners() {
     saveLocalData();
     applyTheme();
     if (themeSettings.sound) SoundFX.click();
-    showToast(themeSettings.sound ? "Audio attivato 🔊" : "Audio disattivato 🔇");
+    showToast(themeSettings.sound ? "audio attivato" : "audio disattivato");
   });
 
-  // Convert Idea Modal Actions
+  // Convert Idea Modal
   document.getElementById('closeConvertModalBtn').addEventListener('click', () => {
     document.getElementById('convertIdeaModal').classList.add('hidden');
     ideaPendingConversion = null;
@@ -1200,7 +1188,7 @@ function setupEventListeners() {
       title: `${ideaPendingConversion.title}${ideaPendingConversion.content ? ': ' + ideaPendingConversion.content : ''}`,
       category: autoDetectCategory(ideaPendingConversion.title) || 'altro',
       assignee: 'Tutti',
-      addedBy: `${userProfile.name} ${userProfile.avatar}`,
+      addedBy: userProfile.name,
       isUrgent: false,
       completed: false,
       createdAt: Date.now()
@@ -1210,10 +1198,9 @@ function setupEventListeners() {
     document.getElementById('convertIdeaModal').classList.add('hidden');
     ideaPendingConversion = null;
     SoundFX.complete();
-    showToast("Idea convertita in To-Do di Famiglia! 👨‍👩‍👧‍👦", "✨");
+    showToast("convertito in attività di famiglia");
     goToSlide(0);
     renderFamilyTasks();
-    updateBadges();
   });
 
   document.getElementById('convertDestPersonalBtn').addEventListener('click', () => {
@@ -1232,10 +1219,9 @@ function setupEventListeners() {
     document.getElementById('convertIdeaModal').classList.add('hidden');
     ideaPendingConversion = null;
     SoundFX.complete();
-    showToast("Idea convertita in To-Do Personale! 🎯", "✨");
+    showToast("convertito in attività personale");
     goToSlide(1);
     renderPersonalTasks();
-    updateBadges();
   });
 }
 
@@ -1250,28 +1236,22 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTouchSwipe();
   setupEventListeners();
 
-  // Populate modals with loaded data
   document.getElementById('familyCodeInput').value = currentFamilyCode;
   document.getElementById('customMemberNameInput').value = userProfile.name;
   
-  // Highlight active profile
-  document.querySelectorAll('#profilePickerGrid .profile-choice').forEach(choice => {
-    choice.classList.toggle('active', choice.dataset.name === userProfile.name);
+  document.querySelectorAll('#profilePickerGrid .member-select-card').forEach(card => {
+    card.classList.toggle('active', card.dataset.name === userProfile.name);
   });
 
-  // Render all tabs
   renderFamilyTasks();
   renderPersonalTasks();
   renderIdeasList();
-  updateBadges();
 
-  // Connect Firebase
   initFirebaseSync();
 
-  // PWA Service Worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(err => {
-      console.log('SW registration note:', err);
+      console.log('SW note:', err);
     });
   }
 });

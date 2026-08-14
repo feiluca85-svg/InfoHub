@@ -1,53 +1,59 @@
 /* ==========================================================================
-   FamTito - Windows Phone 8 Metro Family To-Do Design System
+   FamTito - Authentic Windows Phone 8 Metro UI Design System
+   Inspired by Nokia Lumia / WP8 Panorama & Pivot (Segoe UI Typography)
    ========================================================================== */
 
 :root {
-  /* Dynamic Metro Accent Color (Defaults to Cobalt Blue) */
+  /* Dynamic Windows Phone Accent Color (Default: Cobalt Blue) */
   --accent-color: #0078d7;
   --accent-hover: #1b8beb;
-  --accent-glow: rgba(0, 120, 215, 0.35);
+  --accent-faint: rgba(0, 120, 215, 0.2);
 
-  /* Dark Mode (OLED Pitch Black) */
+  /* Pitch Black OLED Theme (WP8 Dark) */
   --bg-main: #000000;
-  --bg-card: #141414;
-  --bg-card-hover: #1f1f1f;
-  --bg-input: #1a1a1a;
-  --bg-dialog: #121212;
-  
+  --bg-surface: #111111;
+  --bg-surface-hover: #1a1a1a;
+  --bg-input: #161616;
+  --bg-dialog: #0a0a0a;
+  --bg-appbar: #000000;
+
   --text-primary: #ffffff;
-  --text-secondary: #999999;
-  --text-faint: #666666;
-  
-  --border-subtle: rgba(255, 255, 255, 0.12);
-  --border-active: var(--accent-color);
-  
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-dim: rgba(255, 255, 255, 0.35);
+  --text-faint: rgba(255, 255, 255, 0.2);
+
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-medium: rgba(255, 255, 255, 0.22);
+  --border-bold: rgba(255, 255, 255, 0.85);
+
   --font-family: 'Outfit', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Sizing & Geometry */
-  --radius-metro: 0px;       /* Authentic WP8 sharp geometry */
-  --radius-soft: 4px;
-  --radius-circle: 50%;
+  /* Strict WP8 Sharp Geometry (Zero Border Radius) */
+  --radius-metro: 0px;
 
-  /* Safe Area for Mobile Web & Capacitor */
+  /* Safe Area for Mobile */
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
 }
 
-/* Light Theme Variables */
+/* Light Mode (Pure White WP8 Light) */
 body.theme-light {
   --bg-main: #ffffff;
-  --bg-card: #f3f3f3;
-  --bg-card-hover: #e8e8e8;
+  --bg-surface: #f4f4f4;
+  --bg-surface-hover: #eaeaea;
   --bg-input: #ffffff;
   --bg-dialog: #ffffff;
+  --bg-appbar: #f4f4f4;
 
-  --text-primary: #111111;
-  --text-secondary: #555555;
-  --text-faint: #888888;
+  --text-primary: #000000;
+  --text-secondary: rgba(0, 0, 0, 0.65);
+  --text-dim: rgba(0, 0, 0, 0.35);
+  --text-faint: rgba(0, 0, 0, 0.2);
 
-  --border-subtle: rgba(0, 0, 0, 0.12);
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --border-medium: rgba(0, 0, 0, 0.22);
+  --border-bold: rgba(0, 0, 0, 0.85);
 }
 
 /* Reset & Global */
@@ -66,192 +72,142 @@ input, textarea, select {
 html, body {
   width: 100%;
   height: 100%;
-  overflow: hidden; /* Carousel handles internal scrolling */
+  overflow: hidden;
   background-color: var(--bg-main);
   color: var(--text-primary);
   font-family: var(--font-family);
-  line-height: 1.4;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Main App Wrapper */
 .app-root {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   background-color: var(--bg-main);
+  position: relative;
 }
 
 /* ==========================================================================
-   1. WP8 METRO PANORAMA HEADER
+   1. WP8 METRO PANORAMA PIVOT HEADER (GIANT LOWERCASE TITLES)
    ========================================================================== */
 
 .metro-header {
   flex-shrink: 0;
   background: var(--bg-main);
-  padding: calc(14px + var(--sat)) 18px 0 18px;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: calc(14px + var(--sat)) 20px 0 20px;
   z-index: 100;
-  transition: background-color 0.25s ease;
 }
 
 .header-top-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
-.brand-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.brand-sub-title {
-  font-size: 0.72rem;
+.app-kicker {
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   color: var(--text-secondary);
-  margin-bottom: 2px;
 }
 
-.brand-title {
-  font-size: 2.2rem;
-  font-weight: 300;
-  letter-spacing: -0.03em;
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.header-actions {
+.header-right-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-/* Circular WP8 Metro Icon Buttons */
-.metro-icon-btn {
+.cloud-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.status-indicator-dot {
+  width: 7px;
+  height: 7px;
+  background: #107c41; /* Green connected */
+  border-radius: 50%;
+}
+
+.status-indicator-dot.offline {
+  background: #e81123;
+}
+
+.metro-header-icon-btn {
   background: transparent;
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-circle);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 15px;
-  position: relative;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 13px;
+  transition: all 0.15s ease;
 }
 
-.metro-icon-btn:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
+.metro-header-icon-btn:active {
+  background: var(--text-primary);
+  color: var(--bg-main);
 }
 
-.metro-icon-btn:active {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
-  color: #ffffff;
-  transform: scale(0.92);
-}
-
-.member-avatar-btn {
-  font-size: 18px;
-}
-
-.cloud-status-dot {
-  position: absolute;
-  top: -1px;
-  right: -1px;
-  width: 10px;
-  height: 10px;
-  background: #107c41; /* Green active */
-  border: 2px solid var(--bg-main);
-  border-radius: 50%;
-}
-
-.cloud-status-dot.offline {
-  background: #f7630c; /* Orange offline */
-}
-
-/* Metro Pivot Panorama Navigation */
-.metro-pivot-nav {
-  display: flex;
-  gap: 24px;
+/* Giant WP8 Pivot Titles Scroller */
+.pivot-titles-scroller {
   overflow-x: auto;
   scrollbar-width: none;
-  padding-bottom: 8px;
+  margin-top: 4px;
+  padding-bottom: 6px;
 }
 
-.metro-pivot-nav::-webkit-scrollbar {
+.pivot-titles-scroller::-webkit-scrollbar {
   display: none;
 }
 
-.pivot-item {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
+.pivot-titles-track {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
-  padding: 6px 0;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
+  gap: 28px;
   white-space: nowrap;
 }
 
-.pivot-text {
-  font-size: 1.35rem;
-  font-weight: 300;
-  letter-spacing: -0.02em;
+.pivot-title-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-family);
+  font-size: 3rem; /* Huge WP8 Segoe Light style */
+  font-weight: 200;
   text-transform: lowercase;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.pivot-badge {
-  font-size: 0.75rem;
-  font-weight: 700;
-  background: rgba(128, 128, 128, 0.2);
+.pivot-title-btn.active {
   color: var(--text-primary);
-  padding: 1px 6px;
-  border-radius: 10px;
-  line-height: 1.2;
+  font-weight: 300;
 }
 
-.pivot-item:hover {
-  color: var(--text-primary);
-}
-
-.pivot-item.active {
-  color: var(--accent-color);
-}
-
-.pivot-item.active .pivot-text {
-  font-weight: 600;
-}
-
-.pivot-item.active .pivot-badge {
-  background: var(--accent-color);
-  color: #ffffff;
-}
-
-.pivot-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: -9px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--accent-color);
+.pivot-title-btn:hover {
+  color: var(--text-secondary);
 }
 
 /* ==========================================================================
-   2. HORIZONTAL SWIPE CAROUSEL ENGINE
+   2. HORIZONTAL SWIPE CAROUSEL VIEWPORT
    ========================================================================== */
 
 .carousel-viewport {
@@ -266,7 +222,7 @@ html, body {
   display: flex;
   width: 300%;
   height: 100%;
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
 }
 
@@ -276,11 +232,11 @@ html, body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 18px calc(40px + var(--sab)) 18px;
+  padding: 12px 20px calc(76px + var(--sab)) 20px;
 }
 
 .slide-content-wrapper {
-  max-width: 620px;
+  max-width: 640px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -288,168 +244,110 @@ html, body {
 }
 
 /* ==========================================================================
-   CARDS & COMMON UI ELEMENTS
+   3. CLEAN WP8 MINIMALIST CONTROLS & LISTS
    ========================================================================== */
 
-/* Family Cloud Status Card */
-.family-status-card {
-  background: var(--accent-color);
-  color: #ffffff;
-  padding: 14px 16px;
+/* Sub-Filter Minimalist Links */
+.wp8-sub-filter-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: baseline;
   gap: 12px;
-  box-shadow: 0 4px 16px var(--accent-glow);
-}
-
-.family-status-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.cloud-icon {
-  font-size: 24px;
-}
-
-.family-status-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.family-name-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.05rem;
-}
-
-.family-code-tag {
-  background: rgba(0, 0, 0, 0.25);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 2px;
-  letter-spacing: 0.5px;
-}
-
-.family-sync-subtitle {
-  font-size: 0.75rem;
-  opacity: 0.9;
-}
-
-.change-family-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  color: #ffffff;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.change-family-btn:hover {
-  background: #ffffff;
-  color: var(--accent-color);
-}
-
-/* Members Ribbon (Filter who does what) */
-.members-ribbon-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ribbon-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  letter-spacing: 1px;
-}
-
-.members-chips-container {
-  display: flex;
-  gap: 6px;
+  padding-bottom: 2px;
   overflow-x: auto;
   scrollbar-width: none;
-  flex: 1;
 }
 
-.members-chips-container::-webkit-scrollbar {
+.wp8-sub-filter-row::-webkit-scrollbar {
   display: none;
 }
 
-.member-chip {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-  padding: 5px 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  font-weight: 500;
+.sub-filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: lowercase;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.sub-filter-buttons {
+  display: flex;
+  gap: 14px;
+}
+
+.filter-link {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  font-weight: 300;
+  text-transform: lowercase;
   cursor: pointer;
+  padding: 2px 0;
+  position: relative;
+  transition: color 0.15s ease;
   white-space: nowrap;
-  transition: all 0.15s ease;
 }
 
-.member-chip:hover {
-  border-color: var(--accent-color);
+.filter-link:hover {
+  color: var(--text-secondary);
 }
 
-.member-chip.active {
+.filter-link.active {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.filter-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
   background: var(--accent-color);
-  border-color: var(--accent-color);
-  color: #ffffff;
 }
 
-/* Metro Add Card */
-.metro-add-card {
-  background: var(--bg-card);
+/* WP8 Flat Input Card (Minimalist) */
+.wp8-input-card {
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  padding: 14px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.add-input-row {
+.input-line-row {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
 }
 
-.add-input-row input {
+.input-line-row input {
   flex: 1;
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--border-medium);
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-weight: 300;
   font-family: inherit;
-  padding: 10px 12px;
+  padding: 6px 2px;
   outline: none;
+  border-radius: 0;
   transition: border-color 0.2s ease;
 }
 
-.add-input-row input:focus {
+.input-line-row input:focus {
   border-color: var(--accent-color);
 }
 
-.action-mini-btn {
+.wp8-inline-btn {
   background: transparent;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-medium);
   color: var(--text-primary);
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -459,78 +357,73 @@ html, body {
   transition: all 0.15s ease;
 }
 
-.action-mini-btn:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.action-mini-btn.recording {
+.wp8-inline-btn:active, .wp8-inline-btn.recording {
   background: #e81123;
   border-color: #e81123;
   color: #ffffff;
-  animation: pulseMic 1.2s infinite;
 }
 
-@keyframes pulseMic {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
-.metro-submit-btn {
+.wp8-btn-accent {
   background: var(--accent-color);
-  border: 1px solid var(--accent-color);
+  border: none;
   color: #ffffff;
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 600;
+  text-transform: lowercase;
   padding: 0 16px;
-  height: 38px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background-color 0.15s ease;
+  transition: opacity 0.15s ease;
 }
 
-.metro-submit-btn:active {
-  transform: scale(0.96);
+.wp8-btn-accent:active {
+  opacity: 0.8;
 }
 
-/* Meta Options Row */
-.add-meta-options-row {
+/* Meta Select Row */
+.input-meta-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   flex-wrap: wrap;
   padding-top: 4px;
-  border-top: 1px solid rgba(128, 128, 128, 0.15);
 }
 
-.meta-select-group {
+.meta-field {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
 }
 
-.metro-select {
+.meta-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: lowercase;
+}
+
+.wp8-select {
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   font-size: 0.82rem;
   font-family: inherit;
-  padding: 4px 8px;
+  padding: 3px 8px;
   outline: none;
+  border-radius: 0;
 }
 
-.urgent-toggle-chip {
+.wp8-urgent-flag {
   background: transparent;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-medium);
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 4px 10px;
+  text-transform: lowercase;
+  padding: 3px 10px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -539,88 +432,96 @@ html, body {
   transition: all 0.15s ease;
 }
 
-.urgent-toggle-chip.active {
+.wp8-urgent-flag.active {
   background: #e81123;
   border-color: #e81123;
   color: #ffffff;
 }
 
-/* Category Filter Bar */
-.category-filter-bar {
+/* Clean Category Filter Chips */
+.wp8-category-scroller {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
+  padding-bottom: 2px;
 }
 
-.category-filter-bar::-webkit-scrollbar {
+.wp8-category-scroller::-webkit-scrollbar {
   display: none;
 }
 
-.cat-filter-chip {
+.cat-chip {
   background: transparent;
   border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
+  color: var(--text-dim);
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 400;
+  text-transform: lowercase;
   padding: 5px 12px;
   cursor: pointer;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   transition: all 0.15s ease;
 }
 
-.cat-filter-chip:hover {
+.cat-chip:hover {
   color: var(--text-primary);
+  border-color: var(--border-medium);
 }
 
-.cat-filter-chip.active {
-  background: var(--bg-card);
+.cat-chip.active {
+  background: var(--bg-surface);
   border-color: var(--accent-color);
   color: var(--text-primary);
+  font-weight: 600;
 }
 
-/* Tasks Container & Cards */
-.tasks-container {
+/* ==========================================================================
+   4. TASKS LIST (STARK WP8 FLAT ROWS)
+   ========================================================================== */
+
+.wp8-tasks-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
 }
 
-.metro-task-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  padding: 12px 14px;
+.wp8-task-item {
+  background: var(--bg-surface);
+  border-left: 3px solid transparent;
+  padding: 14px 16px;
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  transition: all 0.15s ease;
+  gap: 14px;
+  transition: background-color 0.15s ease;
   position: relative;
 }
 
-.metro-task-card:hover {
-  background: var(--bg-card-hover);
-  border-color: rgba(128, 128, 128, 0.35);
+.wp8-task-item:hover {
+  background: var(--bg-surface-hover);
 }
 
-.metro-task-card.is-urgent {
-  border-left: 4px solid #e81123;
+.wp8-task-item.is-urgent {
+  border-left-color: #e81123;
 }
 
-.metro-task-card.is-completed {
-  opacity: 0.5;
-  background: rgba(128, 128, 128, 0.05);
+.wp8-task-item.is-completed {
+  opacity: 0.45;
 }
 
-.metro-task-card.is-completed .task-title {
+.wp8-task-item.is-completed .task-text {
   text-decoration: line-through;
-  color: var(--text-faint);
+  color: var(--text-dim);
 }
 
-/* WP8 Style Square Checkbox */
-.metro-checkbox-btn {
-  width: 26px;
-  height: 26px;
-  border: 2px solid var(--text-secondary);
+/* Sharp WP8 Square Checkbox */
+.wp8-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-bold);
   background: transparent;
   display: flex;
   align-items: center;
@@ -628,362 +529,363 @@ html, body {
   cursor: pointer;
   flex-shrink: 0;
   margin-top: 1px;
-  transition: all 0.15s ease;
+  font-size: 13px;
+  border-radius: 0;
+  transition: all 0.12s ease;
 }
 
-.metro-checkbox-btn:hover {
+.wp8-checkbox:hover {
   border-color: var(--accent-color);
 }
 
-.metro-task-card.is-completed .metro-checkbox-btn {
+.wp8-task-item.is-completed .wp8-checkbox {
   background: var(--accent-color);
   border-color: var(--accent-color);
   color: #ffffff;
 }
 
-.task-content-group {
+.task-body-col {
   flex: 1;
   min-width: 0;
 }
 
-.task-title {
-  font-size: 0.95rem;
-  font-weight: 500;
+.task-text {
+  font-size: 1.05rem;
+  font-weight: 300;
   color: var(--text-primary);
   word-break: break-word;
+  line-height: 1.35;
   margin-bottom: 4px;
 }
 
-.task-meta-row {
+.task-info-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
 }
 
-.task-badge {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 1px 6px;
-  background: rgba(128, 128, 128, 0.15);
-  color: var(--text-secondary);
+.meta-tag {
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-.task-badge.badge-urgent {
-  background: rgba(232, 17, 35, 0.2);
-  color: #ff4d4f;
+.meta-tag.tag-member {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.meta-tag.tag-urgent {
+  color: #e81123;
   font-weight: 700;
 }
 
-.task-badge.badge-member {
-  background: rgba(0, 120, 215, 0.18);
-  color: var(--accent-color);
-}
-
-.task-badge.badge-date {
-  color: #f7630c;
-}
-
-.task-actions-group {
+.task-side-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
-.task-action-btn {
+.wp8-icon-action {
   background: none;
   border: none;
-  color: var(--text-faint);
-  font-size: 13px;
+  color: var(--text-dim);
+  font-size: 14px;
   padding: 6px;
   cursor: pointer;
   transition: color 0.15s ease;
 }
 
-.task-action-btn:hover {
+.wp8-icon-action:hover {
   color: var(--text-primary);
 }
 
-.task-action-btn.delete-btn:hover {
+.wp8-icon-action.delete-action:hover {
   color: #e81123;
 }
 
-/* Move to family button */
-.move-to-family-btn {
-  background: rgba(0, 120, 215, 0.15);
-  border: 1px solid var(--accent-color);
-  color: var(--accent-color);
+.share-to-family-link {
+  background: none;
+  border: 1px solid var(--border-medium);
+  color: var(--text-secondary);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
+  text-transform: lowercase;
   padding: 3px 8px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   transition: all 0.15s ease;
 }
 
-.move-to-family-btn:hover {
+.share-to-family-link:hover {
   background: var(--accent-color);
+  border-color: var(--accent-color);
   color: #ffffff;
 }
 
-/* Completed Accordion Section */
-.completed-section {
-  background: var(--bg-card);
+/* Completed Fold Box */
+.wp8-completed-box {
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
-.completed-header {
-  padding: 12px 14px;
+.completed-summary-row {
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
   color: var(--text-secondary);
 }
 
-.completed-header-actions {
+.completed-title {
+  font-size: 0.88rem;
+  font-weight: 400;
+  text-transform: lowercase;
+}
+
+.completed-right {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.btn-clear-completed {
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  color: var(--text-faint);
-  font-size: 0.75rem;
-  padding: 2px 8px;
+.wp8-link-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  text-transform: lowercase;
   cursor: pointer;
+  text-decoration: underline;
 }
 
-.btn-clear-completed:hover {
+.wp8-link-btn:hover {
   color: #e81123;
-  border-color: #e81123;
 }
 
-.completed-list {
+.fold-arrow {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.completed-items-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 0 14px 14px 14px;
+  gap: 2px;
+  padding: 0 16px 14px 16px;
 }
 
-/* Slide Banners */
-.slide-banner {
-  border-left: 4px solid var(--accent-color);
-  background: var(--bg-card);
-  padding: 14px 16px;
+/* WP8 Empty States */
+.wp8-empty-state {
+  padding: 48px 20px;
+  text-align: center;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
+  color: var(--text-dim);
 }
 
-.slide-banner.personal-banner {
-  border-left-color: #107c41; /* Emerald */
+.wp8-empty-state i {
+  font-size: 36px;
+  color: var(--accent-color);
+  margin-bottom: 4px;
 }
 
-.slide-banner.ideas-banner {
-  border-left-color: #f7630c; /* Orange */
-}
-
-.banner-icon {
-  font-size: 26px;
-}
-
-.banner-content h3 {
-  font-size: 1.05rem;
-  font-weight: 600;
+.wp8-empty-state h3 {
+  font-size: 1.25rem;
+  font-weight: 200;
+  text-transform: lowercase;
   color: var(--text-primary);
-  margin-bottom: 2px;
 }
 
-.banner-content p {
-  font-size: 0.8rem;
+.wp8-empty-state p {
+  font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
 /* ==========================================================================
-   TAB 3: IDEAS & NOTES MASONRY / TILES
+   5. TAB 3: IDEE & NOTE (BOLD WP8 METRO TILES)
    ========================================================================== */
 
-.idea-creator-card {
-  gap: 8px;
-}
-
-.idea-creator-card input {
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
+.wp8-idea-title-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--border-medium);
   color: var(--text-primary);
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 8px 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 6px 2px;
   outline: none;
+  border-radius: 0;
 }
 
-.idea-creator-card textarea {
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
+.wp8-idea-text-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
   color: var(--text-primary);
   font-size: 0.9rem;
   font-family: inherit;
-  padding: 8px 12px;
+  padding: 6px 2px;
   outline: none;
   resize: vertical;
+  border-radius: 0;
 }
 
-.idea-creator-footer {
+.idea-action-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
-  padding-top: 6px;
+  padding-top: 4px;
 }
 
-.idea-color-selector {
+.metro-color-dots {
   display: flex;
   gap: 8px;
 }
 
-.color-dot {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
+.color-picker-dot {
+  width: 20px;
+  height: 20px;
   border: 2px solid transparent;
   cursor: pointer;
+  border-radius: 0; /* Sharp square */
   transition: transform 0.15s ease;
 }
 
-.color-dot.color-yellow { background: #d89b00; }
-.color-dot.color-blue   { background: #0078d7; }
-.color-dot.color-green  { background: #107c41; }
-.color-dot.color-pink   { background: #e81123; }
-.color-dot.color-purple { background: #881798; }
+.color-picker-dot.dot-yellow { background: #d89b00; }
+.color-picker-dot.dot-blue   { background: #0078d7; }
+.color-picker-dot.dot-green  { background: #107c41; }
+.color-picker-dot.dot-pink   { background: #e81123; }
+.color-picker-dot.dot-purple { background: #881798; }
 
-.color-dot.active {
+.color-picker-dot.active {
   border-color: #ffffff;
-  transform: scale(1.2);
+  transform: scale(1.15);
 }
 
-.idea-footer-actions {
+.idea-right-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-left: auto;
 }
 
-.pin-toggle-btn {
+.wp8-pin-btn {
   background: transparent;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-medium);
   color: var(--text-secondary);
   font-size: 0.8rem;
+  text-transform: lowercase;
   padding: 0 10px;
-  height: 38px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
 }
 
-.pin-toggle-btn.active {
+.wp8-pin-btn.active {
   background: #f7630c;
   border-color: #f7630c;
   color: #ffffff;
 }
 
-/* Ideas Tiles Grid */
-.ideas-masonry-grid {
+/* Ideas Metro Tiles Grid */
+.wp8-ideas-tiles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
 }
 
-.metro-idea-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+.wp8-metro-tile {
+  background: var(--bg-surface);
+  border-left: 4px solid #0078d7;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 8px;
+  transition: transform 0.15s ease;
 }
 
-.metro-idea-card:hover {
+.wp8-metro-tile:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--bg-surface-hover);
 }
 
-.metro-idea-card.tile-yellow { border-top: 4px solid #d89b00; }
-.metro-idea-card.tile-blue   { border-top: 4px solid #0078d7; }
-.metro-idea-card.tile-green  { border-top: 4px solid #107c41; }
-.metro-idea-card.tile-pink   { border-top: 4px solid #e81123; }
-.metro-idea-card.tile-purple { border-top: 4px solid #881798; }
+.wp8-metro-tile.tile-yellow { border-left-color: #d89b00; }
+.wp8-metro-tile.tile-blue   { border-left-color: #0078d7; }
+.wp8-metro-tile.tile-green  { border-left-color: #107c41; }
+.wp8-metro-tile.tile-pink   { border-left-color: #e81123; }
+.wp8-metro-tile.tile-purple { border-left-color: #881798; }
 
-.metro-idea-card.is-pinned {
-  box-shadow: 0 0 12px rgba(247, 99, 12, 0.3);
+.wp8-metro-tile.is-pinned {
+  border-right: 3px solid #f7630c;
 }
 
-.idea-card-header {
+.tile-top-row {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 8px;
 }
 
-.idea-card-title {
-  font-size: 1.05rem;
-  font-weight: 600;
+.tile-headline {
+  font-size: 1.1rem;
+  font-weight: 500;
   color: var(--text-primary);
   word-break: break-word;
 }
 
-.idea-pin-badge {
+.tile-pin-icon {
   color: #f7630c;
-  font-size: 14px;
+  font-size: 13px;
 }
 
-.idea-card-body {
+.tile-content-text {
   font-size: 0.88rem;
   color: var(--text-secondary);
+  line-height: 1.45;
   white-space: pre-wrap;
   word-break: break-word;
-  line-height: 1.5;
 }
 
-.idea-card-footer {
+.tile-footer-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-top: 8px;
-  border-top: 1px solid rgba(128, 128, 128, 0.15);
+  border-top: 1px solid var(--border-subtle);
   font-size: 0.75rem;
 }
 
-.idea-date-tag {
-  color: var(--text-faint);
+.tile-date-label {
+  color: var(--text-dim);
 }
 
-.idea-actions-group {
+.tile-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
-.btn-convert-todo {
+.btn-convert-pill {
   background: var(--accent-color);
   border: none;
   color: #ffffff;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
+  text-transform: lowercase;
   padding: 3px 8px;
   cursor: pointer;
   display: inline-flex;
@@ -991,263 +893,252 @@ html, body {
   gap: 4px;
 }
 
-/* Empty State Cards */
-.empty-state-card {
-  text-align: center;
-  padding: 40px 20px;
-  background: var(--bg-card);
-  border: 1px dashed var(--border-subtle);
+/* ==========================================================================
+   6. ICONIC WP8 BOTTOM APPLICATION BAR
+   ========================================================================== */
+
+.wp8-app-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(56px + var(--sab));
+  background: var(--bg-appbar);
+  border-top: 1px solid var(--border-subtle);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  padding-bottom: var(--sab);
+  z-index: 500;
 }
 
-.empty-state-icon {
-  font-size: 36px;
-  color: var(--accent-color);
-  margin-bottom: 4px;
+.appbar-icons-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
 }
 
-.empty-state-card h3 {
-  font-size: 1.15rem;
-  font-weight: 600;
+.appbar-circle-btn {
+  background: transparent;
+  border: 1px solid var(--border-bold);
+  color: var(--text-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.appbar-circle-btn:active {
+  background: var(--text-primary);
+  color: var(--bg-main);
+  transform: scale(0.92);
+}
+
+.appbar-dots-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.appbar-dots-btn:hover {
   color: var(--text-primary);
 }
 
-.empty-state-card p {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  max-width: 340px;
-}
-
 /* ==========================================================================
-   MODALS
+   7. MODALS & SHEETS
    ========================================================================== */
 
-.metro-modal-overlay {
+.wp8-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
-  animation: fadeInModal 0.2s ease-out;
+  animation: fadeIn 0.18s ease-out;
 }
 
-@keyframes fadeInModal {
+@keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-.metro-modal-card {
+.wp8-modal-sheet {
   background: var(--bg-dialog);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-medium);
   width: 100%;
   max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 20px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.modal-title-group {
+.sheet-header {
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
-.modal-kicker {
+.sheet-kicker {
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--accent-color);
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
-.modal-header h3 {
-  font-size: 1.4rem;
-  font-weight: 300;
+.sheet-title {
+  font-size: 2rem;
+  font-weight: 200;
+  text-transform: lowercase;
   color: var(--text-primary);
 }
 
-.metro-close-btn {
+.sheet-close-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
   background: none;
   border: none;
   color: var(--text-secondary);
-  font-size: 24px;
+  font-size: 28px;
   cursor: pointer;
   line-height: 1;
 }
 
-.modal-body {
+.sheet-body {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.form-section {
+.sheet-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.section-label {
+.sheet-label {
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 600;
+  text-transform: lowercase;
   color: var(--text-primary);
 }
 
-.section-help-text {
+.sheet-help {
   font-size: 0.78rem;
   color: var(--text-secondary);
   line-height: 1.4;
 }
 
-/* Profile / Avatar Picker Grid */
-.profile-picker-grid {
+/* WP8 Member Grid */
+.wp8-member-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
-.profile-choice {
-  background: var(--bg-card);
+.member-select-card {
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  padding: 10px 6px;
+  padding: 12px 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
+  border-radius: 0;
   transition: all 0.15s ease;
 }
 
-.profile-choice:hover {
-  border-color: var(--accent-color);
+.member-select-card i {
+  font-size: 20px;
 }
 
-.profile-choice.active {
+.member-select-card span {
+  font-size: 0.8rem;
+  text-transform: lowercase;
+}
+
+.member-select-card.active {
   background: var(--accent-color);
   border-color: var(--accent-color);
   color: #ffffff;
 }
 
-.choice-avatar {
-  font-size: 24px;
-}
-
-.choice-name {
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.custom-name-row input {
+.wp8-dialog-input {
   width: 100%;
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   padding: 8px 12px;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-family: inherit;
   outline: none;
+  border-radius: 0;
 }
 
-/* Family Code Row */
-.family-code-input-row {
-  display: flex;
-  gap: 8px;
-}
-
-.family-code-input-row input {
-  flex: 1;
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
+.code-font {
   font-family: var(--font-mono);
   font-size: 1.1rem;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 8px 12px;
-  outline: none;
 }
 
-.metro-action-btn {
-  background: var(--accent-color);
-  border: none;
-  color: #ffffff;
-  font-weight: 700;
-  padding: 0 14px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-}
-
-.quick-code-presets {
+.code-action-row {
   display: flex;
   gap: 8px;
 }
 
-.code-preset-btn {
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-  font-size: 0.75rem;
-  padding: 4px 10px;
-  cursor: pointer;
+.code-presets-row {
+  display: flex;
+  gap: 12px;
 }
 
-.server-badge-card {
+.wp8-server-note {
   background: rgba(16, 124, 65, 0.15);
-  border: 1px solid #107c41;
+  border-left: 3px solid #107c41;
   padding: 10px 12px;
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.82rem;
-}
-
-.server-badge-card i {
-  font-size: 20px;
-  color: #107c41;
-}
-
-.server-badge-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.server-badge-info small {
+  font-size: 0.8rem;
   color: var(--text-secondary);
-  font-size: 0.72rem;
 }
 
-/* Theme Mode Toggle */
-.theme-mode-toggle-row {
+.wp8-server-note i {
+  color: #107c41;
+  font-size: 16px;
+}
+
+.theme-choice-row {
   display: flex;
   gap: 8px;
 }
 
-.mode-toggle-btn {
+.wp8-theme-btn {
   flex: 1;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   padding: 10px 12px;
@@ -1256,154 +1147,124 @@ html, body {
   justify-content: center;
   gap: 8px;
   font-size: 0.85rem;
-  font-weight: 600;
+  text-transform: lowercase;
   cursor: pointer;
 }
 
-.mode-toggle-btn.active {
-  border-color: var(--accent-color);
+.wp8-theme-btn.active {
   background: var(--accent-color);
+  border-color: var(--accent-color);
   color: #ffffff;
 }
 
-/* Accent Palette Grid */
 .accent-palette-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
-.accent-choice {
-  height: 44px;
+.accent-tile {
+  height: 42px;
   border: 2px solid transparent;
   color: #ffffff;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.85rem;
+  text-transform: lowercase;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.accent-choice.active {
+.accent-tile.active {
   border-color: #ffffff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
-.sound-switch-btn {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.modal-footer {
+.sheet-footer {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
 }
 
-.metro-btn-primary {
-  background: var(--accent-color);
-  border: none;
-  color: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 700;
-  padding: 10px 20px;
-  cursor: pointer;
-}
-
-.metro-btn-secondary {
+.wp8-btn-outline {
   background: transparent;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-medium);
   color: var(--text-primary);
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 10px 20px;
+  font-size: 0.88rem;
+  text-transform: lowercase;
+  padding: 8px 18px;
   cursor: pointer;
 }
 
-/* Convert Idea Destination Buttons */
-.convert-preview-box {
-  background: var(--bg-input);
+/* Convert Idea Dialog */
+.convert-preview-quote {
+  background: var(--bg-surface);
   border-left: 3px solid var(--accent-color);
   padding: 10px 12px;
-  font-size: 0.9rem;
-  color: var(--text-primary);
+  font-size: 0.95rem;
   font-style: italic;
+  color: var(--text-primary);
 }
 
-.convert-dest-buttons {
+.convert-options-grid {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.convert-dest-btn {
-  background: var(--bg-card);
+.wp8-convert-card {
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   padding: 14px;
   display: flex;
   align-items: center;
   gap: 14px;
-  text-align: left;
   cursor: pointer;
+  text-align: left;
   transition: all 0.15s ease;
 }
 
-.convert-dest-btn:hover {
+.wp8-convert-card:hover {
   background: var(--accent-color);
   color: #ffffff;
 }
 
-.dest-icon {
-  font-size: 28px;
+.wp8-convert-card i {
+  font-size: 24px;
 }
 
-.dest-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.dest-info strong {
+.wp8-convert-card strong {
+  display: block;
   font-size: 0.95rem;
+  text-transform: lowercase;
 }
 
-.dest-info small {
+.wp8-convert-card small {
   font-size: 0.75rem;
   opacity: 0.8;
 }
 
-/* Toast Notifications */
-.metro-toast {
+/* WP8 Toast Notification */
+.wp8-toast {
   position: fixed;
-  bottom: calc(24px + var(--sab));
+  bottom: calc(68px + var(--sab));
   left: 50%;
   transform: translateX(-50%);
-  background: #181818;
+  background: #1e1e1e;
   border: 1px solid var(--accent-color);
   color: #ffffff;
-  padding: 10px 18px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  padding: 8px 16px;
   font-size: 0.85rem;
-  font-weight: 600;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7);
+  font-weight: 500;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   z-index: 2000;
   pointer-events: none;
-  animation: toastPop 0.25s ease-out;
+  animation: toastSlide 0.2s ease-out;
 }
 
-@keyframes toastPop {
-  from { opacity: 0; transform: translate(-50%, 15px); }
+@keyframes toastSlide {
+  from { opacity: 0; transform: translate(-50%, 10px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
@@ -1413,19 +1274,13 @@ html, body {
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
-  .metro-header {
-    padding: calc(10px + var(--sat)) 14px 0 14px;
-  }
-  .brand-title {
-    font-size: 1.85rem;
-  }
-  .pivot-text {
-    font-size: 1.15rem;
+  .pivot-title-btn {
+    font-size: 2.6rem;
   }
   .carousel-slide {
-    padding: 12px 14px calc(30px + var(--sab)) 14px;
+    padding: 10px 14px calc(76px + var(--sab)) 14px;
   }
-  .ideas-masonry-grid {
+  .wp8-ideas-tiles-grid {
     grid-template-columns: 1fr;
   }
 }

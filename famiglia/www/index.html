@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0078d7">
-  <meta name="description" content="FamTito - To-Do List di Famiglia Condivisa in Tempo Reale, Note & To-Do Personali">
-  <title>FamTito - To-Do Famiglia & Idee</title>
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="FamTito - To-Do List di Famiglia Condivisa in Stile Windows Phone 8 Metro UI">
+  <title>FamTito</title>
 
   <!-- PWA & Mobile Meta Tags -->
   <link rel="manifest" href="manifest.json">
@@ -19,12 +19,12 @@
   <link rel="apple-touch-icon" href="icon.jpg">
   <link rel="icon" href="icon.jpg" type="image/jpeg">
 
-  <!-- Google Fonts: Outfit, Segoe UI feel, JetBrains Mono -->
+  <!-- Google Fonts: Outfit (ultra-clean Segoe UI feel), JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   
-  <!-- FontAwesome for crisp Metro vector icons -->
+  <!-- FontAwesome for Authentic Flat Metro Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
 
@@ -37,51 +37,39 @@
   <div id="app" class="app-root">
     
     <!-- ============================================== -->
-    <!-- 1. WP8 METRO PANORAMA HEADER                   -->
+    <!-- 1. WP8 METRO PANORAMA PIVOT HEADER             -->
     <!-- ============================================== -->
     <header class="metro-header">
+      <!-- Top Small Brand & Cloud Status -->
       <div class="header-top-row">
-        <div class="brand-group">
-          <span class="brand-sub-title">HUB FAMIGLIA</span>
-          <h1 class="brand-title">FamTito</h1>
-        </div>
-
-        <div class="header-actions">
-          <!-- Voice Dictation Button -->
-          <button id="globalVoiceBtn" class="metro-icon-btn" title="Dettatura vocale" aria-label="Dettatura vocale">
-            <i class="fa-solid fa-microphone"></i>
+        <span class="app-kicker">FAMTITO</span>
+        
+        <div class="header-right-actions">
+          <div class="cloud-status-badge" id="cloudStatusPill" title="Stato Cloud">
+            <span class="status-indicator-dot" id="cloudStatusDot"></span>
+            <span class="code-label" id="headerFamilyCode">#FAM-TITO</span>
+          </div>
+          <button id="familySettingsBtn" class="metro-header-icon-btn" title="Gestisci Famiglia">
+            <i class="fa-solid fa-users"></i>
           </button>
-          <!-- Theme & Accent Picker -->
-          <button id="themeToggleBtn" class="metro-icon-btn" title="Personalizza Tema e Colore" aria-label="Tema">
+          <button id="themeToggleBtn" class="metro-header-icon-btn" title="Personalizza Stile">
             <i class="fa-solid fa-palette"></i>
-          </button>
-          <!-- Family & Member Profile Button -->
-          <button id="familyProfileBtn" class="metro-icon-btn member-avatar-btn" title="Profilo e Codice Famiglia" aria-label="Profilo">
-            <span id="currentMemberAvatarHeader">🧔</span>
-            <span class="cloud-status-dot" id="cloudStatusDot" title="Cloud Attivo"></span>
           </button>
         </div>
       </div>
 
-      <!-- Metro Panoramic Tab Bar (Clickable & updates with swipe) -->
-      <nav class="metro-pivot-nav" id="metroPivotNav">
-        <button class="pivot-item active" data-index="0">
-          <span class="pivot-text">famiglia</span>
-          <span class="pivot-badge" id="badgeFamilyCount">0</span>
-        </button>
-        <button class="pivot-item" data-index="1">
-          <span class="pivot-text">personale</span>
-          <span class="pivot-badge" id="badgePersonalCount">0</span>
-        </button>
-        <button class="pivot-item" data-index="2">
-          <span class="pivot-text">idee & note</span>
-          <span class="pivot-badge" id="badgeIdeasCount">0</span>
-        </button>
-      </nav>
+      <!-- WP8 Giant Lowercase Pivot Tab Titles (details | related style) -->
+      <div class="pivot-titles-scroller" id="pivotTitlesScroller">
+        <div class="pivot-titles-track" id="pivotTitlesTrack">
+          <button class="pivot-title-btn active" data-index="0">famiglia</button>
+          <button class="pivot-title-btn" data-index="1">personale</button>
+          <button class="pivot-title-btn" data-index="2">idee & note</button>
+        </div>
+      </div>
     </header>
 
     <!-- ============================================== -->
-    <!-- 2. HORIZONTAL SWIPE CAROUSEL CONTAINER         -->
+    <!-- 2. HORIZONTAL SWIPE CAROUSEL (CLEAN & SPACIOUS)-->
     <!-- ============================================== -->
     <main class="carousel-viewport" id="carouselViewport">
       <div class="carousel-track" id="carouselTrack">
@@ -92,292 +80,255 @@
         <section class="carousel-slide" id="slideFamiglia">
           <div class="slide-content-wrapper">
             
-            <!-- Family Live Status Bar -->
-            <div class="family-status-card" id="familyStatusCard">
-              <div class="family-status-left">
-                <span class="cloud-icon" id="cloudSyncIcon">☁️</span>
-                <div class="family-status-info">
-                  <div class="family-name-row">
-                    <strong id="activeFamilyName">Famiglia Tito</strong>
-                    <span class="family-code-tag" id="activeFamilyCodeDisplay">#FAM-TITO</span>
-                  </div>
-                  <span class="family-sync-subtitle" id="familySyncSubtitle">Sincronizzato in tempo reale</span>
-                </div>
-              </div>
-              <button class="change-family-btn" id="openFamilySettingsBtn" title="Gestisci Famiglia e Membri">
-                <i class="fa-solid fa-users-gear"></i>
-              </button>
-            </div>
-
-            <!-- Member Filter Ribbon (Chi fa cosa) -->
-            <div class="members-ribbon-row">
-              <span class="ribbon-label">Filtra:</span>
-              <div class="members-chips-container" id="familyMemberFilterBar">
-                <button class="member-chip active" data-member="all">
-                  <span>👨‍👩‍👧‍👦</span><span>Tutti</span>
-                </button>
-                <button class="member-chip" data-member="Papà">
-                  <span>🧔</span><span>Papà</span>
-                </button>
-                <button class="member-chip" data-member="Mamma">
-                  <span>👩</span><span>Mamma</span>
-                </button>
-                <button class="member-chip" data-member="Figlio">
-                  <span>👦</span><span>Figlio</span>
-                </button>
-                <button class="member-chip" data-member="Figlia">
-                  <span>👧</span><span>Figlia</span>
-                </button>
+            <!-- Sleek Member Filter (WP8 Minimalist Text Tabs) -->
+            <div class="wp8-sub-filter-row">
+              <span class="sub-filter-label">membro:</span>
+              <div class="sub-filter-buttons" id="familyMemberFilterBar">
+                <button class="filter-link active" data-member="all">tutti</button>
+                <button class="filter-link" data-member="Papà">papà</button>
+                <button class="filter-link" data-member="Mamma">mamma</button>
+                <button class="filter-link" data-member="Figlio">figlio</button>
+                <button class="filter-link" data-member="Figlia">figlia</button>
               </div>
             </div>
 
-            <!-- Quick Add Family Task -->
-            <div class="metro-add-card">
-              <div class="add-input-row">
-                <input type="text" id="familyTaskInput" placeholder="Cosa c'è da fare o comprare per la famiglia..." autocomplete="off">
-                <button id="voiceFamilyTaskBtn" class="action-mini-btn" title="Detta voce">
+            <!-- Quick Add Bar (Ultra-clean WP8 Flat Input) -->
+            <div class="wp8-input-card">
+              <div class="input-line-row">
+                <input type="text" id="familyTaskInput" placeholder="aggiungi un'attività di famiglia..." autocomplete="off">
+                <button id="voiceFamilyTaskBtn" class="wp8-inline-btn" title="Dettatura vocale" aria-label="Microfono">
                   <i class="fa-solid fa-microphone"></i>
                 </button>
-                <button id="addFamilyTaskBtn" class="metro-submit-btn">
+                <button id="addFamilyTaskBtn" class="wp8-btn-accent" title="Aggiungi">
                   <i class="fa-solid fa-plus"></i>
-                  <span>Aggiungi</span>
+                  <span>aggiungi</span>
                 </button>
               </div>
 
-              <!-- Category & Assignment Pills -->
-              <div class="add-meta-options-row">
-                <div class="meta-select-group">
-                  <label for="familyCategorySelect">Categoria:</label>
-                  <select id="familyCategorySelect" class="metro-select">
-                    <option value="spesa">🛒 Spesa</option>
-                    <option value="casa">🏠 Casa</option>
-                    <option value="bollette">📄 Bollette</option>
-                    <option value="figli">🎒 Figli / Scuola</option>
-                    <option value="salute">💊 Farmacia / Salute</option>
-                    <option value="urgente">🚨 Urgente</option>
-                    <option value="altro">📌 Altro</option>
+              <!-- Sleek Meta Dropdowns -->
+              <div class="input-meta-row">
+                <div class="meta-field">
+                  <span class="meta-label">categoria:</span>
+                  <select id="familyCategorySelect" class="wp8-select">
+                    <option value="spesa">spesa</option>
+                    <option value="casa">casa</option>
+                    <option value="bollette">bollette</option>
+                    <option value="figli">scuola / figli</option>
+                    <option value="salute">salute</option>
+                    <option value="urgente">urgente</option>
+                    <option value="altro">altro</option>
                   </select>
                 </div>
 
-                <div class="meta-select-group">
-                  <label for="familyAssigneeSelect">Assegna a:</label>
-                  <select id="familyAssigneeSelect" class="metro-select">
-                    <option value="Tutti">👨‍👩‍👧‍👦 Chiunque</option>
-                    <option value="Papà">🧔 Papà</option>
-                    <option value="Mamma">👩 Mamma</option>
-                    <option value="Figlio">👦 Figlio</option>
-                    <option value="Figlia">👧 Figlia</option>
+                <div class="meta-field">
+                  <span class="meta-label">assegna a:</span>
+                  <select id="familyAssigneeSelect" class="wp8-select">
+                    <option value="Tutti">chiunque</option>
+                    <option value="Papà">papà</option>
+                    <option value="Mamma">mamma</option>
+                    <option value="Figlio">figlio</option>
+                    <option value="Figlia">figlia</option>
                   </select>
                 </div>
 
-                <button type="button" id="toggleUrgentFamilyBtn" class="urgent-toggle-chip" title="Contrassegna come urgente">
-                  <i class="fa-solid fa-fire"></i>
-                  <span>Urgente</span>
+                <button type="button" id="toggleUrgentFamilyBtn" class="wp8-urgent-flag" title="Urgente">
+                  <i class="fa-solid fa-bolt"></i>
+                  <span>urgente</span>
                 </button>
               </div>
             </div>
 
-            <!-- Category Filter Ribbon -->
-            <div class="category-filter-bar" id="familyCategoryFilterBar">
-              <button class="cat-filter-chip active" data-cat="all">Tutte</button>
-              <button class="cat-filter-chip" data-cat="spesa">🛒 Spesa</button>
-              <button class="cat-filter-chip" data-cat="casa">🏠 Casa</button>
-              <button class="cat-filter-chip" data-cat="bollette">📄 Bollette</button>
-              <button class="cat-filter-chip" data-cat="figli">🎒 Figli</button>
-              <button class="cat-filter-chip" data-cat="salute">💊 Salute</button>
-              <button class="cat-filter-chip" data-cat="urgente">🚨 Urgente</button>
+            <!-- Sleek Category Filter Chips (Minimalist) -->
+            <div class="wp8-category-scroller" id="familyCategoryFilterBar">
+              <button class="cat-chip active" data-cat="all">tutte</button>
+              <button class="cat-chip" data-cat="spesa"><i class="fa-solid fa-cart-shopping"></i> spesa</button>
+              <button class="cat-chip" data-cat="casa"><i class="fa-solid fa-house"></i> casa</button>
+              <button class="cat-chip" data-cat="bollette"><i class="fa-solid fa-file-invoice"></i> bollette</button>
+              <button class="cat-chip" data-cat="figli"><i class="fa-solid fa-graduation-cap"></i> figli</button>
+              <button class="cat-chip" data-cat="salute"><i class="fa-solid fa-kit-medical"></i> salute</button>
+              <button class="cat-chip" data-cat="urgente"><i class="fa-solid fa-bolt"></i> urgenti</button>
             </div>
 
-            <!-- Shared Tasks List Container -->
-            <div class="tasks-container" id="familyTasksList">
-              <!-- Dynamically populated tasks -->
+            <!-- Tasks List Container -->
+            <div class="wp8-tasks-list" id="familyTasksList">
+              <!-- Dynamically populated -->
             </div>
 
             <!-- Completed Family Tasks Section -->
-            <div class="completed-section" id="familyCompletedSection">
-              <div class="completed-header" id="toggleFamilyCompleted">
-                <span>✅ Cose già fatte (<span id="familyCompletedCount">0</span>)</span>
-                <div class="completed-header-actions">
-                  <button id="clearFamilyCompletedBtn" class="btn-clear-completed" title="Elimina tutte le completate">Svuota</button>
-                  <i class="fa-solid fa-chevron-down toggle-icon"></i>
+            <div class="wp8-completed-box" id="familyCompletedSection">
+              <div class="completed-summary-row" id="toggleFamilyCompleted">
+                <span class="completed-title">completate (<span id="familyCompletedCount">0</span>)</span>
+                <div class="completed-right">
+                  <button id="clearFamilyCompletedBtn" class="wp8-link-btn" title="Elimina tutte">svuota</button>
+                  <i class="fa-solid fa-chevron-down fold-arrow"></i>
                 </div>
               </div>
-              <div class="completed-list hidden" id="familyCompletedList">
+              <div class="completed-items-list hidden" id="familyCompletedList">
                 <!-- Completed items -->
               </div>
             </div>
 
             <!-- Empty State -->
-            <div class="empty-state-card hidden" id="emptyFamilyState">
-              <i class="fa-solid fa-circle-check empty-state-icon"></i>
-              <h3>Tutto Fatto!</h3>
-              <p>Nessun compito rimasto per la famiglia. Aggiungi qualcosa con la barra in alto o riposati!</p>
+            <div class="wp8-empty-state hidden" id="emptyFamilyState">
+              <i class="fa-solid fa-check"></i>
+              <h3>tutto completato</h3>
+              <p>nessuna attività in sospeso per la famiglia</p>
             </div>
 
           </div>
         </section>
 
         <!-- ============================================== -->
-        <!-- TAB 2: PERSONALE (Privata sul dispositivo)     -->
+        <!-- TAB 2: PERSONALE (Privata)                     -->
         <!-- ============================================== -->
         <section class="carousel-slide" id="slidePersonale">
           <div class="slide-content-wrapper">
             
-            <div class="slide-banner personal-banner">
-              <div class="banner-icon">🔒</div>
-              <div class="banner-content">
-                <h3>Le Mie Cose da Fare</h3>
-                <p>Lista privata sul tuo dispositivo. Puoi spostare qualsiasi compito nella lista di famiglia con 1 tocco.</p>
+            <!-- Sub Filter Bar -->
+            <div class="wp8-sub-filter-row">
+              <span class="sub-filter-label">filtra:</span>
+              <div class="sub-filter-buttons" id="personalFilterBar">
+                <button class="filter-link active" data-filter="all">tutti (<span id="personalActiveTotal">0</span>)</button>
+                <button class="filter-link" data-filter="oggi">oggi</button>
+                <button class="filter-link" data-filter="alta">alta priorità</button>
+                <button class="filter-link" data-filter="lavoro">lavoro</button>
+                <button class="filter-link" data-filter="personale">obiettivi</button>
               </div>
             </div>
 
             <!-- Quick Add Personal Task -->
-            <div class="metro-add-card">
-              <div class="add-input-row">
-                <input type="text" id="personalTaskInput" placeholder="Cosa devi fare tu personalmente..." autocomplete="off">
-                <button id="voicePersonalTaskBtn" class="action-mini-btn" title="Detta voce">
+            <div class="wp8-input-card">
+              <div class="input-line-row">
+                <input type="text" id="personalTaskInput" placeholder="cosa devi fare tu personalmente..." autocomplete="off">
+                <button id="voicePersonalTaskBtn" class="wp8-inline-btn" title="Dettatura vocale">
                   <i class="fa-solid fa-microphone"></i>
                 </button>
-                <button id="addPersonalTaskBtn" class="metro-submit-btn">
+                <button id="addPersonalTaskBtn" class="wp8-btn-accent">
                   <i class="fa-solid fa-plus"></i>
-                  <span>Aggiungi</span>
+                  <span>aggiungi</span>
                 </button>
               </div>
 
-              <div class="add-meta-options-row">
-                <div class="meta-select-group">
-                  <label for="personalPrioritySelect">Priorità:</label>
-                  <select id="personalPrioritySelect" class="metro-select">
-                    <option value="normale">🟢 Normale</option>
-                    <option value="media">🟡 Media</option>
-                    <option value="alta">🔴 Alta</option>
+              <div class="input-meta-row">
+                <div class="meta-field">
+                  <span class="meta-label">priorità:</span>
+                  <select id="personalPrioritySelect" class="wp8-select">
+                    <option value="normale">normale</option>
+                    <option value="media">media</option>
+                    <option value="alta">alta</option>
                   </select>
                 </div>
 
-                <div class="meta-select-group">
-                  <label for="personalDueDateSelect">Scadenza:</label>
-                  <select id="personalDueDateSelect" class="metro-select">
-                    <option value="oggi">📅 Oggi</option>
-                    <option value="domani">🌅 Domani</option>
-                    <option value="settimana">🗓️ Questa settimana</option>
-                    <option value="nessuna">♾️ Nessuna</option>
+                <div class="meta-field">
+                  <span class="meta-label">scadenza:</span>
+                  <select id="personalDueDateSelect" class="wp8-select">
+                    <option value="oggi">oggi</option>
+                    <option value="domani">domani</option>
+                    <option value="settimana">questa settimana</option>
+                    <option value="nessuna">nessuna</option>
                   </select>
                 </div>
 
-                <div class="meta-select-group">
-                  <label for="personalCategorySelect">Tag:</label>
-                  <select id="personalCategorySelect" class="metro-select">
-                    <option value="lavoro">💼 Lavoro</option>
-                    <option value="studio">📚 Studio</option>
-                    <option value="salute">🏃 Sport & Salute</option>
-                    <option value="svago">🎮 Svago</option>
-                    <option value="personale">🎯 Obiettivi</option>
+                <div class="meta-field">
+                  <span class="meta-label">tag:</span>
+                  <select id="personalCategorySelect" class="wp8-select">
+                    <option value="lavoro">lavoro</option>
+                    <option value="studio">studio</option>
+                    <option value="salute">sport / salute</option>
+                    <option value="svago">svago</option>
+                    <option value="personale">personale</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            <!-- Filter Chips for Personal -->
-            <div class="category-filter-bar" id="personalFilterBar">
-              <button class="cat-filter-chip active" data-filter="all">Tutti (<span id="personalActiveTotal">0</span>)</button>
-              <button class="cat-filter-chip" data-filter="oggi">📅 Oggi</button>
-              <button class="cat-filter-chip" data-filter="alta">🔴 Alta Priorità</button>
-              <button class="cat-filter-chip" data-filter="lavoro">💼 Lavoro</button>
-              <button class="cat-filter-chip" data-filter="personale">🎯 Personale</button>
-            </div>
-
-            <!-- Personal Task List -->
-            <div class="tasks-container" id="personalTasksList">
-              <!-- Dynamically populated personal tasks -->
+            <!-- Tasks List -->
+            <div class="wp8-tasks-list" id="personalTasksList">
+              <!-- Dynamically populated -->
             </div>
 
             <!-- Completed Personal Tasks Section -->
-            <div class="completed-section" id="personalCompletedSection">
-              <div class="completed-header" id="togglePersonalCompleted">
-                <span>✅ Cose personali completate (<span id="personalCompletedCount">0</span>)</span>
-                <div class="completed-header-actions">
-                  <button id="clearPersonalCompletedBtn" class="btn-clear-completed" title="Elimina tutte le completate">Svuota</button>
-                  <i class="fa-solid fa-chevron-down toggle-icon"></i>
+            <div class="wp8-completed-box" id="personalCompletedSection">
+              <div class="completed-summary-row" id="togglePersonalCompleted">
+                <span class="completed-title">completate personali (<span id="personalCompletedCount">0</span>)</span>
+                <div class="completed-right">
+                  <button id="clearPersonalCompletedBtn" class="wp8-link-btn" title="Elimina tutte">svuota</button>
+                  <i class="fa-solid fa-chevron-down fold-arrow"></i>
                 </div>
               </div>
-              <div class="completed-list hidden" id="personalCompletedList">
+              <div class="completed-items-list hidden" id="personalCompletedList">
                 <!-- Completed items -->
               </div>
             </div>
 
             <!-- Empty State -->
-            <div class="empty-state-card hidden" id="emptyPersonalState">
-              <i class="fa-solid fa-feather-pointed empty-state-icon"></i>
-              <h3>Nessuna attività personale</h3>
-              <p>Non hai compiti personali in sospeso. Aggiungine uno con la barra in alto!</p>
+            <div class="wp8-empty-state hidden" id="emptyPersonalState">
+              <i class="fa-solid fa-feather"></i>
+              <h3>nessuna attività</h3>
+              <p>nessun compito personale rimasto</p>
             </div>
 
           </div>
         </section>
 
         <!-- ============================================== -->
-        <!-- TAB 3: IDEE & NOTE (Scratchpad / Brain Dump)  -->
+        <!-- TAB 3: IDEE & NOTE (WP8 Metro Tiles Grid)     -->
         <!-- ============================================== -->
         <section class="carousel-slide" id="slideIdee">
           <div class="slide-content-wrapper">
             
-            <div class="slide-banner ideas-banner">
-              <div class="banner-icon">💡</div>
-              <div class="banner-content">
-                <h3>Bacheca Idee & Note</h3>
-                <p>Cattura pensieri, spunti, liste regali e appunti al volo. Trasforma qualsiasi idea in To-Do con 1 clic!</p>
-              </div>
-            </div>
-
-            <!-- Quick Add Idea Card -->
-            <div class="metro-add-card idea-creator-card">
-              <input type="text" id="ideaTitleInput" placeholder="Titolo dell'idea o appunto..." autocomplete="off">
-              <textarea id="ideaContentInput" placeholder="Scrivi qui i dettagli, una lista o il tuo pensiero..." rows="2"></textarea>
+            <!-- Quick Add Idea -->
+            <div class="wp8-input-card">
+              <input type="text" id="ideaTitleInput" class="wp8-idea-title-input" placeholder="titolo dell'idea o appunto..." autocomplete="off">
+              <textarea id="ideaContentInput" class="wp8-idea-text-input" placeholder="dettagli, pensiero o lista..." rows="2"></textarea>
               
-              <div class="idea-creator-footer">
-                <div class="idea-color-selector" id="ideaColorSelector">
-                  <button type="button" class="color-dot color-yellow active" data-color="yellow" title="Giallo Post-it"></button>
-                  <button type="button" class="color-dot color-blue" data-color="blue" title="Blu Cobalto"></button>
-                  <button type="button" class="color-dot color-green" data-color="green" title="Verde Smeraldo"></button>
-                  <button type="button" class="color-dot color-pink" data-color="pink" title="Rosa Acceso"></button>
-                  <button type="button" class="color-dot color-purple" data-color="purple" title="Viola"></button>
+              <div class="idea-action-row">
+                <div class="metro-color-dots" id="ideaColorSelector">
+                  <button type="button" class="color-picker-dot dot-yellow active" data-color="yellow" title="Giallo"></button>
+                  <button type="button" class="color-picker-dot dot-blue" data-color="blue" title="Blu"></button>
+                  <button type="button" class="color-picker-dot dot-green" data-color="green" title="Verde"></button>
+                  <button type="button" class="color-picker-dot dot-pink" data-color="pink" title="Crimson"></button>
+                  <button type="button" class="color-picker-dot dot-purple" data-color="purple" title="Viola"></button>
                 </div>
 
-                <div class="idea-footer-actions">
-                  <button type="button" id="togglePinIdeaBtn" class="pin-toggle-btn" title="Fissa in alto">
+                <div class="idea-right-actions">
+                  <button type="button" id="togglePinIdeaBtn" class="wp8-pin-btn" title="Fissa in alto">
                     <i class="fa-solid fa-thumbtack"></i>
-                    <span>In Primo Piano</span>
+                    <span>fissa</span>
                   </button>
-                  <button id="voiceIdeaBtn" class="action-mini-btn" title="Dettatura vocale">
+                  <button id="voiceIdeaBtn" class="wp8-inline-btn" title="Dettatura">
                     <i class="fa-solid fa-microphone"></i>
                   </button>
-                  <button id="addIdeaBtn" class="metro-submit-btn">
-                    <i class="fa-solid fa-lightbulb"></i>
-                    <span>Salva Idea</span>
+                  <button id="addIdeaBtn" class="wp8-btn-accent">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>salva</span>
                   </button>
                 </div>
               </div>
             </div>
 
             <!-- Ideas Filter Bar -->
-            <div class="category-filter-bar" id="ideasFilterBar">
-              <button class="cat-filter-chip active" data-filter="all">Tutte (<span id="ideasTotalCount">0</span>)</button>
-              <button class="cat-filter-chip" data-filter="pinned">📌 Fissate</button>
-              <button class="cat-filter-chip" data-filter="yellow">🟡 Gialle</button>
-              <button class="cat-filter-chip" data-filter="blue">🔵 Blu</button>
-              <button class="cat-filter-chip" data-filter="green">🟢 Verdi</button>
+            <div class="wp8-sub-filter-row">
+              <span class="sub-filter-label">mostra:</span>
+              <div class="sub-filter-buttons" id="ideasFilterBar">
+                <button class="filter-link active" data-filter="all">tutte (<span id="ideasTotalCount">0</span>)</button>
+                <button class="filter-link" data-filter="pinned">fissate</button>
+                <button class="filter-link" data-filter="yellow">gialle</button>
+                <button class="filter-link" data-filter="blue">blu</button>
+                <button class="filter-link" data-filter="green">verdi</button>
+              </div>
             </div>
 
-            <!-- Metro Tiles Grid for Ideas -->
-            <div class="ideas-masonry-grid" id="ideasListGrid">
-              <!-- Dynamically populated ideas cards -->
+            <!-- Metro Tiles List for Ideas -->
+            <div class="wp8-ideas-tiles-grid" id="ideasListGrid">
+              <!-- Dynamically populated tiles -->
             </div>
 
-            <!-- Empty State for Ideas -->
-            <div class="empty-state-card hidden" id="emptyIdeasState">
-              <i class="fa-solid fa-lightbulb empty-state-icon"></i>
-              <h3>Nessuna idea annotata</h3>
-              <p>Usa il campo in alto per salvare i tuoi spunti o detta la tua prima idea col microfono!</p>
+            <!-- Empty State -->
+            <div class="wp8-empty-state hidden" id="emptyIdeasState">
+              <i class="fa-solid fa-lightbulb"></i>
+              <h3>nessuna idea</h3>
+              <p>salva qui i tuoi pensieri e trasformali in to-do</p>
             </div>
 
           </div>
@@ -387,185 +338,178 @@
     </main>
 
     <!-- ============================================== -->
-    <!-- 3. MODALS & DIALOGS                            -->
+    <!-- 3. WP8 ICONIC BOTTOM APPLICATION BAR           -->
+    <!-- ============================================== -->
+    <footer class="wp8-app-bar" id="wp8AppBar">
+      <div class="appbar-icons-row">
+        <!-- Quick Add Focus Action -->
+        <button id="appbarAddBtn" class="appbar-circle-btn" title="Nuova attività" aria-label="Aggiungi">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+        <!-- Quick Voice Dictation -->
+        <button id="appbarVoiceBtn" class="appbar-circle-btn" title="Dettatura vocale" aria-label="Microfono">
+          <i class="fa-solid fa-microphone"></i>
+        </button>
+        <!-- Quick Refresh / Sync -->
+        <button id="appbarSyncBtn" class="appbar-circle-btn" title="Sincronizza ora" aria-label="Aggiorna">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <!-- 3 Dots Menu Button -->
+        <button id="appbarMenuBtn" class="appbar-dots-btn" title="Altre opzioni" aria-label="Menu">
+          <i class="fa-solid fa-ellipsis"></i>
+        </button>
+      </div>
+    </footer>
+
+    <!-- ============================================== -->
+    <!-- 4. MODALS (WP8 CLEAN DESIGN)                   -->
     <!-- ============================================== -->
 
     <!-- Family Settings & Profile Modal -->
-    <div id="familySettingsModal" class="metro-modal-overlay hidden">
-      <div class="metro-modal-card">
-        <div class="modal-header">
-          <div class="modal-title-group">
-            <span class="modal-kicker">GESTIONE CONDIVISIONE</span>
-            <h3>Famiglia & Profilo</h3>
-          </div>
-          <button id="closeFamilyModalBtn" class="metro-close-btn">&times;</button>
+    <div id="familySettingsModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet">
+        <div class="sheet-header">
+          <span class="sheet-kicker">GESTIONE FAMIGLIA</span>
+          <h2 class="sheet-title">profilo & cloud</h2>
+          <button id="closeFamilyModalBtn" class="sheet-close-btn">&times;</button>
         </div>
 
-        <div class="modal-body">
-          
-          <!-- 1. Who Are You? Member Selector -->
-          <div class="form-section">
-            <label class="section-label">Chi sei in Famiglia? (Il tuo Avatar)</label>
-            <div class="profile-picker-grid" id="profilePickerGrid">
-              <button type="button" class="profile-choice active" data-name="Papà" data-avatar="🧔">
-                <span class="choice-avatar">🧔</span>
-                <span class="choice-name">Papà</span>
+        <div class="sheet-body">
+          <!-- Member Selector -->
+          <div class="sheet-section">
+            <label class="sheet-label">chi sei in famiglia?</label>
+            <div class="wp8-member-grid" id="profilePickerGrid">
+              <button type="button" class="member-select-card active" data-name="Papà" data-role="papà">
+                <i class="fa-solid fa-user"></i>
+                <span>Papà</span>
               </button>
-              <button type="button" class="profile-choice" data-name="Mamma" data-avatar="👩">
-                <span class="choice-avatar">👩</span>
-                <span class="choice-name">Mamma</span>
+              <button type="button" class="member-select-card" data-name="Mamma" data-role="mamma">
+                <i class="fa-solid fa-user"></i>
+                <span>Mamma</span>
               </button>
-              <button type="button" class="profile-choice" data-name="Figlio" data-avatar="👦">
-                <span class="choice-avatar">👦</span>
-                <span class="choice-name">Figlio</span>
+              <button type="button" class="member-select-card" data-name="Figlio" data-role="figlio">
+                <i class="fa-solid fa-child"></i>
+                <span>Figlio</span>
               </button>
-              <button type="button" class="profile-choice" data-name="Figlia" data-avatar="👧">
-                <span class="choice-avatar">👧</span>
-                <span class="choice-name">Figlia</span>
+              <button type="button" class="member-select-card" data-name="Figlia" data-role="figlia">
+                <i class="fa-solid fa-child-dress"></i>
+                <span>Figlia</span>
               </button>
-              <button type="button" class="profile-choice" data-name="Nonno" data-avatar="👴">
-                <span class="choice-avatar">👴</span>
-                <span class="choice-name">Nonno</span>
+              <button type="button" class="member-select-card" data-name="Nonno" data-role="nonno">
+                <i class="fa-solid fa-glasses"></i>
+                <span>Nonno</span>
               </button>
-              <button type="button" class="profile-choice" data-name="Nonna" data-avatar="👵">
-                <span class="choice-avatar">👵</span>
-                <span class="choice-name">Nonna</span>
+              <button type="button" class="member-select-card" data-name="Nonna" data-role="nonna">
+                <i class="fa-solid fa-heart"></i>
+                <span>Nonna</span>
               </button>
             </div>
-            <div class="custom-name-row">
-              <input type="text" id="customMemberNameInput" placeholder="Oppure scrivi il tuo nome...">
+            <input type="text" id="customMemberNameInput" class="wp8-dialog-input" placeholder="oppure scrivi il tuo nome...">
+          </div>
+
+          <!-- Family Code -->
+          <div class="sheet-section">
+            <label class="sheet-label">codice famiglia (cloud)</label>
+            <p class="sheet-help">Tutti i familiari con lo stesso codice vedono e aggiornano la lista in tempo reale:</p>
+            <div class="code-action-row">
+              <input type="text" id="familyCodeInput" class="wp8-dialog-input code-font" value="FAM-TITO" autocomplete="off" autocapitalize="characters">
+              <button id="saveFamilyCodeBtn" class="wp8-btn-accent">collega</button>
+            </div>
+            <div class="code-presets-row">
+              <button type="button" class="wp8-link-btn code-preset-btn" data-code="FAM-TITO">predefinito (#FAM-TITO)</button>
+              <button type="button" class="wp8-link-btn" id="generateRandomCodeBtn">genera codice casuale</button>
             </div>
           </div>
 
-          <!-- 2. Family Sync Code -->
-          <div class="form-section">
-            <label class="section-label">Codice Sincronizzazione Famiglia (Cloud)</label>
-            <p class="section-help-text">Tutti i familiari che inseriscono lo stesso codice vedranno e aggiorneranno la stessa lista in tempo reale:</p>
-            
-            <div class="family-code-input-row">
-              <input type="text" id="familyCodeInput" value="FAM-TITO" placeholder="Es. FAM-ROSSI-77" autocomplete="off" autocapitalize="characters">
-              <button id="saveFamilyCodeBtn" class="metro-action-btn">
-                <i class="fa-solid fa-cloud-arrow-down"></i>
-                <span>Collega</span>
-              </button>
-            </div>
-            <div class="quick-code-presets">
-              <button type="button" class="code-preset-btn" data-code="FAM-TITO">Predefinito (FAM-TITO)</button>
-              <button type="button" class="code-preset-btn" id="generateRandomCodeBtn">Genera Codice Casuale</button>
-            </div>
+          <!-- Cloud status note -->
+          <div class="wp8-server-note">
+            <i class="fa-solid fa-cloud"></i>
+            <span>Server AppTito: sincronizzazione istantanea bidirezionale</span>
           </div>
-
-          <!-- 3. Server Info -->
-          <div class="server-badge-card">
-            <i class="fa-solid fa-database"></i>
-            <div class="server-badge-info">
-              <span>Server Cloud: <strong>Firebase AppTito Backend</strong></span>
-              <small>Sincronizzazione istantanea bidirezionale crittografata</small>
-            </div>
-          </div>
-
         </div>
 
-        <div class="modal-footer">
-          <button id="closeFamilyModalFooterBtn" class="metro-btn-secondary">Chiudi</button>
+        <div class="sheet-footer">
+          <button id="closeFamilyModalFooterBtn" class="wp8-btn-outline">chiudi</button>
         </div>
       </div>
     </div>
 
-    <!-- Theme & Colors Modal -->
-    <div id="themeModal" class="metro-modal-overlay hidden">
-      <div class="metro-modal-card">
-        <div class="modal-header">
-          <div class="modal-title-group">
-            <span class="modal-kicker">PERSONALIZZAZIONE</span>
-            <h3>Colori & Stile Metro</h3>
-          </div>
-          <button id="closeThemeModalBtn" class="metro-close-btn">&times;</button>
+    <!-- Theme Modal -->
+    <div id="themeModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet">
+        <div class="sheet-header">
+          <span class="sheet-kicker">IMPOSTAZIONI</span>
+          <h2 class="sheet-title">personalizzazione</h2>
+          <button id="closeThemeModalBtn" class="sheet-close-btn">&times;</button>
         </div>
 
-        <div class="modal-body">
-          <div class="form-section">
-            <label class="section-label">Modalità Schermo</label>
-            <div class="theme-mode-toggle-row">
-              <button type="button" class="mode-toggle-btn active" id="btnDarkMode">
-                <i class="fa-solid fa-moon"></i>
-                <span>Nero OLED (Scuro)</span>
+        <div class="sheet-body">
+          <div class="sheet-section">
+            <label class="sheet-label">tema sfondo</label>
+            <div class="theme-choice-row">
+              <button type="button" class="wp8-theme-btn active" id="btnDarkMode">
+                <i class="fa-solid fa-moon"></i> scuro (nero oled)
               </button>
-              <button type="button" class="mode-toggle-btn" id="btnLightMode">
-                <i class="fa-solid fa-sun"></i>
-                <span>Bianco Puro (Chiaro)</span>
+              <button type="button" class="wp8-theme-btn" id="btnLightMode">
+                <i class="fa-solid fa-sun"></i> chiaro (bianco puro)
               </button>
             </div>
           </div>
 
-          <div class="form-section">
-            <label class="section-label">Colore d'Accento Windows Phone</label>
+          <div class="sheet-section">
+            <label class="sheet-label">colore d'accento windows phone</label>
             <div class="accent-palette-grid" id="accentPaletteGrid">
-              <button type="button" class="accent-choice active" data-accent="#0078d7" style="background:#0078d7;">
-                <span>Cobalto</span>
-              </button>
-              <button type="button" class="accent-choice" data-accent="#107c41" style="background:#107c41;">
-                <span>Smeraldo</span>
-              </button>
-              <button type="button" class="accent-choice" data-accent="#f7630c" style="background:#f7630c;">
-                <span>Mango</span>
-              </button>
-              <button type="button" class="accent-choice" data-accent="#e81123" style="background:#e81123;">
-                <span>Crimson</span>
-              </button>
-              <button type="button" class="accent-choice" data-accent="#881798" style="background:#881798;">
-                <span>Magenta</span>
-              </button>
-              <button type="button" class="accent-choice" data-accent="#00b7c3" style="background:#00b7c3;">
-                <span>Ciano</span>
-              </button>
+              <button type="button" class="accent-tile active" data-accent="#0078d7" style="background:#0078d7;">cobalto</button>
+              <button type="button" class="accent-tile" data-accent="#107c41" style="background:#107c41;">smeraldo</button>
+              <button type="button" class="accent-tile" data-accent="#f7630c" style="background:#f7630c;">mango</button>
+              <button type="button" class="accent-tile" data-accent="#e81123" style="background:#e81123;">crimson</button>
+              <button type="button" class="accent-tile" data-accent="#881798" style="background:#881798;">magenta</button>
+              <button type="button" class="accent-tile" data-accent="#00b7c3" style="background:#00b7c3;">ciano</button>
             </div>
           </div>
 
-          <div class="form-section">
-            <label class="section-label">Effetti Sonori Web Audio</label>
-            <button type="button" class="sound-switch-btn" id="toggleSoundBtn">
+          <div class="sheet-section">
+            <label class="sheet-label">audio e suoni</label>
+            <button type="button" class="wp8-theme-btn" id="toggleSoundBtn">
               <i class="fa-solid fa-volume-high" id="soundStatusIcon"></i>
-              <span id="soundStatusText">Audio Attivo (Click e Chimes)</span>
+              <span id="soundStatusText">effetti sonori attivi</span>
             </button>
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button id="closeThemeModalFooterBtn" class="metro-btn-primary">Fatto</button>
+        <div class="sheet-footer">
+          <button id="closeThemeModalFooterBtn" class="wp8-btn-accent">fatto</button>
         </div>
       </div>
     </div>
 
     <!-- Convert Idea to To-Do Modal -->
-    <div id="convertIdeaModal" class="metro-modal-overlay hidden">
-      <div class="metro-modal-card">
-        <div class="modal-header">
-          <div class="modal-title-group">
-            <span class="modal-kicker">TRASFORMA IN TO-DO</span>
-            <h3>Converti Idea</h3>
-          </div>
-          <button id="closeConvertModalBtn" class="metro-close-btn">&times;</button>
+    <div id="convertIdeaModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet">
+        <div class="sheet-header">
+          <span class="sheet-kicker">CONVERTI IDEA</span>
+          <h2 class="sheet-title">crea to-do</h2>
+          <button id="closeConvertModalBtn" class="sheet-close-btn">&times;</button>
         </div>
 
-        <div class="modal-body">
-          <p id="convertIdeaPreviewText" class="convert-preview-box"></p>
+        <div class="sheet-body">
+          <div class="convert-preview-quote" id="convertIdeaPreviewText"></div>
 
-          <label class="section-label">Dove vuoi inserire questa attività?</label>
-          <div class="convert-dest-buttons">
-            <button type="button" id="convertDestFamilyBtn" class="convert-dest-btn">
-              <span class="dest-icon">👨‍👩‍👧‍👦</span>
-              <div class="dest-info">
-                <strong>Lista Famiglia (Condivisa)</strong>
-                <small>Visibile a tutti i membri</small>
+          <label class="sheet-label">dove vuoi salvare l'attività?</label>
+          <div class="convert-options-grid">
+            <button type="button" id="convertDestFamilyBtn" class="wp8-convert-card">
+              <i class="fa-solid fa-users"></i>
+              <div>
+                <strong>famiglia (condivisa)</strong>
+                <small>visibile a tutti i membri di casa</small>
               </div>
             </button>
 
-            <button type="button" id="convertDestPersonalBtn" class="convert-dest-btn">
-              <span class="dest-icon">👤</span>
-              <div class="dest-info">
-                <strong>Lista Personale (Privata)</strong>
-                <small>Solo sul tuo telefono</small>
+            <button type="button" id="convertDestPersonalBtn" class="wp8-convert-card">
+              <i class="fa-solid fa-user"></i>
+              <div>
+                <strong>personale (privata)</strong>
+                <small>solo sul tuo smartphone</small>
               </div>
             </button>
           </div>
@@ -573,10 +517,9 @@
       </div>
     </div>
 
-    <!-- Toast Notification Overlay -->
-    <div id="metroToast" class="metro-toast hidden">
-      <span class="toast-icon" id="metroToastIcon">✨</span>
-      <span class="toast-message" id="metroToastMessage">Operazione completata</span>
+    <!-- Minimalist Toast -->
+    <div id="metroToast" class="wp8-toast hidden">
+      <span class="toast-text" id="metroToastMessage">Operazione completata</span>
     </div>
 
   </div>
