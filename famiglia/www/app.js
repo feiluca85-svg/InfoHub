@@ -41,7 +41,7 @@ try {
 // 2. STATE STORAGE & DEFAULTS
 // =============================================================================
 
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.5.1";
 
 const WP8_GLYPHS = {
   'wp8:user': 'fa-solid fa-user',
@@ -1903,9 +1903,6 @@ document.addEventListener('DOMContentLoaded', () => {
   safeListen('closeThemeModalFooterBtn', 'click', () => {
     document.getElementById('themeModal')?.classList.add('hidden');
   });
-
-  // Auto GPS Sharing
-  safeListen('toggleAutoGpsBtn', 'click', toggleAutoGpsSharing);
 
   // QR Code Share
   safeListen('btnOpenShareQRModal', 'click', () => {
