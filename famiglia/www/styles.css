@@ -29,7 +29,6 @@
   --font-family: 'Outfit', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Strict WP8 Sharp Geometry (Zero Border Radius) */
   --radius-metro: 0px;
 
   /* Safe Area for Mobile */
@@ -76,7 +75,7 @@ html, body {
   background-color: var(--bg-main);
   color: var(--text-primary);
   font-family: var(--font-family);
-  font-size: 16px; /* Slightly larger text */
+  font-size: 16px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -102,45 +101,49 @@ html, body {
   z-index: 100;
 }
 
+/* 3) Ingrandito tutta la prima riga dell'header */
 .header-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .app-kicker {
-  font-size: 1.15rem; /* Lowercase tribù in WP8 style */
+  font-size: 2.1rem; /* Enlarge tribù */
   font-weight: 300;
   text-transform: lowercase;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.5px;
   color: var(--text-primary);
+  line-height: 1;
 }
 
 .header-right-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
+/* 3) Ingrandite le tre icone in alto a destra */
 .metro-header-icon-btn {
   background: transparent;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-medium);
   color: var(--text-primary);
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 18px;
   transition: all 0.15s ease;
 }
 
 .metro-header-icon-btn:active {
   background: var(--text-primary);
   color: var(--bg-main);
+  transform: scale(0.92);
 }
 
 /* Giant WP8 Pivot Titles Scroller */
@@ -166,7 +169,7 @@ html, body {
   border: none;
   color: var(--text-dim);
   font-family: var(--font-family);
-  font-size: 3.2rem; /* Giant Segoe Light style */
+  font-size: 3.2rem;
   font-weight: 200;
   text-transform: lowercase;
   letter-spacing: -0.04em;
@@ -226,7 +229,6 @@ html, body {
    3. CLEAN WP8 CONTROLS & DYNAMIC MEMBER FILTER
    ========================================================================== */
 
-/* 6) Sub-Filter Row that never overflows */
 .wp8-sub-filter-row {
   display: flex;
   align-items: center;
@@ -311,14 +313,94 @@ html, body {
   color: var(--accent-color);
 }
 
-/* WP8 Flat Input Card */
+/* 4 & 5 & 6) First Position '+' Button on Category Scrollers */
+.wp8-category-scroller {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.wp8-category-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.cat-chip-plus-first {
+  background: var(--accent-color);
+  border: none;
+  color: #ffffff;
+  width: 38px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 0;
+  transition: all 0.15s ease;
+}
+
+.cat-chip-plus-first:active, .cat-chip-plus-first.active {
+  background: #ffffff;
+  color: var(--bg-main);
+  transform: scale(0.94);
+}
+
+.cat-chip {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  font-weight: 400;
+  text-transform: lowercase;
+  padding: 6px 14px;
+  height: 36px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.cat-chip:hover {
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+}
+
+.cat-chip.active {
+  background: var(--bg-surface);
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.chip-color-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* 4) Expandable/Collapsible WP8 Flat Input Card */
 .wp8-input-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  padding: 14px 16px;
+  border-left: 4px solid var(--accent-color);
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  animation: slideDownCard 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDownCard {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .input-line-row {
@@ -367,7 +449,6 @@ html, body {
   color: #ffffff;
 }
 
-/* WP8 Plus-Only Action Button */
 .wp8-btn-plus-only {
   background: var(--accent-color);
   border: none;
@@ -437,47 +518,6 @@ html, body {
   border-radius: 0;
 }
 
-/* Clean Category Filter Chips */
-.wp8-category-scroller {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 2px;
-}
-
-.wp8-category-scroller::-webkit-scrollbar {
-  display: none;
-}
-
-.cat-chip {
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  color: var(--text-dim);
-  font-size: 0.88rem;
-  font-weight: 400;
-  text-transform: lowercase;
-  padding: 6px 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.15s ease;
-}
-
-.cat-chip:hover {
-  color: var(--text-primary);
-  border-color: var(--border-medium);
-}
-
-.cat-chip.active {
-  background: var(--bg-surface);
-  border-color: var(--accent-color);
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
 /* ==========================================================================
    4. TASKS LIST (STARK WP8 FLAT ROWS)
    ========================================================================== */
@@ -485,12 +525,12 @@ html, body {
 .wp8-tasks-list {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 
 .wp8-task-item {
   background: var(--bg-surface);
-  border-left: 3px solid transparent;
+  border-left: 4px solid var(--accent-color);
   padding: 16px 18px;
   display: flex;
   align-items: flex-start;
@@ -504,7 +544,7 @@ html, body {
 }
 
 .wp8-task-item.is-urgent {
-  border-left-color: #a20025;
+  border-left-color: #a20025 !important;
 }
 
 .wp8-task-item.is-completed {
@@ -745,7 +785,6 @@ html, body {
   border-radius: 0;
 }
 
-/* 8) Single clean horizontal line for note actions */
 .idea-action-row.single-line {
   display: flex;
   align-items: center;

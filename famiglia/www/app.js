@@ -1,11 +1,11 @@
 /**
  * Tribù - Authentic Windows Phone 8.1 Metro UI Engine
  * Features:
- * - Real-time Dynamic Family Members & AppTito Cloud Sync
- * - Custom Categories with Instant Tagging
- * - Priority, Due Date/Time & Scheduled Reminders
- * - Single-line Note Bar & Live Tile Theme Engine
- * - Robust Voice Dictation & Dual (Native + In-App) Notifications
+ * - Bell Toggle with fa-bell / fa-bell-slash status
+ * - Collapsible Add Boxes with '+' in 1st position across Family, Personal & Ideas
+ * - Category Border Color Customization via Long-Press
+ * - Identical Power Features across Family & Personal (Priority, Scheduling, Reminders)
+ * - Real-time AppTito Cloud Sync & Dynamic Members
  */
 
 // =============================================================================
@@ -57,6 +57,16 @@ let dynamicFamilyMembers = ['Papà'];
 
 let customCategories = ['spesa', 'casa', 'bollette', 'figli', 'salute', 'urgente', 'altro'];
 
+let categoryColors = {
+  spesa: '#008a00',
+  casa: '#0050ef',
+  bollette: '#f09609',
+  figli: '#6a00ff',
+  salute: '#a20025',
+  urgente: '#e81123',
+  altro: '#4390df'
+};
+
 let familyTasks = [
   {
     id: 'f_task_1',
@@ -91,8 +101,10 @@ let personalTasks = [
     id: 'p_task_1',
     title: 'Revisionare documento di lavoro e inviare mail',
     priority: 'alta',
-    dueDate: 'oggi',
-    category: 'lavoro',
+    dueDate: '2026-08-15',
+    dueTime: '11:00',
+    category: 'casa',
+    reminder: '15m',
     completed: false,
     createdAt: Date.now() - 5400000
   },
@@ -100,8 +112,10 @@ let personalTasks = [
     id: 'p_task_2',
     title: '30 minuti di allenamento o camminata',
     priority: 'media',
-    dueDate: 'oggi',
+    dueDate: '',
+    dueTime: '',
     category: 'salute',
+    reminder: 'none',
     completed: false,
     createdAt: Date.now() - 10800000
   }
@@ -137,6 +151,7 @@ let selectedIdeaColor = 'yellow';
 let isIdeaPinned = false;
 let ideaPendingConversion = null;
 let lastKnownTaskCount = 0;
+let categoryBeingCustomized = null;
 
 // =============================================================================
 // 3. PERSISTENCE & CLOUD SYNC ENGINE
@@ -155,6 +170,9 @@ function loadLocalData() {
 
     const savedCats = localStorage.getItem('tribu_custom_cats');
     if (savedCats) customCategories = JSON.parse(savedCats);
+
+    const savedCatColors = localStorage.getItem('tribu_category_colors');
+    if (savedCatColors) categoryColors = JSON.parse(savedCatColors);
 
     const savedMembers = localStorage.getItem('tribu_family_members_' + currentFamilyCode);
     if (savedMembers) {
@@ -182,6 +200,7 @@ function saveLocalData() {
     localStorage.setItem('tribu_theme', JSON.stringify(themeSettings));
     localStorage.setItem('tribu_family_code', currentFamilyCode);
     localStorage.setItem('tribu_custom_cats', JSON.stringify(customCategories));
+    localStorage.setItem('tribu_category_colors', JSON.stringify(categoryColors));
     localStorage.setItem('tribu_family_members_' + currentFamilyCode, JSON.stringify(dynamicFamilyMembers));
     localStorage.setItem('tribu_personal_tasks', JSON.stringify(personalTasks));
     localStorage.setItem('tribu_ideas', JSON.stringify(ideasList));
@@ -232,15 +251,19 @@ function initFirebaseSync() {
         pushFamilyTasksToCloud();
       }
 
-      // Sync categories
+      // Sync categories & colors
       if (Array.isArray(data.customCategories)) {
         customCategories = Array.from(new Set([...customCategories, ...data.customCategories]));
+      }
+      if (data.categoryColors && typeof data.categoryColors === 'object') {
+        categoryColors = { ...categoryColors, ...data.categoryColors };
       }
 
       saveLocalData();
       renderMemberFilterBar();
       renderCategoryOptions();
       renderFamilyTasks();
+      renderPersonalTasks();
       updateCloudStatus(true);
     } else {
       pushFamilyTasksToCloud();
@@ -264,6 +287,7 @@ function pushFamilyTasksToCloud() {
       familyCode: currentFamilyCode,
       members: dynamicFamilyMembers,
       customCategories: customCategories,
+      categoryColors: categoryColors,
       lastUpdated: Date.now(),
       updatedBy: userProfile.name,
       tasks: familyTasks
@@ -274,22 +298,39 @@ function pushFamilyTasksToCloud() {
 }
 
 function updateCloudStatus(isOnline) {
-  // Handled silently
+  // Silent indicator
 }
 
 // =============================================================================
-// 4. NOTIFICATIONS ENGINE (Dual Web Notification + In-App Banner)
+// 4. NOTIFICATIONS & BELL TOGGLE ENGINE (Requirement 1)
 // =============================================================================
 
+function toggleNotifications() {
+  themeSettings.notifications = !themeSettings.notifications;
+  saveLocalData();
+  updateNotificationUI();
+
+  if (themeSettings.notifications) {
+    SoundFX.pop();
+    if ('Notification' in window) {
+      Notification.requestPermission().then((perm) => console.log("Notif perm:", perm));
+    }
+    triggerTribNotification("🔔 Notifiche Attivate", "Riceverai avvisi su compiti urgenti, scadenze e note!");
+    showToast("notifiche attivate");
+  } else {
+    SoundFX.click();
+    showToast("notifiche disattivate");
+  }
+}
+
 function triggerTribNotification(title, body) {
-  // 1. Audio and Haptic feedback
+  if (!themeSettings.notifications) return;
+
   if (themeSettings.sound) SoundFX.pop();
   if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
 
-  // 2. In-App Visual Banner (Works in 100% of WebViews and Phones)
   showInAppBanner(title, body);
 
-  // 3. System Web Notification if supported and permitted
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
       new Notification(title, {
@@ -298,7 +339,7 @@ function triggerTribNotification(title, body) {
         badge: 'icon-192.png'
       });
     } catch (e) {
-      console.log("System notification notice:", e);
+      console.log("System notification note:", e);
     }
   }
 }
@@ -315,32 +356,28 @@ function showInAppBanner(title, body) {
   }, 4000);
 }
 
-function requestNotificationPermission() {
-  themeSettings.notifications = true;
-  saveLocalData();
-  updateNotificationUI();
-
-  if ('Notification' in window) {
-    Notification.requestPermission().then((perm) => {
-      console.log("Notification perm:", perm);
-    });
-  }
-
-  triggerTribNotification("🔔 Notifiche Tribù Attive", "Riceverai avvisi su attività, scadenze e promemoria di famiglia!");
-  showToast("notifiche attivate con successo");
-}
-
 function updateNotificationUI() {
-  const icon = document.getElementById('notifStatusIcon');
-  const text = document.getElementById('notifStatusText');
-  if (icon) icon.className = 'fa-solid fa-bell';
-  if (text) text.textContent = 'notifiche push & avvisi attivi';
+  const headerIcon = document.getElementById('headerNotifIcon');
+  const modalIcon = document.getElementById('notifStatusIcon');
+  const modalText = document.getElementById('notifStatusText');
+
+  const isEnabled = themeSettings.notifications;
+
+  if (headerIcon) {
+    headerIcon.className = isEnabled ? 'fa-solid fa-bell' : 'fa-solid fa-bell-slash';
+  }
+  if (modalIcon) {
+    modalIcon.className = isEnabled ? 'fa-solid fa-bell' : 'fa-solid fa-bell-slash';
+  }
+  if (modalText) {
+    modalText.textContent = isEnabled ? 'notifiche push & avvisi attivi' : 'notifiche disattivate (tocca per attivare)';
+  }
 }
 
 // Check scheduled reminders periodically
 setInterval(() => {
   const now = Date.now();
-  familyTasks.forEach(task => {
+  [...familyTasks, ...personalTasks].forEach(task => {
     if (!task.completed && task.dueDate && task.reminder && task.reminder !== 'none' && !task.reminderFired) {
       const dueDateTime = new Date(`${task.dueDate}T${task.dueTime || '09:00'}`).getTime();
       let reminderOffset = 0;
@@ -350,7 +387,7 @@ setInterval(() => {
 
       if (now >= (dueDateTime - reminderOffset) && now < (dueDateTime + 1800000)) {
         task.reminderFired = true;
-        triggerTribNotification(`⏰ Scadenza: ${task.title}`, `Assegnato a ${task.assignee} (Scadenza: ${task.dueDate} ${task.dueTime || ''})`);
+        triggerTribNotification(`⏰ Scadenza: ${task.title}`, `(Scadenza: ${task.dueDate} ${task.dueTime || ''})`);
         pushFamilyTasksToCloud();
       }
     }
@@ -429,7 +466,7 @@ const SoundFX = {
 };
 
 // =============================================================================
-// 6. CATEGORIES & SMART AUTO-DETECTION (Requirement 7)
+// 6. CATEGORIES, BORDER COLORS & LONG-PRESS CUSTOMIZER (Requirement 5)
 // =============================================================================
 
 const CATEGORY_MAP = {
@@ -462,38 +499,132 @@ function autoDetectCategory(text) {
 }
 
 function renderCategoryOptions() {
-  const select = document.getElementById('familyCategorySelect');
-  const filterBar = document.getElementById('familyCategoryFilterBar');
-  if (!select || !filterBar) return;
+  const familySelect = document.getElementById('familyCategorySelect');
+  const personalSelect = document.getElementById('personalCategorySelect');
+  const familyFilterBar = document.getElementById('familyCategoryFilterBar');
+  const personalFilterBar = document.getElementById('personalCategoryFilterBar');
 
-  // 1. Populate Dropdown
+  // 1. Populate Dropdowns
   let selectHtml = '';
   customCategories.forEach(cat => {
     const meta = CATEGORY_MAP[cat] || { name: cat, icon: 'fa-tag' };
     selectHtml += `<option value="${escapeHTML(cat)}">${escapeHTML(meta.name)}</option>`;
   });
   selectHtml += `<option value="__new__">+ nuova categoria...</option>`;
-  select.innerHTML = selectHtml;
 
-  // 2. Populate Filter Chips
-  let chipsHtml = `<button class="cat-chip ${familyCategoryFilter === 'all' ? 'active' : ''}" data-cat="all">tutte</button>`;
-  customCategories.forEach(cat => {
-    const meta = CATEGORY_MAP[cat] || { name: cat, icon: 'fa-tag' };
-    const isAct = familyCategoryFilter === cat;
-    chipsHtml += `<button class="cat-chip ${isAct ? 'active' : ''}" data-cat="${escapeHTML(cat)}"><i class="fa-solid ${meta.icon}"></i> ${escapeHTML(meta.name)}</button>`;
-  });
-  filterBar.innerHTML = chipsHtml;
+  if (familySelect) familySelect.innerHTML = selectHtml;
+  if (personalSelect) personalSelect.innerHTML = selectHtml;
 
-  // Chip click listeners
-  filterBar.querySelectorAll('.cat-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      filterBar.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      familyCategoryFilter = chip.dataset.cat;
+  // 2. Populate Family Filter Chips with '+' in 1st position
+  if (familyFilterBar) {
+    let chipsHtml = `
+      <button id="toggleFamilyAddBoxBtn" class="cat-chip-plus-first" title="Nuova attività per la tribù">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+      <button class="cat-chip ${familyCategoryFilter === 'all' ? 'active' : ''}" data-cat="all">tutte</button>
+    `;
+    customCategories.forEach(cat => {
+      const meta = CATEGORY_MAP[cat] || { name: cat, icon: 'fa-tag' };
+      const isAct = familyCategoryFilter === cat;
+      const borderCol = categoryColors[cat] || '';
+      const styleAttr = borderCol ? `style="border-color:${borderCol};"` : '';
+      chipsHtml += `<button class="cat-chip ${isAct ? 'active' : ''}" data-cat="${escapeHTML(cat)}" ${styleAttr} title="Tocca per filtrare, tieni premuto per cambiare colore"><i class="fa-solid ${meta.icon}"></i> ${escapeHTML(meta.name)}</button>`;
+    });
+    familyFilterBar.innerHTML = chipsHtml;
+    attachCategoryChipListeners(familyFilterBar, 'family');
+  }
+
+  // 3. Populate Personal Filter Chips with '+' in 1st position
+  if (personalFilterBar) {
+    let chipsHtml = `
+      <button id="togglePersonalAddBoxBtn" class="cat-chip-plus-first" title="Nuova attività personale">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+      <button class="cat-chip ${personalCategoryFilter === 'all' ? 'active' : ''}" data-cat="all">tutte</button>
+    `;
+    customCategories.forEach(cat => {
+      const meta = CATEGORY_MAP[cat] || { name: cat, icon: 'fa-tag' };
+      const isAct = personalCategoryFilter === cat;
+      const borderCol = categoryColors[cat] || '';
+      const styleAttr = borderCol ? `style="border-color:${borderCol};"` : '';
+      chipsHtml += `<button class="cat-chip ${isAct ? 'active' : ''}" data-cat="${escapeHTML(cat)}" ${styleAttr} title="Tocca per filtrare, tieni premuto per cambiare colore"><i class="fa-solid ${meta.icon}"></i> ${escapeHTML(meta.name)}</button>`;
+    });
+    personalFilterBar.innerHTML = chipsHtml;
+    attachCategoryChipListeners(personalFilterBar, 'personal');
+  }
+}
+
+function attachCategoryChipListeners(container, type) {
+  // Toggle add box on '+' click
+  const plusBtn = container.querySelector('.cat-chip-plus-first');
+  if (plusBtn) {
+    plusBtn.addEventListener('click', () => {
       SoundFX.click();
-      renderFamilyTasks();
+      if (type === 'family') {
+        const card = document.getElementById('familyInputCard');
+        card.classList.toggle('hidden');
+        if (!card.classList.contains('hidden')) {
+          document.getElementById('familyTaskInput').focus();
+        }
+      } else {
+        const card = document.getElementById('personalInputCard');
+        card.classList.toggle('hidden');
+        if (!card.classList.contains('hidden')) {
+          document.getElementById('personalTaskInput').focus();
+        }
+      }
+    });
+  }
+
+  // Filter chips with short click and long press
+  container.querySelectorAll('.cat-chip').forEach(chip => {
+    let pressTimer = null;
+    let isLongPress = false;
+
+    const startPress = () => {
+      isLongPress = false;
+      pressTimer = setTimeout(() => {
+        isLongPress = true;
+        const cat = chip.dataset.cat;
+        if (cat && cat !== 'all') {
+          openCategoryColorModal(cat);
+        }
+      }, 550);
+    };
+
+    const cancelPress = () => {
+      clearTimeout(pressTimer);
+    };
+
+    chip.addEventListener('mousedown', startPress);
+    chip.addEventListener('touchstart', startPress, { passive: true });
+    chip.addEventListener('mouseup', cancelPress);
+    chip.addEventListener('mouseleave', cancelPress);
+    chip.addEventListener('touchend', cancelPress);
+
+    chip.addEventListener('click', () => {
+      if (isLongPress) return;
+      container.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+
+      if (type === 'family') {
+        familyCategoryFilter = chip.dataset.cat;
+        SoundFX.click();
+        renderFamilyTasks();
+      } else {
+        personalCategoryFilter = chip.dataset.cat;
+        SoundFX.click();
+        renderPersonalTasks();
+      }
     });
   });
+}
+
+function openCategoryColorModal(cat) {
+  categoryBeingCustomized = cat;
+  document.getElementById('customizingCategoryName').textContent = cat;
+  document.getElementById('categoryColorModal').classList.remove('hidden');
+  SoundFX.pop();
 }
 
 function addCustomCategory(name) {
@@ -502,6 +633,7 @@ function addCustomCategory(name) {
   if (!customCategories.includes(clean)) {
     customCategories.push(clean);
     CATEGORY_MAP[clean] = { name: clean, icon: 'fa-tag' };
+    categoryColors[clean] = '#4390df';
     saveLocalData();
     pushFamilyTasksToCloud();
     renderCategoryOptions();
@@ -512,7 +644,7 @@ function addCustomCategory(name) {
 }
 
 // =============================================================================
-// 7. ROBUST SPEECH DICTATION (Microphone Engine)
+// 7. ROBUST SPEECH DICTATION
 // =============================================================================
 
 let recognition = null;
@@ -561,10 +693,11 @@ function setupSpeechRecognition() {
     document.querySelectorAll('.wp8-inline-btn, #appbarVoiceBtn').forEach(b => b.classList.remove('recording'));
     if (currentVoiceTranscript && activeVoiceTargetInput) {
       activeVoiceTargetInput.value = currentVoiceTranscript;
-      if (activeVoiceTargetInput.id === 'familyTaskInput') {
+      if (activeVoiceTargetInput.id === 'familyTaskInput' || activeVoiceTargetInput.id === 'personalTaskInput') {
         const detected = autoDetectCategory(currentVoiceTranscript);
         if (detected) {
-          document.getElementById('familyCategorySelect').value = detected;
+          const selectId = activeVoiceTargetInput.id === 'familyTaskInput' ? 'familyCategorySelect' : 'personalCategorySelect';
+          document.getElementById(selectId).value = detected;
         }
       }
     }
@@ -579,7 +712,7 @@ async function startVoiceDictation(targetInput) {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (e) {
-      console.log("Microphone getUserMedia prompt handled:", e);
+      console.log("Microphone prompt handled:", e);
     }
   }
 
@@ -676,7 +809,6 @@ function renderMemberFilterBar() {
 
   if (!container) return;
 
-  // 1. Render Ribbon Filters
   let html = `<button class="filter-link ${familyMemberFilter === 'all' ? 'active' : ''}" data-member="all">tutti</button>`;
   dynamicFamilyMembers.forEach(member => {
     const isAct = familyMemberFilter === member;
@@ -694,7 +826,6 @@ function renderMemberFilterBar() {
     });
   });
 
-  // 2. Render Assignee Select
   if (assigneeSelect) {
     let selectHtml = `<option value="Tutti">chiunque</option>`;
     dynamicFamilyMembers.forEach(member => {
@@ -703,7 +834,6 @@ function renderMemberFilterBar() {
     assigneeSelect.innerHTML = selectHtml;
   }
 
-  // 3. Render Modal Member List
   if (modalMemberList) {
     modalMemberList.innerHTML = '';
     dynamicFamilyMembers.forEach(member => {
@@ -755,7 +885,7 @@ function addFamilyMember(name) {
 }
 
 // =============================================================================
-// 10. TAB 1: RENDERING FAMIGLIA (Priority & Scheduling Support)
+// 10. TAB 1: RENDERING FAMIGLIA
 // =============================================================================
 
 function renderFamilyTasks() {
@@ -781,77 +911,15 @@ function renderFamilyTasks() {
   } else {
     emptyState.classList.add('hidden');
     filtered.forEach(t => {
-      container.appendChild(createFamilyTaskItem(t));
+      container.appendChild(createTaskItem(t, 'family'));
     });
   }
 
-  // Completed
   completedCountElem.textContent = completedTasks.length;
   completedList.innerHTML = '';
   completedTasks.forEach(t => {
-    completedList.appendChild(createFamilyTaskItem(t));
+    completedList.appendChild(createTaskItem(t, 'family'));
   });
-}
-
-function createFamilyTaskItem(task) {
-  const cat = CATEGORY_MAP[task.category] || { name: task.category, icon: 'fa-tag' };
-  const item = document.createElement('div');
-  const isUrgent = task.priority === 'urgente' || task.priority === 'alta';
-  item.className = `wp8-task-item ${isUrgent ? 'is-urgent' : ''} ${task.completed ? 'is-completed' : ''}`;
-  item.id = `ftask_${task.id}`;
-
-  const scheduleInfo = task.dueDate ? `${task.dueDate}${task.dueTime ? ' ore ' + task.dueTime : ''}` : '';
-
-  item.innerHTML = `
-    <button class="wp8-checkbox" aria-label="Completa" title="Segna come fatto">
-      ${task.completed ? '<i class="fa-solid fa-check"></i>' : ''}
-    </button>
-    <div class="task-body-col">
-      <div class="task-text">${escapeHTML(task.title)}</div>
-      <div class="task-info-meta">
-        <span class="meta-tag"><i class="fa-solid ${cat.icon}"></i> ${escapeHTML(cat.name)}</span>
-        ${task.assignee !== 'Tutti' ? `<span class="meta-tag tag-member"><i class="fa-solid fa-user"></i> ${escapeHTML(task.assignee)}</span>` : ''}
-        ${isUrgent ? `<span class="meta-tag tag-urgent"><i class="fa-solid fa-bolt"></i> ${task.priority}</span>` : ''}
-        ${scheduleInfo ? `<span class="meta-tag tag-schedule"><i class="fa-solid fa-clock"></i> ${scheduleInfo}</span>` : ''}
-        <span class="meta-tag" style="opacity:0.65;">di ${escapeHTML(task.addedBy || 'Tribù')}</span>
-        ${task.completed && task.completedBy ? `<span class="meta-tag" style="color:#008a00;">fatto da ${escapeHTML(task.completedBy)}</span>` : ''}
-      </div>
-    </div>
-    <div class="task-side-actions">
-      <button class="wp8-icon-action delete-action" title="Elimina">
-        <i class="fa-solid fa-trash-can"></i>
-      </button>
-    </div>
-  `;
-
-  // Checkbox toggle
-  item.querySelector('.wp8-checkbox').addEventListener('click', () => {
-    task.completed = !task.completed;
-    if (task.completed) {
-      task.completedBy = userProfile.name;
-      task.completedAt = Date.now();
-      SoundFX.complete();
-      showToast(`completato da ${userProfile.name}`);
-    } else {
-      task.completedBy = null;
-      task.completedAt = null;
-      SoundFX.click();
-    }
-    pushFamilyTasksToCloud();
-    renderFamilyTasks();
-  });
-
-  // Delete
-  item.querySelector('.delete-action').addEventListener('click', (e) => {
-    e.stopPropagation();
-    familyTasks = familyTasks.filter(item => item.id !== task.id);
-    SoundFX.click();
-    pushFamilyTasksToCloud();
-    renderFamilyTasks();
-    showToast("attività eliminata");
-  });
-
-  return item;
 }
 
 function addFamilyTask() {
@@ -890,6 +958,9 @@ function addFamilyTask() {
   document.getElementById('familyDueTimeInput').value = '';
   document.getElementById('familyReminderSelect').value = 'none';
 
+  // Collapse card after add
+  document.getElementById('familyInputCard').classList.add('hidden');
+
   SoundFX.pop();
   pushFamilyTasksToCloud();
   renderFamilyTasks();
@@ -901,7 +972,7 @@ function addFamilyTask() {
 }
 
 // =============================================================================
-// 11. TAB 2: RENDERING PERSONALE
+// 11. TAB 2: RENDERING PERSONALE (Same power as Family)
 // =============================================================================
 
 function renderPersonalTasks() {
@@ -920,10 +991,8 @@ function renderPersonalTasks() {
   completedCountElem.textContent = completedTasks.length;
 
   let filtered = activeTasks.filter(t => {
-    if (personalCategoryFilter === 'all') return true;
-    if (personalCategoryFilter === 'oggi') return t.dueDate === 'oggi';
-    if (personalCategoryFilter === 'alta') return t.priority === 'alta';
-    return t.category === personalCategoryFilter;
+    const matchCat = personalCategoryFilter === 'all' || t.category === personalCategoryFilter;
+    return matchCat;
   });
 
   container.innerHTML = '';
@@ -932,90 +1001,14 @@ function renderPersonalTasks() {
   } else {
     emptyState.classList.add('hidden');
     filtered.forEach(t => {
-      container.appendChild(createPersonalTaskItem(t));
+      container.appendChild(createTaskItem(t, 'personal'));
     });
   }
 
   completedList.innerHTML = '';
   completedTasks.forEach(t => {
-    completedList.appendChild(createPersonalTaskItem(t));
+    completedList.appendChild(createTaskItem(t, 'personal'));
   });
-}
-
-function createPersonalTaskItem(task) {
-  const item = document.createElement('div');
-  item.className = `wp8-task-item ${task.priority === 'alta' ? 'is-urgent' : ''} ${task.completed ? 'is-completed' : ''}`;
-  item.id = `ptask_${task.id}`;
-
-  const dueLabel = task.dueDate === 'oggi' ? 'oggi' : (task.dueDate === 'domani' ? 'domani' : (task.dueDate === 'settimana' ? 'questa settimana' : ''));
-
-  item.innerHTML = `
-    <button class="wp8-checkbox" aria-label="Completa" title="Segna come fatto">
-      ${task.completed ? '<i class="fa-solid fa-check"></i>' : ''}
-    </button>
-    <div class="task-body-col">
-      <div class="task-text">${escapeHTML(task.title)}</div>
-      <div class="task-info-meta">
-        ${dueLabel ? `<span class="meta-tag"><i class="fa-solid fa-calendar"></i> ${dueLabel}</span>` : ''}
-        ${task.priority === 'alta' ? `<span class="meta-tag tag-urgent"><i class="fa-solid fa-bolt"></i> alta</span>` : ''}
-        <span class="meta-tag"><i class="fa-solid fa-tag"></i> ${escapeHTML(task.category || 'personale')}</span>
-      </div>
-    </div>
-    <div class="task-side-actions">
-      ${!task.completed ? `
-        <button class="share-to-family-link" title="Condividi con la tribù">
-          <i class="fa-solid fa-share-nodes"></i>
-          <span>tribù</span>
-        </button>
-      ` : ''}
-      <button class="wp8-icon-action delete-action" title="Elimina">
-        <i class="fa-solid fa-trash-can"></i>
-      </button>
-    </div>
-  `;
-
-  item.querySelector('.wp8-checkbox').addEventListener('click', () => {
-    task.completed = !task.completed;
-    if (task.completed) {
-      SoundFX.complete();
-      showToast("compito personale completato");
-    } else {
-      SoundFX.click();
-    }
-    saveLocalData();
-    renderPersonalTasks();
-  });
-
-  const shareBtn = item.querySelector('.share-to-family-link');
-  if (shareBtn) {
-    shareBtn.addEventListener('click', () => {
-      const familyCopy = {
-        id: 'f_' + Date.now(),
-        title: task.title,
-        category: autoDetectCategory(task.title) || 'altro',
-        assignee: userProfile.name,
-        addedBy: userProfile.name,
-        priority: task.priority === 'alta' ? 'alta' : 'normale',
-        completed: false,
-        createdAt: Date.now()
-      };
-      familyTasks.unshift(familyCopy);
-      pushFamilyTasksToCloud();
-      SoundFX.pop();
-      showToast("spostato nella bacheca della tribù");
-    });
-  }
-
-  item.querySelector('.delete-action').addEventListener('click', (e) => {
-    e.stopPropagation();
-    personalTasks = personalTasks.filter(item => item.id !== task.id);
-    SoundFX.click();
-    saveLocalData();
-    renderPersonalTasks();
-    showToast("compito personale rimosso");
-  });
-
-  return item;
 }
 
 function addPersonalTask() {
@@ -1027,21 +1020,32 @@ function addPersonalTask() {
   }
 
   const priority = document.getElementById('personalPrioritySelect').value;
-  const dueDate = document.getElementById('personalDueDateSelect').value;
+  const dueDate = document.getElementById('personalDueDateInput').value;
+  const dueTime = document.getElementById('personalDueTimeInput').value;
   const category = document.getElementById('personalCategorySelect').value;
+  const reminder = document.getElementById('personalReminderSelect').value;
 
   const newTask = {
     id: 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     title,
     priority,
     dueDate,
-    category,
+    dueTime,
+    category: category === '__new__' ? 'altro' : category,
+    reminder,
+    reminderFired: false,
     completed: false,
     createdAt: Date.now()
   };
 
   personalTasks.unshift(newTask);
   input.value = '';
+  document.getElementById('personalDueDateInput').value = '';
+  document.getElementById('personalDueTimeInput').value = '';
+  document.getElementById('personalReminderSelect').value = 'none';
+
+  // Collapse card after add
+  document.getElementById('personalInputCard').classList.add('hidden');
 
   SoundFX.pop();
   saveLocalData();
@@ -1049,8 +1053,122 @@ function addPersonalTask() {
   showToast("aggiunto alla lista personale");
 }
 
+// Unified Task Item Renderer with Custom Category Colors
+function createTaskItem(task, scope) {
+  const catMeta = CATEGORY_MAP[task.category] || { name: task.category, icon: 'fa-tag' };
+  const catColor = categoryColors[task.category] || varAccentColor();
+  const isUrgent = task.priority === 'urgente' || task.priority === 'alta';
+  
+  const item = document.createElement('div');
+  item.className = `wp8-task-item ${isUrgent ? 'is-urgent' : ''} ${task.completed ? 'is-completed' : ''}`;
+  item.id = `${scope === 'family' ? 'ftask' : 'ptask'}_${task.id}`;
+
+  if (!isUrgent && catColor) {
+    item.style.borderLeftColor = catColor;
+  }
+
+  const scheduleInfo = task.dueDate ? `${task.dueDate}${task.dueTime ? ' ore ' + task.dueTime : ''}` : '';
+
+  item.innerHTML = `
+    <button class="wp8-checkbox" aria-label="Completa" title="Segna come fatto">
+      ${task.completed ? '<i class="fa-solid fa-check"></i>' : ''}
+    </button>
+    <div class="task-body-col">
+      <div class="task-text">${escapeHTML(task.title)}</div>
+      <div class="task-info-meta">
+        <span class="meta-tag" style="color:${catColor};"><i class="fa-solid ${catMeta.icon}"></i> ${escapeHTML(catMeta.name)}</span>
+        ${task.assignee && task.assignee !== 'Tutti' ? `<span class="meta-tag tag-member"><i class="fa-solid fa-user"></i> ${escapeHTML(task.assignee)}</span>` : ''}
+        ${isUrgent ? `<span class="meta-tag tag-urgent"><i class="fa-solid fa-bolt"></i> ${task.priority}</span>` : ''}
+        ${scheduleInfo ? `<span class="meta-tag tag-schedule"><i class="fa-solid fa-clock"></i> ${scheduleInfo}</span>` : ''}
+        ${scope === 'family' ? `<span class="meta-tag" style="opacity:0.65;">di ${escapeHTML(task.addedBy || 'Tribù')}</span>` : ''}
+        ${task.completed && task.completedBy ? `<span class="meta-tag" style="color:#008a00;">fatto da ${escapeHTML(task.completedBy)}</span>` : ''}
+      </div>
+    </div>
+    <div class="task-side-actions">
+      ${scope === 'personal' && !task.completed ? `
+        <button class="share-to-family-link" title="Condividi con la tribù">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span>tribù</span>
+        </button>
+      ` : ''}
+      <button class="wp8-icon-action delete-action" title="Elimina">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+    </div>
+  `;
+
+  // Checkbox toggle
+  item.querySelector('.wp8-checkbox').addEventListener('click', () => {
+    task.completed = !task.completed;
+    if (task.completed) {
+      task.completedBy = userProfile.name;
+      task.completedAt = Date.now();
+      SoundFX.complete();
+      showToast("completato!");
+    } else {
+      task.completedBy = null;
+      task.completedAt = null;
+      SoundFX.click();
+    }
+
+    if (scope === 'family') {
+      pushFamilyTasksToCloud();
+      renderFamilyTasks();
+    } else {
+      saveLocalData();
+      renderPersonalTasks();
+    }
+  });
+
+  // Share to family (for personal items)
+  const shareBtn = item.querySelector('.share-to-family-link');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      const familyCopy = {
+        id: 'f_' + Date.now(),
+        title: task.title,
+        category: task.category || 'altro',
+        assignee: userProfile.name,
+        addedBy: userProfile.name,
+        priority: task.priority || 'normale',
+        dueDate: task.dueDate || '',
+        dueTime: task.dueTime || '',
+        reminder: task.reminder || 'none',
+        completed: false,
+        createdAt: Date.now()
+      };
+      familyTasks.unshift(familyCopy);
+      pushFamilyTasksToCloud();
+      SoundFX.pop();
+      showToast("spostato nella tribù");
+    });
+  }
+
+  // Delete
+  item.querySelector('.delete-action').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (scope === 'family') {
+      familyTasks = familyTasks.filter(item => item.id !== task.id);
+      pushFamilyTasksToCloud();
+      renderFamilyTasks();
+    } else {
+      personalTasks = personalTasks.filter(item => item.id !== task.id);
+      saveLocalData();
+      renderPersonalTasks();
+    }
+    SoundFX.click();
+    showToast("attività eliminata");
+  });
+
+  return item;
+}
+
+function varAccentColor() {
+  return themeSettings.accent || '#0050ef';
+}
+
 // =============================================================================
-// 12. TAB 3: RENDERING IDEE & NOTE (Single Line Action Bar)
+// 12. TAB 3: RENDERING IDEE & NOTE (Requirement 6)
 // =============================================================================
 
 function renderIdeasList() {
@@ -1162,6 +1280,7 @@ function addIdeaNote() {
   contentInput.value = '';
   isIdeaPinned = false;
   document.getElementById('togglePinIdeaBtn').classList.remove('active');
+  document.getElementById('ideasInputCard').classList.add('hidden');
 
   SoundFX.pop();
   saveLocalData();
@@ -1221,7 +1340,7 @@ function applyTheme() {
 }
 
 function setupEventListeners() {
-  // Giant WP8 Pivot Titles
+  // Pivot Tabs
   document.querySelectorAll('#pivotTitlesTrack .pivot-title-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = parseInt(btn.dataset.index, 10);
@@ -1229,9 +1348,10 @@ function setupEventListeners() {
     });
   });
 
-  // Header quick buttons
-  document.getElementById('headerNotifBtn').addEventListener('click', requestNotificationPermission);
+  // 1) Bell Toggle in Header
+  document.getElementById('headerNotifBtn').addEventListener('click', toggleNotifications);
 
+  // 2) Gear Icon for Settings / Colors
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
     document.getElementById('themeModal').classList.remove('hidden');
   });
@@ -1250,6 +1370,68 @@ function setupEventListeners() {
   });
   document.getElementById('closeFamilyModalFooterBtn').addEventListener('click', () => {
     document.getElementById('familySettingsModal').classList.add('hidden');
+  });
+
+  // Category Color Customizer Modal Listeners
+  document.querySelectorAll('#categoryColorPaletteGrid .palette-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      if (categoryBeingCustomized) {
+        const color = tile.dataset.catcolor;
+        categoryColors[categoryBeingCustomized] = color;
+        saveLocalData();
+        pushFamilyTasksToCloud();
+        renderCategoryOptions();
+        renderFamilyTasks();
+        renderPersonalTasks();
+        document.getElementById('categoryColorModal').classList.add('hidden');
+        showToast(`colore impostato per ${categoryBeingCustomized}`);
+        SoundFX.pop();
+      }
+    });
+  });
+
+  document.getElementById('closeCategoryColorModalBtn').addEventListener('click', () => {
+    document.getElementById('categoryColorModal').classList.add('hidden');
+  });
+  document.getElementById('closeCategoryColorModalFooterBtn').addEventListener('click', () => {
+    document.getElementById('categoryColorModal').classList.add('hidden');
+  });
+  document.getElementById('resetCategoryColorBtn').addEventListener('click', () => {
+    if (categoryBeingCustomized) {
+      delete categoryColors[categoryBeingCustomized];
+      saveLocalData();
+      pushFamilyTasksToCloud();
+      renderCategoryOptions();
+      renderFamilyTasks();
+      renderPersonalTasks();
+      document.getElementById('categoryColorModal').classList.add('hidden');
+      showToast(`colore predefinito ripristinato`);
+      SoundFX.click();
+    }
+  });
+
+  // Toggle Ideas Add Card
+  const toggleIdeasBtn = document.getElementById('toggleIdeasAddBoxBtn');
+  if (toggleIdeasBtn) {
+    toggleIdeasBtn.addEventListener('click', () => {
+      const card = document.getElementById('ideasInputCard');
+      card.classList.toggle('hidden');
+      if (!card.classList.contains('hidden')) {
+        document.getElementById('ideaTitleInput').focus();
+      }
+      SoundFX.click();
+    });
+  }
+
+  // Ideas filter chips
+  document.querySelectorAll('#ideasCategoryFilterBar .cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#ideasCategoryFilterBar .cat-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      ideasActiveFilter = chip.dataset.color;
+      SoundFX.click();
+      renderIdeasList();
+    });
   });
 
   // Add member buttons
@@ -1283,8 +1465,14 @@ function setupEventListeners() {
     });
   });
 
-  // Custom Category trigger in select
+  // Custom Category trigger
   document.getElementById('familyCategorySelect').addEventListener('change', (e) => {
+    if (e.target.value === '__new__') {
+      document.getElementById('customCategoryModal').classList.remove('hidden');
+      document.getElementById('newCategoryNameInput').focus();
+    }
+  });
+  document.getElementById('personalCategorySelect').addEventListener('change', (e) => {
     if (e.target.value === '__new__') {
       document.getElementById('customCategoryModal').classList.remove('hidden');
       document.getElementById('newCategoryNameInput').focus();
@@ -1293,11 +1481,9 @@ function setupEventListeners() {
 
   document.getElementById('closeCustomCategoryModalBtn').addEventListener('click', () => {
     document.getElementById('customCategoryModal').classList.add('hidden');
-    document.getElementById('familyCategorySelect').value = 'spesa';
   });
   document.getElementById('cancelCustomCategoryBtn').addEventListener('click', () => {
     document.getElementById('customCategoryModal').classList.add('hidden');
-    document.getElementById('familyCategorySelect').value = 'spesa';
   });
   document.getElementById('confirmCustomCategoryBtn').addEventListener('click', () => {
     const input = document.getElementById('newCategoryNameInput');
@@ -1308,18 +1494,35 @@ function setupEventListeners() {
     }
   });
 
-  // Bottom WP8 Application Bar Actions
+  // Bottom Application Bar Actions
   document.getElementById('appbarAddBtn').addEventListener('click', () => {
-    if (activeTabSlide === 0) document.getElementById('familyTaskInput').focus();
-    else if (activeTabSlide === 1) document.getElementById('personalTaskInput').focus();
-    else document.getElementById('ideaTitleInput').focus();
     SoundFX.click();
+    if (activeTabSlide === 0) {
+      const card = document.getElementById('familyInputCard');
+      card.classList.remove('hidden');
+      document.getElementById('familyTaskInput').focus();
+    } else if (activeTabSlide === 1) {
+      const card = document.getElementById('personalInputCard');
+      card.classList.remove('hidden');
+      document.getElementById('personalTaskInput').focus();
+    } else {
+      const card = document.getElementById('ideasInputCard');
+      card.classList.remove('hidden');
+      document.getElementById('ideaTitleInput').focus();
+    }
   });
 
   document.getElementById('appbarVoiceBtn').addEventListener('click', () => {
-    if (activeTabSlide === 0) startVoiceDictation(document.getElementById('familyTaskInput'));
-    else if (activeTabSlide === 1) startVoiceDictation(document.getElementById('personalTaskInput'));
-    else startVoiceDictation(document.getElementById('ideaTitleInput'));
+    if (activeTabSlide === 0) {
+      document.getElementById('familyInputCard').classList.remove('hidden');
+      startVoiceDictation(document.getElementById('familyTaskInput'));
+    } else if (activeTabSlide === 1) {
+      document.getElementById('personalInputCard').classList.remove('hidden');
+      startVoiceDictation(document.getElementById('personalTaskInput'));
+    } else {
+      document.getElementById('ideasInputCard').classList.remove('hidden');
+      startVoiceDictation(document.getElementById('ideaTitleInput'));
+    }
   });
 
   document.getElementById('appbarSyncBtn').addEventListener('click', () => {
@@ -1356,25 +1559,20 @@ function setupEventListeners() {
     if (recognition) recognition.stop();
     if (currentVoiceTranscript && activeVoiceTargetInput) {
       activeVoiceTargetInput.value = currentVoiceTranscript;
-      if (activeVoiceTargetInput.id === 'familyTaskInput') {
+      if (activeVoiceTargetInput.id === 'familyTaskInput' || activeVoiceTargetInput.id === 'personalTaskInput') {
         const detected = autoDetectCategory(currentVoiceTranscript);
-        if (detected) document.getElementById('familyCategorySelect').value = detected;
+        if (detected) {
+          const selectId = activeVoiceTargetInput.id === 'familyTaskInput' ? 'familyCategorySelect' : 'personalCategorySelect';
+          document.getElementById(selectId).value = detected;
+        }
       }
     }
     document.getElementById('voiceModal').classList.add('hidden');
     SoundFX.pop();
   });
 
-  // Auto-detect category while typing
-  const familyInput = document.getElementById('familyTaskInput');
-  familyInput.addEventListener('input', (e) => {
-    const detected = autoDetectCategory(e.target.value);
-    if (detected && customCategories.includes(detected)) {
-      document.getElementById('familyCategorySelect').value = detected;
-    }
-  });
-
-  familyInput.addEventListener('keydown', (e) => {
+  // Enter keys
+  document.getElementById('familyTaskInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') addFamilyTask();
   });
   document.getElementById('personalTaskInput').addEventListener('keydown', (e) => {
@@ -1386,25 +1584,18 @@ function setupEventListeners() {
   document.getElementById('addPersonalTaskBtn').addEventListener('click', addPersonalTask);
   document.getElementById('addIdeaBtn').addEventListener('click', addIdeaNote);
 
-  // Personal filter links
+  // Personal sub filter links
   document.querySelectorAll('#personalFilterBar .filter-link').forEach(link => {
     link.addEventListener('click', () => {
       document.querySelectorAll('#personalFilterBar .filter-link').forEach(c => c.classList.remove('active'));
       link.classList.add('active');
-      personalCategoryFilter = link.dataset.filter;
+      const filterVal = link.dataset.filter;
+      if (filterVal === 'oggi') {
+        personalCategoryFilter = 'all';
+        personalTasks = personalTasks.map(t => t);
+      }
       SoundFX.click();
       renderPersonalTasks();
-    });
-  });
-
-  // Ideas filter links
-  document.querySelectorAll('#ideasFilterBar .filter-link').forEach(link => {
-    link.addEventListener('click', () => {
-      document.querySelectorAll('#ideasFilterBar .filter-link').forEach(c => c.classList.remove('active'));
-      link.classList.add('active');
-      ideasActiveFilter = link.dataset.filter;
-      SoundFX.click();
-      renderIdeasList();
     });
   });
 
@@ -1529,7 +1720,7 @@ function setupEventListeners() {
     showToast(themeSettings.sound ? "audio attivato" : "audio disattivato");
   });
 
-  document.getElementById('toggleNotifBtn').addEventListener('click', requestNotificationPermission);
+  document.getElementById('toggleNotifBtn').addEventListener('click', toggleNotifications);
 
   // Convert Idea Modal
   document.getElementById('closeConvertModalBtn').addEventListener('click', () => {
@@ -1565,8 +1756,8 @@ function setupEventListeners() {
       id: 'p_' + Date.now(),
       title: `${ideaPendingConversion.title}${ideaPendingConversion.content ? ': ' + ideaPendingConversion.content : ''}`,
       priority: 'media',
-      dueDate: 'oggi',
-      category: 'personale',
+      dueDate: '',
+      category: 'altro',
       completed: false,
       createdAt: Date.now()
     };

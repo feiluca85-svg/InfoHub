@@ -40,26 +40,27 @@
     <!-- 1. WP8 METRO PANORAMA PIVOT HEADER             -->
     <!-- ============================================== -->
     <header class="metro-header">
-      <!-- Top Small Brand & Header Icons -->
+      <!-- Top Row: Ingrandito 'tribù' + 3 icone (campanella toggle, ingranaggio, membri) -->
       <div class="header-top-row">
-        <!-- 2) Lowercase WP8.1 'tribù' -->
         <span class="app-kicker">tribù</span>
         
-        <!-- 3) Clean header actions (removed confusing code box) -->
         <div class="header-right-actions">
-          <button id="headerNotifBtn" class="metro-header-icon-btn" title="Notifiche e Avvisi" aria-label="Notifiche">
-            <i class="fa-solid fa-bell"></i>
+          <!-- 1) Campanella con toggle attivo / sbarrato -->
+          <button id="headerNotifBtn" class="metro-header-icon-btn" title="Attiva/Disattiva Notifiche" aria-label="Notifiche">
+            <i class="fa-solid fa-bell" id="headerNotifIcon"></i>
           </button>
-          <button id="themeToggleBtn" class="metro-header-icon-btn" title="Palette WP8.1 & Icona" aria-label="Tema">
-            <i class="fa-solid fa-palette"></i>
+          <!-- 2) Ingranaggio al posto della tavolozza -->
+          <button id="themeToggleBtn" class="metro-header-icon-btn" title="Impostazioni & Colori" aria-label="Impostazioni">
+            <i class="fa-solid fa-gear"></i>
           </button>
+          <!-- 3) Gestione Membri Tribù -->
           <button id="familySettingsBtn" class="metro-header-icon-btn" title="Gestisci Membri Tribù" aria-label="Membri">
             <i class="fa-solid fa-users"></i>
           </button>
         </div>
       </div>
 
-      <!-- WP8 Giant Lowercase Pivot Tab Titles (details | related style) -->
+      <!-- WP8 Giant Lowercase Pivot Tab Titles -->
       <div class="pivot-titles-scroller" id="pivotTitlesScroller">
         <div class="pivot-titles-track" id="pivotTitlesTrack">
           <button class="pivot-title-btn active" data-index="0">famiglia</button>
@@ -81,20 +82,29 @@
         <section class="carousel-slide" id="slideFamiglia">
           <div class="slide-content-wrapper">
             
-            <!-- 6) Dynamic Member Filter Ribbon with unified '+' button -->
+            <!-- Member Filter Ribbon with unified '+' button -->
             <div class="wp8-sub-filter-row">
               <span class="sub-filter-label">membro:</span>
               <div class="sub-filter-buttons" id="familyMemberFilterBar">
                 <button class="filter-link active" data-member="all">tutti</button>
-                <!-- Dynamic member buttons -->
               </div>
               <button id="addMemberFilterBtn" class="add-member-plus-btn" title="Aggiungi familiare alla tribù">
                 <i class="fa-solid fa-plus"></i>
               </button>
             </div>
 
-            <!-- Quick Add Bar with '+' only and full scheduling (Requirement 7) -->
-            <div class="wp8-input-card">
+            <!-- 4) Category Bar with '+' in First Position -->
+            <div class="wp8-category-scroller" id="familyCategoryFilterBar">
+              <!-- '+' in 1st position to expand the add box -->
+              <button id="toggleFamilyAddBoxBtn" class="cat-chip-plus-first" title="Nuova attività per la tribù">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+              <button class="cat-chip active" data-cat="all">tutte</button>
+              <!-- Dynamic Category chips will be rendered here -->
+            </div>
+
+            <!-- 4) Expandable/Collapsible Add Box -->
+            <div class="wp8-input-card hidden" id="familyInputCard">
               <div class="input-line-row">
                 <input type="text" id="familyTaskInput" placeholder="cosa c'è da fare per la famiglia..." autocomplete="off">
                 <button id="voiceFamilyTaskBtn" class="wp8-inline-btn" title="Dettatura vocale" aria-label="Microfono">
@@ -110,14 +120,7 @@
                 <div class="meta-field">
                   <span class="meta-label">categoria:</span>
                   <select id="familyCategorySelect" class="wp8-select">
-                    <option value="spesa">🛒 spesa</option>
-                    <option value="casa">🏠 casa</option>
-                    <option value="bollette">📄 bollette</option>
-                    <option value="figli">🎒 scuola / figli</option>
-                    <option value="salute">💊 salute</option>
-                    <option value="urgente">🚨 urgente</option>
-                    <option value="altro">📌 altro</option>
-                    <option value="__new__">+ nuova categoria...</option>
+                    <!-- Populated dynamically -->
                   </select>
                 </div>
 
@@ -125,7 +128,6 @@
                   <span class="meta-label">assegna a:</span>
                   <select id="familyAssigneeSelect" class="wp8-select">
                     <option value="Tutti">chiunque</option>
-                    <!-- Dynamically populated -->
                   </select>
                 </div>
 
@@ -140,7 +142,7 @@
                 </div>
               </div>
 
-              <!-- Meta Options Row 2: Scadenza Giorno, Ora & Avviso (Requirement 7) -->
+              <!-- Meta Options Row 2: Scadenza Giorno, Ora & Avviso -->
               <div class="input-meta-row schedule-row">
                 <div class="meta-field">
                   <span class="meta-label"><i class="fa-solid fa-calendar-day"></i> giorno:</span>
@@ -163,18 +165,6 @@
                   </select>
                 </div>
               </div>
-            </div>
-
-            <!-- Dynamic Category Filter Chips -->
-            <div class="wp8-category-scroller" id="familyCategoryFilterBar">
-              <button class="cat-chip active" data-cat="all">tutte</button>
-              <button class="cat-chip" data-cat="spesa"><i class="fa-solid fa-cart-shopping"></i> spesa</button>
-              <button class="cat-chip" data-cat="casa"><i class="fa-solid fa-house"></i> casa</button>
-              <button class="cat-chip" data-cat="bollette"><i class="fa-solid fa-file-invoice"></i> bollette</button>
-              <button class="cat-chip" data-cat="figli"><i class="fa-solid fa-graduation-cap"></i> figli</button>
-              <button class="cat-chip" data-cat="salute"><i class="fa-solid fa-kit-medical"></i> salute</button>
-              <button class="cat-chip" data-cat="urgente"><i class="fa-solid fa-bolt"></i> urgenti</button>
-              <!-- Custom categories will append here -->
             </div>
 
             <!-- Tasks List -->
@@ -207,7 +197,7 @@
         </section>
 
         <!-- ============================================== -->
-        <!-- TAB 2: PERSONALE (Privata)                     -->
+        <!-- TAB 2: PERSONALE (Stesso layout di Famiglia)   -->
         <!-- ============================================== -->
         <section class="carousel-slide" id="slidePersonale">
           <div class="slide-content-wrapper">
@@ -219,13 +209,20 @@
                 <button class="filter-link active" data-filter="all">tutti (<span id="personalActiveTotal">0</span>)</button>
                 <button class="filter-link" data-filter="oggi">oggi</button>
                 <button class="filter-link" data-filter="alta">alta priorità</button>
-                <button class="filter-link" data-filter="lavoro">lavoro</button>
-                <button class="filter-link" data-filter="personale">obiettivi</button>
               </div>
             </div>
 
-            <!-- Quick Add Personal Task ('+' only) -->
-            <div class="wp8-input-card">
+            <!-- 5) Category Bar with '+' in First Position for Personal -->
+            <div class="wp8-category-scroller" id="personalCategoryFilterBar">
+              <button id="togglePersonalAddBoxBtn" class="cat-chip-plus-first" title="Nuova attività personale">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+              <button class="cat-chip active" data-cat="all">tutte</button>
+              <!-- Dynamic Personal Category chips -->
+            </div>
+
+            <!-- 5) Expandable/Collapsible Add Box for Personal -->
+            <div class="wp8-input-card hidden" id="personalInputCard">
               <div class="input-line-row">
                 <input type="text" id="personalTaskInput" placeholder="cosa devi fare tu personalmente..." autocomplete="off">
                 <button id="voicePersonalTaskBtn" class="wp8-inline-btn" title="Dettatura vocale">
@@ -236,34 +233,46 @@
                 </button>
               </div>
 
+              <!-- Meta Options Row 1 -->
               <div class="input-meta-row">
+                <div class="meta-field">
+                  <span class="meta-label">categoria:</span>
+                  <select id="personalCategorySelect" class="wp8-select">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
                 <div class="meta-field">
                   <span class="meta-label">priorità:</span>
                   <select id="personalPrioritySelect" class="wp8-select">
-                    <option value="normale">normale</option>
-                    <option value="media">media</option>
-                    <option value="alta">alta</option>
+                    <option value="normale">🟢 normale</option>
+                    <option value="media">🟡 media</option>
+                    <option value="alta">🔴 alta</option>
+                    <option value="urgente">🚨 urgente</option>
                   </select>
+                </div>
+              </div>
+
+              <!-- Meta Options Row 2: Scadenza Giorno, Ora & Avviso -->
+              <div class="input-meta-row schedule-row">
+                <div class="meta-field">
+                  <span class="meta-label"><i class="fa-solid fa-calendar-day"></i> giorno:</span>
+                  <input type="date" id="personalDueDateInput" class="wp8-date-input">
                 </div>
 
                 <div class="meta-field">
-                  <span class="meta-label">scadenza:</span>
-                  <select id="personalDueDateSelect" class="wp8-select">
-                    <option value="oggi">oggi</option>
-                    <option value="domani">domani</option>
-                    <option value="settimana">questa settimana</option>
-                    <option value="nessuna">nessuna</option>
-                  </select>
+                  <span class="meta-label"><i class="fa-solid fa-clock"></i> ora:</span>
+                  <input type="time" id="personalDueTimeInput" class="wp8-time-input">
                 </div>
 
                 <div class="meta-field">
-                  <span class="meta-label">tag:</span>
-                  <select id="personalCategorySelect" class="wp8-select">
-                    <option value="lavoro">lavoro</option>
-                    <option value="studio">studio</option>
-                    <option value="salute">sport / salute</option>
-                    <option value="svago">svago</option>
-                    <option value="personale">personale</option>
+                  <span class="meta-label"><i class="fa-solid fa-bell"></i> avviso:</span>
+                  <select id="personalReminderSelect" class="wp8-select">
+                    <option value="none">nessun avviso</option>
+                    <option value="exact">all'ora esatta</option>
+                    <option value="15m">15 min prima</option>
+                    <option value="1h">1 ora prima</option>
+                    <option value="1d">1 giorno prima</option>
                   </select>
                 </div>
               </div>
@@ -299,17 +308,31 @@
         </section>
 
         <!-- ============================================== -->
-        <!-- TAB 3: IDEE & NOTE (WP8 Metro Tiles Grid)     -->
+        <!-- TAB 3: IDEE & NOTE                             -->
         <!-- ============================================== -->
         <section class="carousel-slide" id="slideIdee">
           <div class="slide-content-wrapper">
             
-            <!-- 8) Quick Add Idea on a single clean line -->
-            <div class="wp8-input-card">
+            <!-- 6) Color Chips Bar with '+' in First Position for Ideas -->
+            <div class="wp8-category-scroller" id="ideasCategoryFilterBar">
+              <button id="toggleIdeasAddBoxBtn" class="cat-chip-plus-first" title="Nuova idea o nota">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+              <button class="cat-chip active" data-color="all">tutte (<span id="ideasTotalCount">0</span>)</button>
+              <button class="cat-chip" data-color="pinned"><i class="fa-solid fa-thumbtack" style="color:#f09609;"></i> fissate</button>
+              <button class="cat-chip" data-color="yellow"><span class="chip-color-dot" style="background:#f0a30a;"></span> gialle</button>
+              <button class="cat-chip" data-color="blue"><span class="chip-color-dot" style="background:#0050ef;"></span> blu</button>
+              <button class="cat-chip" data-color="green"><span class="chip-color-dot" style="background:#008a00;"></span> verdi</button>
+              <button class="cat-chip" data-color="pink"><span class="chip-color-dot" style="background:#a20025;"></span> crimson</button>
+              <button class="cat-chip" data-color="purple"><span class="chip-color-dot" style="background:#6a00ff;"></span> viola</button>
+              <button class="cat-chip" data-color="orange"><span class="chip-color-dot" style="background:#f09609;"></span> mango</button>
+            </div>
+
+            <!-- 6) Expandable Add Idea Card with Single-Line Actions -->
+            <div class="wp8-input-card hidden" id="ideasInputCard">
               <input type="text" id="ideaTitleInput" class="wp8-idea-title-input" placeholder="titolo dell'idea o appunto..." autocomplete="off">
               <textarea id="ideaContentInput" class="wp8-idea-text-input" placeholder="dettagli, pensiero o lista..." rows="2"></textarea>
               
-              <!-- Single clean horizontal line -->
               <div class="idea-action-row single-line">
                 <div class="metro-color-dots" id="ideaColorSelector">
                   <button type="button" class="color-picker-dot dot-yellow active" data-color="yellow" title="Giallo"></button>
@@ -331,18 +354,6 @@
                     <i class="fa-solid fa-plus"></i>
                   </button>
                 </div>
-              </div>
-            </div>
-
-            <!-- Ideas Filter Bar -->
-            <div class="wp8-sub-filter-row">
-              <span class="sub-filter-label">mostra:</span>
-              <div class="sub-filter-buttons" id="ideasFilterBar">
-                <button class="filter-link active" data-filter="all">tutte (<span id="ideasTotalCount">0</span>)</button>
-                <button class="filter-link" data-filter="pinned">fissate</button>
-                <button class="filter-link" data-filter="yellow">gialle</button>
-                <button class="filter-link" data-filter="blue">blu</button>
-                <button class="filter-link" data-filter="green">verdi</button>
               </div>
             </div>
 
@@ -369,7 +380,7 @@
     <!-- ============================================== -->
     <footer class="wp8-app-bar" id="wp8AppBar">
       <div class="appbar-icons-row">
-        <!-- Quick Add Focus Action -->
+        <!-- Quick Add Action -->
         <button id="appbarAddBtn" class="appbar-circle-btn" title="Nuova attività" aria-label="Aggiungi">
           <i class="fa-solid fa-plus"></i>
         </button>
@@ -391,6 +402,42 @@
     <!-- ============================================== -->
     <!-- 4. MODALS & DIALOGS                            -->
     <!-- ============================================== -->
+
+    <!-- Category Color Customizer Modal (Requirement 5) -->
+    <div id="categoryColorModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet">
+        <div class="sheet-header">
+          <h2 class="sheet-title">colore categoria</h2>
+          <button id="closeCategoryColorModalBtn" class="sheet-close-btn">&times;</button>
+        </div>
+
+        <div class="sheet-body">
+          <p class="sheet-help">Personalizza il colore del contorno per la categoria <strong id="customizingCategoryName">spesa</strong>:</p>
+          <div class="wp8-full-palette-grid" id="categoryColorPaletteGrid">
+            <button type="button" class="palette-tile" data-catcolor="#0050ef" style="background:#0050ef;">cobalto</button>
+            <button type="button" class="palette-tile" data-catcolor="#008a00" style="background:#008a00;">smeraldo</button>
+            <button type="button" class="palette-tile" data-catcolor="#f09609" style="background:#f09609;">mango</button>
+            <button type="button" class="palette-tile" data-catcolor="#a20025" style="background:#a20025;">crimson</button>
+            <button type="button" class="palette-tile" data-catcolor="#d80073" style="background:#d80073;">magenta</button>
+            <button type="button" class="palette-tile" data-catcolor="#1ba1e2" style="background:#1ba1e2;">ciano</button>
+            <button type="button" class="palette-tile" data-catcolor="#a4c400" style="background:#a4c400;">lime</button>
+            <button type="button" class="palette-tile" data-catcolor="#6a00ff" style="background:#6a00ff;">viola</button>
+            <button type="button" class="palette-tile" data-catcolor="#f0a30a" style="background:#f0a30a;">ambra</button>
+            <button type="button" class="palette-tile" data-catcolor="#4390df" style="background:#4390df;">acciaio</button>
+            <button type="button" class="palette-tile" data-catcolor="#fa6800" style="background:#fa6800;">mandarino</button>
+            <button type="button" class="palette-tile" data-catcolor="#e671b8" style="background:#e671b8;">rosa</button>
+            <button type="button" class="palette-tile" data-catcolor="#6b69d6" style="background:#6b69d6;">indaco</button>
+            <button type="button" class="palette-tile" data-catcolor="#6d8764" style="background:#6d8764;">oliva</button>
+            <button type="button" class="palette-tile" data-catcolor="#825a2c" style="background:#825a2c;">talpa</button>
+          </div>
+        </div>
+
+        <div class="sheet-footer">
+          <button id="resetCategoryColorBtn" class="wp8-btn-outline">predefinito</button>
+          <button id="closeCategoryColorModalFooterBtn" class="wp8-btn-accent">fatto</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Dynamic Family & Member Management Modal -->
     <div id="familySettingsModal" class="wp8-modal-overlay hidden">
@@ -480,7 +527,7 @@
       </div>
     </div>
 
-    <!-- Add Custom Category Modal (Requirement 7) -->
+    <!-- Add Custom Category Modal -->
     <div id="customCategoryModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
@@ -500,7 +547,7 @@
       </div>
     </div>
 
-    <!-- 5) Theme Modal without kicker -->
+    <!-- Theme Modal (Settings & Colori) -->
     <div id="themeModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
@@ -562,7 +609,7 @@
             <div class="toggles-column">
               <button type="button" class="wp8-theme-btn" id="toggleNotifBtn">
                 <i class="fa-solid fa-bell" id="notifStatusIcon"></i>
-                <span id="notifStatusText">attiva notifiche push & avvisi</span>
+                <span id="notifStatusText">notifiche push & avvisi attivi</span>
               </button>
               <button type="button" class="wp8-theme-btn" id="toggleSoundBtn">
                 <i class="fa-solid fa-volume-high" id="soundStatusIcon"></i>
