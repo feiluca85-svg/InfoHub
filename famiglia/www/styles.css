@@ -1507,29 +1507,111 @@ body.theme-dark .leaflet-tile {
   gap: 8px;
 }
 
-/* Avatar Emojis Grid */
+/* Avatar WP8.1 Grid */
 .avatar-emojis-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 8px;
 }
 
 .avatar-emoji-btn {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  font-size: 2rem;
-  height: 54px;
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  height: 64px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   cursor: pointer;
-  transition: all 0.12s ease;
+  border-radius: 0;
+  transition: all 0.1s ease;
+  padding: 4px;
+}
+
+.avatar-emoji-btn i {
+  font-size: 1.5rem;
+  color: #ffffff;
+}
+
+.avatar-emoji-btn span {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  text-transform: lowercase;
 }
 
 .avatar-emoji-btn:hover, .avatar-emoji-btn.active {
   background: var(--accent-color);
   border-color: var(--accent-color);
-  transform: scale(1.08);
+  transform: scale(1.04);
+}
+
+.avatar-emoji-btn:hover span, .avatar-emoji-btn.active span {
+  color: #ffffff;
+}
+
+/* WP8 Glyph Avatar Badge */
+.member-avatar-badge {
+  background: var(--accent-color);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.member-avatar-badge.wp8-glyph-badge i {
+  font-size: 0.9em;
+  color: #ffffff;
+}
+
+/* Instant Auto-Update Banner */
+.wp8-update-banner {
+  background: var(--accent-color);
+  color: #ffffff;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  animation: bannerDrop 0.25s ease-out;
+  z-index: 1200;
+}
+
+@keyframes bannerDrop {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.update-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.update-banner-btn {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: lowercase;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 0;
+  white-space: nowrap;
+}
+
+.update-banner-btn:active {
+  transform: scale(0.95);
 }
 
 /* Quick Role Chips */

@@ -8,7 +8,7 @@
   <title>Tribù</title>
 
   <!-- PWA & Mobile Meta Tags -->
-  <link rel="manifest" href="manifest.json?v=1.3.0">
+  <link rel="manifest" href="manifest.json?v=1.4.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -19,8 +19,8 @@
   <meta name="application-name" content="Tribù">
 
   <!-- Icons -->
-  <link rel="apple-touch-icon" href="icon.jpg?v=1.3.0">
-  <link rel="icon" href="icon.jpg?v=1.3.0" type="image/jpeg">
+  <link rel="apple-touch-icon" href="icon.jpg?v=1.4.0">
+  <link rel="icon" href="icon.jpg?v=1.4.0" type="image/jpeg">
 
   <!-- Google Fonts: Outfit & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +36,7 @@
   <!-- Standalone QRCode Engine for 100% Offline Instant QR Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <link rel="stylesheet" href="styles.css?v=1.3.0">
+  <link rel="stylesheet" href="styles.css?v=1.4.0">
 
   <!-- Firebase Compatibility SDKs (AppTito Cloud Backend) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -48,6 +48,15 @@
 <body class="theme-dark">
 
   <div id="app" class="app-root">
+    
+    <!-- Instant Auto-Update Banner -->
+    <div id="appUpdateBanner" class="wp8-update-banner hidden">
+      <div class="update-banner-content">
+        <i class="fa-solid fa-arrows-rotate fa-spin"></i>
+        <span>Nuovo aggiornamento disponibile (<strong id="updateBannerVersion">1.4.0</strong>)!</span>
+      </div>
+      <button type="button" id="btnApplyAppUpdate" class="update-banner-btn">aggiorna ora</button>
+    </div>
     
     <!-- ============================================== -->
     <!-- 1. WP8 METRO PANORAMA PIVOT HEADER             -->
@@ -587,22 +596,74 @@
             </button>
           </div>
 
-          <!-- Preset Metro Emoji Avatars -->
+          <!-- Preset WP8.1 Metro Vector Silhouette Avatars -->
           <div class="sheet-section">
-            <label class="sheet-label">oppure scegli un avatar metro:</label>
+            <label class="sheet-label">oppure scegli un'icona metro wp8.1:</label>
             <div class="avatar-emojis-grid" id="avatarEmojisGrid">
-              <button type="button" class="avatar-emoji-btn" data-avatar="👨‍🦱">👨‍🦱</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="👩‍🦰">👩‍🦰</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="👧">👧</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="👦">👦</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="👶">👶</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="👴">👴</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="👵">👵</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="🐶">🐶</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="🐱">🐱</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="🌟">🌟</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="⚽">⚽</button>
-              <button type="button" class="avatar-emoji-btn" data-avatar="👑">👑</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:user" title="Papà / Uomo">
+                <i class="fa-solid fa-user"></i>
+                <span>papà</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:female" title="Mamma / Donna">
+                <i class="fa-solid fa-person-dress"></i>
+                <span>mamma</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:girl" title="Ragazza (12 anni)">
+                <i class="fa-solid fa-child-dress"></i>
+                <span>figlia</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:boy" title="Ragazzo / Figlio">
+                <i class="fa-solid fa-child"></i>
+                <span>figlio</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:baby" title="Neonato / Bimbo">
+                <i class="fa-solid fa-baby"></i>
+                <span>bimbo</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:grandpa" title="Nonno">
+                <i class="fa-solid fa-person-cane"></i>
+                <span>nonno</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:grandma" title="Nonna">
+                <i class="fa-solid fa-person-walking-with-cane"></i>
+                <span>nonna</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:dog" title="Cane">
+                <i class="fa-solid fa-dog"></i>
+                <span>cane</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:cat" title="Gatto">
+                <i class="fa-solid fa-cat"></i>
+                <span>gatto</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:house" title="Casa / Famiglia">
+                <i class="fa-solid fa-house"></i>
+                <span>casa</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:star" title="Stella / Personale">
+                <i class="fa-solid fa-star"></i>
+                <span>speciale</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:heart" title="Cuore">
+                <i class="fa-solid fa-heart"></i>
+                <span>cuore</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:futbol" title="Sport">
+                <i class="fa-solid fa-futbol"></i>
+                <span>sport</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:briefcase" title="Lavoro">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>lavoro</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:graduation" title="Studio">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>studio</span>
+              </button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="wp8:crown" title="Corona">
+                <i class="fa-solid fa-crown"></i>
+                <span>re/regina</span>
+              </button>
             </div>
           </div>
 
@@ -712,14 +773,14 @@
 
         <div class="sheet-body">
           
-          <!-- Live Icon Preview with Smeraldo Background -->
-          <div class="icon-preview-box">
+          <!-- Live Icon Preview with WP8 Classic Background -->
+          <div class="profile-card-edit">
             <div class="live-tile-preview" id="liveTilePreview">
-              <img src="icon.jpg" alt="Icona Tribù" id="liveTileIconImg">
+              <img src="icon.jpg" alt="Icona Tribù" id="appIconPreviewImg">
             </div>
             <div class="live-tile-info">
-              <strong>Colore & Sfondo Icona</strong>
-              <small>Icona con sfondo Smeraldo Lumia ufficiale</small>
+              <strong>Icona Ufficiale WP8.1</strong>
+              <small>Icona classica Live Tile Lumia</small>
             </div>
           </div>
 
@@ -779,12 +840,15 @@
             </div>
           </div>
 
-          <!-- Version Info (Numerical only, No button) -->
+          <!-- Version Info & Auto-Update Check -->
           <div class="sheet-section version-update-box">
             <div class="version-row-meta">
-              <span class="sheet-label">versione:</span>
-              <strong id="appVersionCodeLabel" class="version-badge">1.2.0</strong>
+              <span class="sheet-label">versione installata:</span>
+              <strong id="appVersionCodeLabel" class="version-badge">1.4.0</strong>
             </div>
+            <button type="button" id="btnManualCheckUpdate" class="wp8-btn-outline" style="width:100%; margin-top:8px; font-size:0.88rem;">
+              <i class="fa-solid fa-rotate"></i> verifica aggiornamenti cloud
+            </button>
           </div>
 
         </div>
@@ -871,6 +935,6 @@
 
   </div>
 
-  <script src="app.js?v=1.3.0"></script>
+  <script src="app.js?v=1.4.0"></script>
 </body>
 </html>

@@ -41,16 +41,35 @@ try {
 // 2. STATE STORAGE & DEFAULTS
 // =============================================================================
 
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.4.0";
+
+const WP8_GLYPHS = {
+  'wp8:user': 'fa-solid fa-user',
+  'wp8:female': 'fa-solid fa-person-dress',
+  'wp8:girl': 'fa-solid fa-child-dress',
+  'wp8:boy': 'fa-solid fa-child',
+  'wp8:baby': 'fa-solid fa-baby',
+  'wp8:grandpa': 'fa-solid fa-person-cane',
+  'wp8:grandma': 'fa-solid fa-person-walking-with-cane',
+  'wp8:dog': 'fa-solid fa-dog',
+  'wp8:cat': 'fa-solid fa-cat',
+  'wp8:house': 'fa-solid fa-house',
+  'wp8:star': 'fa-solid fa-star',
+  'wp8:heart': 'fa-solid fa-heart',
+  'wp8:futbol': 'fa-solid fa-futbol',
+  'wp8:briefcase': 'fa-solid fa-briefcase',
+  'wp8:graduation': 'fa-solid fa-graduation-cap',
+  'wp8:crown': 'fa-solid fa-crown'
+};
 
 let userProfile = {
   name: 'Papà',
-  avatar: '👨‍🦱'
+  avatar: 'wp8:user'
 };
 
 let themeSettings = {
   mode: 'dark',
-  accent: '#008a00', // Default Lumia Smeraldo
+  accent: '#0050ef', // Lumia Cobalto default
   sound: true,
   notifications: true
 };
@@ -64,7 +83,7 @@ let savedTribes = [
 
 let dynamicFamilyMembers = ['Papà'];
 let memberAliases = {}; // Private nicknames on this smartphone
-let memberAvatars = { 'Papà': '👨‍🦱' }; // Cloud avatars
+let memberAvatars = { 'Papà': 'wp8:user' }; // Cloud avatars
 
 let customCategories = ['spesa', 'casa', 'bollette', 'figli', 'salute', 'urgente', 'altro'];
 
@@ -312,11 +331,15 @@ function getMemberDisplayName(rawName) {
 }
 
 function getMemberAvatarHtml(memberName, size = 32) {
-  const avatar = memberAvatars[memberName] || (memberName === userProfile.name ? userProfile.avatar : null) || '👤';
+  const avatar = memberAvatars[memberName] || (memberName === userProfile.name ? userProfile.avatar : null) || 'wp8:user';
   if (avatar && avatar.startsWith('data:image')) {
-    return `<div class="member-avatar-badge" style="width:${size}px; height:${size}px;"><img src="${avatar}" alt="${memberName}"></div>`;
+    return `<div class="member-avatar-badge" style="width:${size}px; height:${size}px;"><img src="${avatar}" alt="${memberName}" style="width:100%;height:100%;object-fit:cover;"></div>`;
   }
-  return `<div class="member-avatar-badge" style="width:${size}px; height:${size}px;">${avatar || memberName.charAt(0).toUpperCase()}</div>`;
+  if (avatar && avatar.startsWith('wp8:')) {
+    const iconClass = WP8_GLYPHS[avatar] || 'fa-solid fa-user';
+    return `<div class="member-avatar-badge wp8-glyph-badge" style="width:${size}px; height:${size}px; font-size:${Math.round(size * 0.5)}px;"><i class="${iconClass}"></i></div>`;
+  }
+  return `<div class="member-avatar-badge" style="width:${size}px; height:${size}px; font-size:${Math.round(size * 0.52)}px;">${avatar || memberName.charAt(0).toUpperCase()}</div>`;
 }
 
 // =============================================================================
@@ -1386,12 +1409,7 @@ function renderFamilySettingsModal() {
   if (activeTribeInput) activeTribeInput.value = activeTribeName;
 
   if (myAvatarDisplay) {
-    const av = userProfile.avatar || '👨‍🦱';
-    if (av.startsWith('data:image')) {
-      myAvatarDisplay.innerHTML = `<img src="${av}" style="width:100%;height:100%;object-fit:cover;">`;
-    } else {
-      myAvatarDisplay.textContent = av;
-    }
+    myAvatarDisplay.innerHTML = getMemberAvatarHtml(userProfile.name, 44);
   }
 
   // Render Saved Tribes List
@@ -1716,6 +1734,54 @@ function renderAllViews() {
 }
 
 // =============================================================================
+// 11.5. INSTANT AUTO-UPDATE ENGINE (Zero Reinstallation Required)
+// =============================================================================
+
+async function checkAppVersionUpdate(manual = false) {
+  try {
+    const res = await fetch(`version.json?_t=${Date.now()}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.version && data.version !== APP_VERSION) {
+        const banner = document.getElementById('appUpdateBanner');
+        const vLabel = document.getElementById('updateBannerVersion');
+        if (vLabel) vLabel.textContent = data.version;
+        if (banner) banner.classList.remove('hidden');
+        if (manual) showToast(`Nuovo aggiornamento v${data.version} trovato!`);
+        return true;
+      } else if (manual) {
+        showToast(`Sei già all'ultima versione (${APP_VERSION})`);
+      }
+    }
+  } catch (e) {
+    if (manual) showToast("Impossibile verificare aggiornamenti");
+  }
+  return false;
+}
+
+function applyAppUpdateNow() {
+  showToast("Aggiornamento dell'app in corso...");
+  SoundFX.pop();
+
+  if ('caches' in window) {
+    caches.keys().then(names => {
+      names.forEach(name => caches.delete(name));
+    });
+  }
+
+  // Clear service workers if any
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => reg.unregister());
+    });
+  }
+
+  setTimeout(() => {
+    window.location.href = window.location.pathname + '?v=' + Date.now();
+  }, 500);
+}
+
+// =============================================================================
 // 12. DOM INITIALIZATION & EVENT WIRING (NULL-SAFE)
 // =============================================================================
 
@@ -1734,6 +1800,26 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAutoGpsState();
   renderAllViews();
   setupTouchSwipe();
+
+  // Check version on launch
+  setTimeout(() => {
+    checkAppVersionUpdate(false);
+  }, 1500);
+
+  // Check version when returning to app
+  window.addEventListener('focus', () => checkAppVersionUpdate(false));
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) checkAppVersionUpdate(false);
+  });
+
+  // Periodic version check every 5 minutes
+  setInterval(() => {
+    checkAppVersionUpdate(false);
+  }, 5 * 60 * 1000);
+
+  // Auto-Update Banner & Manual Check
+  safeListen('btnApplyAppUpdate', 'click', applyAppUpdateNow);
+  safeListen('btnManualCheckUpdate', 'click', () => checkAppVersionUpdate(true));
 
   // 1) Brand Home Reset Button
   safeListen('brandHomeBtn', 'click', resetToHome);
