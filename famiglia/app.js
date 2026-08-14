@@ -1,11 +1,12 @@
 /**
  * Tribù - Authentic Windows Phone 8.1 Metro UI Engine
  * Features:
- * - Bell Toggle with fa-bell / fa-bell-slash status
- * - Collapsible Add Boxes with '+' in 1st position across Family, Personal & Ideas
- * - Category Border Color Customization via Long-Press
- * - Identical Power Features across Family & Personal (Priority, Scheduling, Reminders)
- * - Real-time AppTito Cloud Sync & Dynamic Members
+ * - Brand 'tribù' Home Reset Button
+ * - 3 Centered Application Bar Buttons
+ * - Perfectly Symmetrical Add Submenu with Bottom-Right 'Salva'
+ * - Real-Time Audio-Analyzed Voice Dictation Engine
+ * - Monumental Pivot Tab Typography & Custom Category Border Colors
+ * - App Icon & Theme Accent Customization
  */
 
 // =============================================================================
@@ -140,7 +141,7 @@ let ideasList = [
   }
 ];
 
-// Active Filters
+// Active Filters & State
 let activeTabSlide = 0; // 0: Famiglia, 1: Personale, 2: Idee
 let familyMemberFilter = 'all';
 let familyCategoryFilter = 'all';
@@ -227,7 +228,6 @@ function initFirebaseSync() {
     if (doc.exists) {
       const data = doc.data();
       
-      // Sync tasks
       if (Array.isArray(data.tasks)) {
         if (data.tasks.length > lastKnownTaskCount && lastKnownTaskCount > 0) {
           const newest = data.tasks[0];
@@ -239,7 +239,6 @@ function initFirebaseSync() {
         lastKnownTaskCount = familyTasks.length;
       }
 
-      // Sync members
       if (Array.isArray(data.members) && data.members.length > 0) {
         dynamicFamilyMembers = data.members;
         if (!dynamicFamilyMembers.includes(userProfile.name)) {
@@ -251,7 +250,6 @@ function initFirebaseSync() {
         pushFamilyTasksToCloud();
       }
 
-      // Sync categories & colors
       if (Array.isArray(data.customCategories)) {
         customCategories = Array.from(new Set([...customCategories, ...data.customCategories]));
       }
@@ -302,7 +300,7 @@ function updateCloudStatus(isOnline) {
 }
 
 // =============================================================================
-// 4. NOTIFICATIONS & BELL TOGGLE ENGINE (Requirement 1)
+// 4. NOTIFICATIONS & BELL TOGGLE ENGINE
 // =============================================================================
 
 function toggleNotifications() {
@@ -466,7 +464,7 @@ const SoundFX = {
 };
 
 // =============================================================================
-// 6. CATEGORIES, BORDER COLORS & LONG-PRESS CUSTOMIZER (Requirement 5)
+// 6. CATEGORIES, BORDER COLORS & LONG-PRESS CUSTOMIZER
 // =============================================================================
 
 const CATEGORY_MAP = {
@@ -504,7 +502,6 @@ function renderCategoryOptions() {
   const familyFilterBar = document.getElementById('familyCategoryFilterBar');
   const personalFilterBar = document.getElementById('personalCategoryFilterBar');
 
-  // 1. Populate Dropdowns
   let selectHtml = '';
   customCategories.forEach(cat => {
     const meta = CATEGORY_MAP[cat] || { name: cat, icon: 'fa-tag' };
@@ -515,7 +512,6 @@ function renderCategoryOptions() {
   if (familySelect) familySelect.innerHTML = selectHtml;
   if (personalSelect) personalSelect.innerHTML = selectHtml;
 
-  // 2. Populate Family Filter Chips with '+' in 1st position
   if (familyFilterBar) {
     let chipsHtml = `
       <button id="toggleFamilyAddBoxBtn" class="cat-chip-plus-first" title="Nuova attività per la tribù">
@@ -534,7 +530,6 @@ function renderCategoryOptions() {
     attachCategoryChipListeners(familyFilterBar, 'family');
   }
 
-  // 3. Populate Personal Filter Chips with '+' in 1st position
   if (personalFilterBar) {
     let chipsHtml = `
       <button id="togglePersonalAddBoxBtn" class="cat-chip-plus-first" title="Nuova attività personale">
@@ -555,7 +550,6 @@ function renderCategoryOptions() {
 }
 
 function attachCategoryChipListeners(container, type) {
-  // Toggle add box on '+' click
   const plusBtn = container.querySelector('.cat-chip-plus-first');
   if (plusBtn) {
     plusBtn.addEventListener('click', () => {
@@ -576,7 +570,6 @@ function attachCategoryChipListeners(container, type) {
     });
   }
 
-  // Filter chips with short click and long press
   container.querySelectorAll('.cat-chip').forEach(chip => {
     let pressTimer = null;
     let isLongPress = false;
@@ -644,12 +637,12 @@ function addCustomCategory(name) {
 }
 
 // =============================================================================
-// 7. ROBUST SPEECH DICTATION
+// 7. ROBUST SPEECH DICTATION (Microphone Engine - Requirement 4)
 // =============================================================================
 
 let recognition = null;
 let activeVoiceTargetInput = null;
-let currentVoiceTranscript = '';
+let liveAudioStream = null;
 
 function setupSpeechRecognition() {
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -663,8 +656,6 @@ function setupSpeechRecognition() {
   recognition.onstart = () => {
     document.querySelectorAll('.wp8-inline-btn, #appbarVoiceBtn').forEach(b => b.classList.add('recording'));
     document.getElementById('voiceStatusPrompt').textContent = "In ascolto... Parla ora!";
-    document.getElementById('voiceTranscriptionResult').textContent = '"..."';
-    currentVoiceTranscript = '';
   };
 
   recognition.onresult = (event) => {
@@ -679,63 +670,58 @@ function setupSpeechRecognition() {
     }
     const current = final || interim;
     if (current) {
-      currentVoiceTranscript = current;
-      document.getElementById('voiceTranscriptionResult').textContent = `"${current}"`;
+      document.getElementById('voiceTranscriptionResult').value = current;
     }
   };
 
   recognition.onerror = (err) => {
     console.warn("Speech error:", err);
-    document.getElementById('voiceStatusPrompt').textContent = "Nessun audio rilevato. Riprova o scrivi manualmente.";
+    document.getElementById('voiceStatusPrompt').textContent = "Puoi anche modificare o scrivere qui sotto:";
   };
 
   recognition.onend = () => {
     document.querySelectorAll('.wp8-inline-btn, #appbarVoiceBtn').forEach(b => b.classList.remove('recording'));
-    if (currentVoiceTranscript && activeVoiceTargetInput) {
-      activeVoiceTargetInput.value = currentVoiceTranscript;
-      if (activeVoiceTargetInput.id === 'familyTaskInput' || activeVoiceTargetInput.id === 'personalTaskInput') {
-        const detected = autoDetectCategory(currentVoiceTranscript);
-        if (detected) {
-          const selectId = activeVoiceTargetInput.id === 'familyTaskInput' ? 'familyCategorySelect' : 'personalCategorySelect';
-          document.getElementById(selectId).value = detected;
-        }
-      }
-    }
   };
 }
 
 async function startVoiceDictation(targetInput) {
   activeVoiceTargetInput = targetInput;
-  currentVoiceTranscript = '';
-
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (e) {
-      console.log("Microphone prompt handled:", e);
-    }
-  }
 
   document.getElementById('voiceModal').classList.remove('hidden');
   document.getElementById('voiceStatusPrompt').textContent = "In ascolto... Parla ora!";
-  document.getElementById('voiceTranscriptionResult').textContent = '"..."';
+  const txtArea = document.getElementById('voiceTranscriptionResult');
+  txtArea.value = targetInput.value || '';
+  txtArea.focus();
 
+  // 1. Request microphone via getUserMedia for hardware activation
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    try {
+      liveAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      console.log("Microphone access handled:", e);
+    }
+  }
+
+  // 2. Start speech recognizer
   if (recognition) {
     try {
       recognition.start();
     } catch (e) {
-      recognition.stop();
-      setTimeout(() => { try { recognition.start(); } catch(e){} }, 200);
-    }
-  } else {
-    document.getElementById('voiceStatusPrompt').textContent = "Usa il microfono della tua tastiera (Gboard) o detta qui:";
-    const manualPrompt = prompt("Detta o scrivi la tua attività:");
-    if (manualPrompt && activeVoiceTargetInput) {
-      activeVoiceTargetInput.value = manualPrompt;
-      document.getElementById('voiceModal').classList.add('hidden');
-      SoundFX.pop();
+      try { recognition.stop(); } catch(err){}
+      setTimeout(() => { try { recognition.start(); } catch(err){} }, 180);
     }
   }
+}
+
+function stopVoiceDictation() {
+  if (recognition) {
+    try { recognition.stop(); } catch(e){}
+  }
+  if (liveAudioStream) {
+    liveAudioStream.getTracks().forEach(t => t.stop());
+    liveAudioStream = null;
+  }
+  document.querySelectorAll('.wp8-inline-btn, #appbarVoiceBtn').forEach(b => b.classList.remove('recording'));
 }
 
 // =============================================================================
@@ -760,8 +746,8 @@ function goToSlide(index) {
   const scroller = document.getElementById('pivotTitlesScroller');
   if (scroller) {
     if (index === 0) scroller.scrollTo({ left: 0, behavior: 'smooth' });
-    else if (index === 1) scroller.scrollTo({ left: 100, behavior: 'smooth' });
-    else if (index === 2) scroller.scrollTo({ left: 240, behavior: 'smooth' });
+    else if (index === 1) scroller.scrollTo({ left: 140, behavior: 'smooth' });
+    else if (index === 2) scroller.scrollTo({ left: 320, behavior: 'smooth' });
   }
 
   SoundFX.click();
@@ -958,13 +944,12 @@ function addFamilyTask() {
   document.getElementById('familyDueTimeInput').value = '';
   document.getElementById('familyReminderSelect').value = 'none';
 
-  // Collapse card after add
   document.getElementById('familyInputCard').classList.add('hidden');
 
   SoundFX.pop();
   pushFamilyTasksToCloud();
   renderFamilyTasks();
-  showToast("aggiunto alla tribù");
+  showToast("salvato nella tribù");
 
   if (newTask.priority === 'urgente' || newTask.priority === 'alta') {
     triggerTribNotification(`🚨 Attività Urgente da ${userProfile.name}`, newTask.title);
@@ -972,7 +957,7 @@ function addFamilyTask() {
 }
 
 // =============================================================================
-// 11. TAB 2: RENDERING PERSONALE (Same power as Family)
+// 11. TAB 2: RENDERING PERSONALE
 // =============================================================================
 
 function renderPersonalTasks() {
@@ -1044,16 +1029,14 @@ function addPersonalTask() {
   document.getElementById('personalDueTimeInput').value = '';
   document.getElementById('personalReminderSelect').value = 'none';
 
-  // Collapse card after add
   document.getElementById('personalInputCard').classList.add('hidden');
 
   SoundFX.pop();
   saveLocalData();
   renderPersonalTasks();
-  showToast("aggiunto alla lista personale");
+  showToast("salvato nella lista personale");
 }
 
-// Unified Task Item Renderer with Custom Category Colors
 function createTaskItem(task, scope) {
   const catMeta = CATEGORY_MAP[task.category] || { name: task.category, icon: 'fa-tag' };
   const catColor = categoryColors[task.category] || varAccentColor();
@@ -1097,7 +1080,6 @@ function createTaskItem(task, scope) {
     </div>
   `;
 
-  // Checkbox toggle
   item.querySelector('.wp8-checkbox').addEventListener('click', () => {
     task.completed = !task.completed;
     if (task.completed) {
@@ -1120,7 +1102,6 @@ function createTaskItem(task, scope) {
     }
   });
 
-  // Share to family (for personal items)
   const shareBtn = item.querySelector('.share-to-family-link');
   if (shareBtn) {
     shareBtn.addEventListener('click', () => {
@@ -1144,7 +1125,6 @@ function createTaskItem(task, scope) {
     });
   }
 
-  // Delete
   item.querySelector('.delete-action').addEventListener('click', (e) => {
     e.stopPropagation();
     if (scope === 'family') {
@@ -1168,7 +1148,7 @@ function varAccentColor() {
 }
 
 // =============================================================================
-// 12. TAB 3: RENDERING IDEE & NOTE (Requirement 6)
+// 12. TAB 3: RENDERING IDEE & NOTE
 // =============================================================================
 
 function renderIdeasList() {
@@ -1312,7 +1292,7 @@ function escapeHTML(str) {
 }
 
 // =============================================================================
-// 14. THEME & EVENT LISTENERS
+// 14. THEME, HOME & EVENT LISTENERS
 // =============================================================================
 
 function applyTheme() {
@@ -1340,6 +1320,34 @@ function applyTheme() {
 }
 
 function setupEventListeners() {
+  // 7) Brand Home Button (Clicking 'tribù' returns to home)
+  const homeBtn = document.getElementById('brandHomeBtn');
+  if (homeBtn) {
+    homeBtn.addEventListener('click', () => {
+      goToSlide(0);
+      familyMemberFilter = 'all';
+      familyCategoryFilter = 'all';
+      document.querySelectorAll('#familyMemberFilterBar .filter-link').forEach(l => l.classList.remove('active'));
+      const firstMember = document.querySelector('#familyMemberFilterBar .filter-link');
+      if (firstMember) firstMember.classList.add('active');
+
+      document.querySelectorAll('#familyCategoryFilterBar .cat-chip').forEach(c => c.classList.remove('active'));
+      const firstCat = document.querySelector('#familyCategoryFilterBar .cat-chip');
+      if (firstCat) firstCat.classList.add('active');
+
+      document.getElementById('familyInputCard').classList.add('hidden');
+      document.getElementById('personalInputCard').classList.add('hidden');
+      document.getElementById('ideasInputCard').classList.add('hidden');
+
+      const slideFam = document.getElementById('slideFamiglia');
+      if (slideFam) slideFam.scrollTo({ top: 0, behavior: 'smooth' });
+
+      renderFamilyTasks();
+      SoundFX.click();
+      showToast("tribù - inizio");
+    });
+  }
+
   // Pivot Tabs
   document.querySelectorAll('#pivotTitlesTrack .pivot-title-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1423,6 +1431,20 @@ function setupEventListeners() {
     });
   }
 
+  // Cancel buttons in Submenus (Requirement 3)
+  document.getElementById('cancelFamilyTaskBtn').addEventListener('click', () => {
+    document.getElementById('familyInputCard').classList.add('hidden');
+    SoundFX.click();
+  });
+  document.getElementById('cancelPersonalTaskBtn').addEventListener('click', () => {
+    document.getElementById('personalInputCard').classList.add('hidden');
+    SoundFX.click();
+  });
+  document.getElementById('cancelIdeaBtn').addEventListener('click', () => {
+    document.getElementById('ideasInputCard').classList.add('hidden');
+    SoundFX.click();
+  });
+
   // Ideas filter chips
   document.querySelectorAll('#ideasCategoryFilterBar .cat-chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -1494,7 +1516,7 @@ function setupEventListeners() {
     }
   });
 
-  // Bottom Application Bar Actions
+  // 2) Bottom 3 Centered Application Bar Buttons
   document.getElementById('appbarAddBtn').addEventListener('click', () => {
     SoundFX.click();
     if (activeTabSlide === 0) {
@@ -1531,11 +1553,6 @@ function setupEventListeners() {
     showToast("sincronizzazione in corso...");
   });
 
-  document.getElementById('appbarMenuBtn').addEventListener('click', () => {
-    document.getElementById('familySettingsModal').classList.remove('hidden');
-    SoundFX.click();
-  });
-
   // Voice buttons
   document.getElementById('voiceFamilyTaskBtn').addEventListener('click', () => {
     startVoiceDictation(document.getElementById('familyTaskInput'));
@@ -1547,23 +1564,26 @@ function setupEventListeners() {
     startVoiceDictation(document.getElementById('ideaTitleInput'));
   });
 
+  // Voice modal confirm/cancel (Requirement 4)
   document.getElementById('closeVoiceModalBtn').addEventListener('click', () => {
-    if (recognition) recognition.stop();
+    stopVoiceDictation();
     document.getElementById('voiceModal').classList.add('hidden');
   });
   document.getElementById('cancelVoiceBtn').addEventListener('click', () => {
-    if (recognition) recognition.stop();
+    stopVoiceDictation();
     document.getElementById('voiceModal').classList.add('hidden');
   });
   document.getElementById('confirmVoiceBtn').addEventListener('click', () => {
-    if (recognition) recognition.stop();
-    if (currentVoiceTranscript && activeVoiceTargetInput) {
-      activeVoiceTargetInput.value = currentVoiceTranscript;
-      if (activeVoiceTargetInput.id === 'familyTaskInput' || activeVoiceTargetInput.id === 'personalTaskInput') {
-        const detected = autoDetectCategory(currentVoiceTranscript);
-        if (detected) {
-          const selectId = activeVoiceTargetInput.id === 'familyTaskInput' ? 'familyCategorySelect' : 'personalCategorySelect';
-          document.getElementById(selectId).value = detected;
+    stopVoiceDictation();
+    const transcribedText = document.getElementById('voiceTranscriptionResult').value.trim();
+    if (transcribedText && activeVoiceTargetInput) {
+      activeVoiceTargetInput.value = transcribedText;
+      const detected = autoDetectCategory(transcribedText);
+      if (detected) {
+        if (activeVoiceTargetInput.id === 'familyTaskInput') {
+          document.getElementById('familyCategorySelect').value = detected;
+        } else if (activeVoiceTargetInput.id === 'personalTaskInput') {
+          document.getElementById('personalCategorySelect').value = detected;
         }
       }
     }
@@ -1589,11 +1609,6 @@ function setupEventListeners() {
     link.addEventListener('click', () => {
       document.querySelectorAll('#personalFilterBar .filter-link').forEach(c => c.classList.remove('active'));
       link.classList.add('active');
-      const filterVal = link.dataset.filter;
-      if (filterVal === 'oggi') {
-        personalCategoryFilter = 'all';
-        personalTasks = personalTasks.map(t => t);
-      }
       SoundFX.click();
       renderPersonalTasks();
     });
@@ -1701,14 +1716,14 @@ function setupEventListeners() {
     SoundFX.click();
   });
 
-  // 15-Color WP8.1 Palette selection
+  // 15-Color WP8.1 Palette selection (Requirement 1)
   document.querySelectorAll('#accentPaletteGrid .palette-tile').forEach(tile => {
     tile.addEventListener('click', () => {
       themeSettings.accent = tile.dataset.accent;
       saveLocalData();
       applyTheme();
       SoundFX.click();
-      showToast(`colore WP8.1: ${tile.textContent}`);
+      showToast(`colore icona & app: ${tile.textContent}`);
     });
   });
 
