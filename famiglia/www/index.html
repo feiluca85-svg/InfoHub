@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="Tribù - To-Do List di Famiglia Condivisa in Stile Windows Phone 8.1 Metro UI">
+  <meta name="description" content="Tribù - To-Do List di Famiglia Condivisa & Mappa in Stile Windows Phone 8.1 Metro UI">
   <title>Tribù</title>
 
   <!-- PWA & Mobile Meta Tags -->
@@ -19,18 +19,25 @@
   <link rel="apple-touch-icon" href="icon.jpg">
   <link rel="icon" href="icon.jpg" type="image/jpeg">
 
-  <!-- Google Fonts: Outfit (ultra-clean Segoe UI feel), JetBrains Mono -->
+  <!-- Google Fonts: Outfit & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   
   <!-- FontAwesome for Authentic Flat Metro Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Leaflet CSS for Ultra-Light Privacy-First Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
   <link rel="stylesheet" href="styles.css">
 
   <!-- Firebase Compatibility SDKs (AppTito Cloud Backend) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="theme-dark">
 
@@ -42,42 +49,43 @@
     <header class="metro-header">
       <!-- Top Row: 'tribù' (Home Button) + 3 Action Icons -->
       <div class="header-top-row">
-        <!-- 7) 'tribù' works as Home button to reset and go to start of app -->
+        <!-- 'tribù' works as Home button to reset and go to start of app -->
         <button id="brandHomeBtn" class="brand-home-btn" title="Torna all'inizio (Home)">
           <span class="app-kicker">tribù</span>
         </button>
         
         <div class="header-right-actions">
-          <!-- 1) Bell Toggle (Active / Crossed out) -->
+          <!-- Bell Toggle (Active / Crossed out) -->
           <button id="headerNotifBtn" class="metro-header-icon-btn" title="Attiva/Disattiva Notifiche" aria-label="Notifiche">
             <i class="fa-solid fa-bell" id="headerNotifIcon"></i>
           </button>
-          <!-- 2) Gear Icon for Settings & Color Customizer -->
-          <button id="themeToggleBtn" class="metro-header-icon-btn" title="Impostazioni, Icona & Colori" aria-label="Impostazioni">
+          <!-- Gear Icon for Settings & Color Customizer -->
+          <button id="themeToggleBtn" class="metro-header-icon-btn" title="Impostazioni & Colori" aria-label="Impostazioni">
             <i class="fa-solid fa-gear"></i>
           </button>
-          <!-- 3) Family Members Management -->
+          <!-- Family Members Management -->
           <button id="familySettingsBtn" class="metro-header-icon-btn" title="Gestisci Membri Tribù" aria-label="Membri">
             <i class="fa-solid fa-users"></i>
           </button>
         </div>
       </div>
 
-      <!-- 5) Giant WP8 Pivot Tab Titles (Enlarged) -->
+      <!-- Giant WP8 Pivot Tab Titles (4 Tabs: famiglia, personale, idee & note, mappa) -->
       <div class="pivot-titles-scroller" id="pivotTitlesScroller">
         <div class="pivot-titles-track" id="pivotTitlesTrack">
           <button class="pivot-title-btn active" data-index="0">famiglia</button>
           <button class="pivot-title-btn" data-index="1">personale</button>
           <button class="pivot-title-btn" data-index="2">idee & note</button>
+          <button class="pivot-title-btn" data-index="3">mappa</button>
         </div>
       </div>
     </header>
 
     <!-- ============================================== -->
-    <!-- 2. HORIZONTAL SWIPE CAROUSEL                   -->
+    <!-- 2. HORIZONTAL SWIPE CAROUSEL (4 Slides)        -->
     <!-- ============================================== -->
     <main class="carousel-viewport" id="carouselViewport">
-      <div class="carousel-track" id="carouselTrack">
+      <div class="carousel-track four-slides" id="carouselTrack">
 
         <!-- ============================================== -->
         <!-- TAB 1: FAMIGLIA (Condivisa in tempo reale)     -->
@@ -105,16 +113,13 @@
               <!-- Dynamic Category chips -->
             </div>
 
-            <!-- 3 & 6) Expandable Add Box with Flawlessly Symmetrical Grid and Bottom-Right 'Salva' Button -->
+            <!-- Expandable Add Box with Flawlessly Symmetrical Grid and Bottom-Right 'Salva' Button -->
             <div class="wp8-input-card hidden" id="familyInputCard">
               <div class="input-line-row">
                 <input type="text" id="familyTaskInput" placeholder="cosa c'è da fare per la famiglia..." autocomplete="off">
-                <button id="voiceFamilyTaskBtn" class="wp8-inline-btn" title="Dettatura vocale" aria-label="Microfono">
-                  <i class="fa-solid fa-microphone"></i>
-                </button>
               </div>
 
-              <!-- 6) Perfectly Symmetrical 3-Column Grid for Dropdowns & Inputs -->
+              <!-- Perfectly Symmetrical 3-Column Grid for Dropdowns & Inputs -->
               <div class="symmetric-fields-grid">
                 <div class="grid-form-field">
                   <label class="field-top-label">categoria</label>
@@ -162,7 +167,7 @@
                 </div>
               </div>
 
-              <!-- 3) Bottom Right Actions with Prominent 'Salva' Button -->
+              <!-- Bottom Right Actions with Prominent 'Salva' Button -->
               <div class="submenu-bottom-actions">
                 <button type="button" id="cancelFamilyTaskBtn" class="wp8-btn-outline">annulla</button>
                 <button type="button" id="addFamilyTaskBtn" class="wp8-btn-accent">salva</button>
@@ -227,9 +232,6 @@
             <div class="wp8-input-card hidden" id="personalInputCard">
               <div class="input-line-row">
                 <input type="text" id="personalTaskInput" placeholder="cosa devi fare tu personalmente..." autocomplete="off">
-                <button id="voicePersonalTaskBtn" class="wp8-inline-btn" title="Dettatura vocale">
-                  <i class="fa-solid fa-microphone"></i>
-                </button>
               </div>
 
               <!-- Symmetric Form Grid -->
@@ -349,9 +351,6 @@
                   <button type="button" id="togglePinIdeaBtn" class="wp8-inline-btn" title="Fissa in alto">
                     <i class="fa-solid fa-thumbtack"></i>
                   </button>
-                  <button id="voiceIdeaBtn" class="wp8-inline-btn" title="Dettatura">
-                    <i class="fa-solid fa-microphone"></i>
-                  </button>
                 </div>
               </div>
 
@@ -377,24 +376,62 @@
           </div>
         </section>
 
+        <!-- ============================================== -->
+        <!-- TAB 4: MAPPA (Posizione Famiglia su Richiesta) -->
+        <!-- ============================================== -->
+        <section class="carousel-slide" id="slideMappa">
+          <div class="slide-content-wrapper">
+            
+            <!-- Map Top Action Card -->
+            <div class="wp8-map-header-card">
+              <div class="map-header-left">
+                <span class="sub-filter-label">la tua posizione:</span>
+                <strong id="myLocationStatusLabel" class="location-status-text">non aggiornata</strong>
+              </div>
+              <button type="button" id="btnUpdateMyGPS" class="wp8-btn-accent location-refresh-btn" title="Aggiorna dove sei">
+                <i class="fa-solid fa-location-crosshairs"></i> aggiorna dove sono
+              </button>
+            </div>
+
+            <!-- Interactive Privacy-First Leaflet Map -->
+            <div class="wp8-map-container" id="wp8MapContainer">
+              <div id="familyLeafletMap" class="leaflet-map-view"></div>
+            </div>
+
+            <!-- Family Members Location Status Cards -->
+            <div class="map-members-section">
+              <div class="section-title-with-btn">
+                <span class="sub-filter-label">posizioni della tribù</span>
+                <small style="color:var(--text-dim); font-size:0.8rem;">(tocca un membro per vederlo)</small>
+              </div>
+              <div class="map-members-list" id="mapFamilyMembersList">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Privacy Guarantee Note -->
+            <div class="wp8-privacy-note">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span><strong>Privacy totale:</strong> Nessun tracciamento in background. La posizione si aggiorna solo quando si preme "aggiorna" ed è visibile esclusivamente ai membri della tua tribù.</span>
+            </div>
+
+          </div>
+        </section>
+
       </div>
     </main>
 
     <!-- ============================================== -->
     <!-- 3. WP8 ICONIC BOTTOM APPLICATION BAR           -->
     <!-- ============================================== -->
-    <!-- 2) Exactly 3 Centered Buttons (Removed 3-dots button) -->
+    <!-- 2 Centered Buttons (No microphone) -->
     <footer class="wp8-app-bar" id="wp8AppBar">
-      <div class="appbar-icons-row centered-three">
+      <div class="appbar-icons-row centered-two">
         <!-- 1) Add Activity Button -->
         <button id="appbarAddBtn" class="appbar-circle-btn" title="Nuova attività" aria-label="Aggiungi">
           <i class="fa-solid fa-plus"></i>
         </button>
-        <!-- 2) Voice Dictation Button -->
-        <button id="appbarVoiceBtn" class="appbar-circle-btn" title="Dettatura vocale" aria-label="Microfono">
-          <i class="fa-solid fa-microphone"></i>
-        </button>
-        <!-- 3) Refresh / Sync Button -->
+        <!-- 2) Refresh / Sync Button -->
         <button id="appbarSyncBtn" class="appbar-circle-btn" title="Sincronizza ora" aria-label="Aggiorna">
           <i class="fa-solid fa-arrows-rotate"></i>
         </button>
@@ -549,24 +586,24 @@
       </div>
     </div>
 
-    <!-- 1) Theme & Custom App Icon Modal -->
+    <!-- Theme & Custom App Icon Modal -->
     <div id="themeModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
-          <h2 class="sheet-title">colori & icona</h2>
+          <h2 class="sheet-title">colori & opzioni</h2>
           <button id="closeThemeModalBtn" class="sheet-close-btn">&times;</button>
         </div>
 
         <div class="sheet-body">
           
-          <!-- 1) Live Icon Preview with Dynamic Color Swatch -->
+          <!-- Live Icon Preview with Dynamic Color Swatch -->
           <div class="icon-preview-box">
             <div class="live-tile-preview" id="liveTilePreview">
               <img src="icon.jpg" alt="Icona Tribù" id="liveTileIconImg">
             </div>
             <div class="live-tile-info">
-              <strong>Personalizza Colore Icona & App</strong>
-              <small>Scegli il tuo colore Lumia preferito per l'icona e per tutta l'interfaccia</small>
+              <strong>Colore Icona & App</strong>
+              <small>Scegli il tuo colore preferito per l'interfaccia</small>
             </div>
           </div>
 
@@ -617,11 +654,13 @@
                 <span id="soundStatusText">effetti sonori attivi</span>
               </button>
             </div>
-          <!-- Version Info & App Update Button -->
+          </div>
+
+          <!-- Version Info & App Update Button (Numbers Only) -->
           <div class="sheet-section version-update-box">
             <div class="version-row-meta">
               <span class="sheet-label">versione:</span>
-              <strong id="appVersionCodeLabel" class="version-badge">v1.2.0 (Lumia Amber)</strong>
+              <strong id="appVersionCodeLabel" class="version-badge">1.2.0</strong>
             </div>
             <button type="button" class="wp8-btn-accent update-btn-full" id="btnCheckAppUpdate">
               <i class="fa-solid fa-arrows-rotate"></i> controlla aggiornamenti
@@ -632,40 +671,6 @@
 
         <div class="sheet-footer">
           <button id="closeThemeModalFooterBtn" class="wp8-btn-accent">fatto</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Enhanced Voice Speech Dictation Modal with Audio Meter -->
-    <div id="voiceModal" class="wp8-modal-overlay hidden">
-      <div class="wp8-modal-sheet text-center">
-        <div class="sheet-header">
-          <h2 class="sheet-title">dettatura vocale</h2>
-          <button id="closeVoiceModalBtn" class="sheet-close-btn">&times;</button>
-        </div>
-
-        <div class="sheet-body voice-modal-body">
-          <div class="voice-mic-wave" id="voiceWaveAnimation">
-            <i class="fa-solid fa-microphone"></i>
-          </div>
-          
-          <!-- Audio visualizer bars -->
-          <div class="audio-bars-container" id="audioBarsContainer">
-            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-            <div class="bar"></div>
-          </div>
-
-          <p class="voice-status-text" id="voiceStatusPrompt">In ascolto... Parla ora chiaramente!</p>
-          <p class="voice-hint-sub"><i class="fa-solid fa-keyboard"></i> <strong>Nota:</strong> Puoi anche toccare il microfono sulla tastiera (Gboard) per dettare direttamente.</p>
-          
-          <!-- Live editable transcription box -->
-          <textarea id="voiceTranscriptionResult" class="voice-transcription-input" placeholder="Il testo pronunciato apparirà qui... puoi anche scriverlo o modificarlo subito" rows="3"></textarea>
-        </div>
-
-        <div class="sheet-footer">
-          <button id="cancelVoiceBtn" class="wp8-btn-outline">annulla</button>
-          <button id="confirmVoiceBtn" class="wp8-btn-accent">inserisci testo</button>
         </div>
       </div>
     </div>

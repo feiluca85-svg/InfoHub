@@ -1,6 +1,6 @@
 /* ==========================================================================
    Tribù - Authentic Windows Phone 8.1 Metro UI Design System
-   Inspired by Nokia Lumia / WP8.1 Panorama, Pivot & Live Tiles (Segoe UI Typography)
+   Inspired by Nokia Lumia / WP8.1 Panorama, Pivot & Live Tiles
    ========================================================================== */
 
 :root {
@@ -108,7 +108,7 @@ html, body {
   margin-bottom: 6px;
 }
 
-/* 7) Brand Home Button */
+/* Brand Home Button */
 .brand-home-btn {
   background: transparent;
   border: none;
@@ -160,7 +160,7 @@ html, body {
   transform: scale(0.92);
 }
 
-/* 5) Enormous WP8 Pivot Tab Titles */
+/* Monumental Pivot Tab Titles (4 Tabs) */
 .pivot-titles-scroller {
   overflow-x: auto;
   scrollbar-width: none;
@@ -183,7 +183,7 @@ html, body {
   border: none;
   color: var(--text-dim);
   font-family: var(--font-family);
-  font-size: 4.1rem; /* Monumental Segoe Light style */
+  font-size: 4.1rem;
   font-weight: 200;
   text-transform: lowercase;
   letter-spacing: -0.05em;
@@ -203,7 +203,7 @@ html, body {
 }
 
 /* ==========================================================================
-   2. HORIZONTAL SWIPE CAROUSEL VIEWPORT
+   2. HORIZONTAL SWIPE CAROUSEL (4 Slides)
    ========================================================================== */
 
 .carousel-viewport {
@@ -214,16 +214,16 @@ html, body {
   touch-action: pan-y pinch-zoom;
 }
 
-.carousel-track {
+.carousel-track.four-slides {
   display: flex;
-  width: 300%;
+  width: 400%;
   height: 100%;
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
 }
 
 .carousel-slide {
-  width: 33.3333%;
+  width: 25%;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
@@ -400,7 +400,7 @@ html, body {
 }
 
 /* ==========================================================================
-   4. EXPANDABLE ADD BOX & FLAWLESSLY SYMMETRICAL GRID (Requirements 3 & 6)
+   4. EXPANDABLE ADD BOX & FLAWLESSLY SYMMETRICAL GRID
    ========================================================================== */
 
 .wp8-input-card {
@@ -422,11 +422,11 @@ html, body {
 .input-line-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  width: 100%;
 }
 
 .input-line-row input {
-  flex: 1;
+  width: 100%;
   background: transparent;
   border: none;
   border-bottom: 2px solid var(--border-medium);
@@ -459,13 +459,12 @@ html, body {
   transition: all 0.15s ease;
 }
 
-.wp8-inline-btn:active, .wp8-inline-btn.recording {
-  background: #a20025;
-  border-color: #a20025;
+.wp8-inline-btn:active {
+  background: var(--accent-color);
   color: #ffffff;
 }
 
-/* 6) Symmetrical Form Grid with Uniform Dimensions & Proportions */
+/* Symmetrical Form Grid with Uniform Dimensions */
 .symmetric-fields-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -498,7 +497,6 @@ html, body {
   gap: 5px;
 }
 
-/* Strict Uniform Dimensions for all controls (Requirement 6) */
 .uniform-control {
   width: 100% !important;
   height: 42px !important;
@@ -518,7 +516,7 @@ html, body {
   border-color: var(--accent-color) !important;
 }
 
-/* 3) Bottom Right Actions with Prominent 'Salva' */
+/* Bottom Right Actions */
 .submenu-bottom-actions {
   display: flex;
   justify-content: flex-end;
@@ -964,7 +962,151 @@ html, body {
 }
 
 /* ==========================================================================
-   7. ICONIC WP8 BOTTOM APPLICATION BAR (Requirement 2: 3 Centered Buttons)
+   7. TAB 4: MAPPA (Ultra-Leggera, Privacy & Check-in Rapido)
+   ========================================================================== */
+
+.wp8-map-header-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--accent-color);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.map-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.location-status-text {
+  font-size: 0.95rem;
+  color: var(--accent-color);
+}
+
+.location-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+}
+
+.wp8-map-container {
+  width: 100%;
+  height: 280px;
+  background: #0d0d0d;
+  border: 1px solid var(--border-subtle);
+  position: relative;
+  z-index: 10;
+}
+
+.leaflet-map-view {
+  width: 100%;
+  height: 100%;
+  background: #111111;
+}
+
+/* Dark mode invert for OpenStreetMap tiles to match pure black Lumia UI */
+body.theme-dark .leaflet-tile {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+}
+
+/* Member location cards */
+.map-members-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.map-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.map-member-card {
+  background: var(--bg-surface);
+  border-left: 4px solid var(--accent-color);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.map-member-card:hover {
+  background: var(--bg-surface-hover);
+}
+
+.map-member-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.map-member-avatar {
+  width: 38px;
+  height: 38px;
+  background: var(--accent-color);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.map-member-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.map-member-name {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.map-member-loc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.map-member-time {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.map-member-right {
+  color: var(--accent-color);
+  font-size: 18px;
+}
+
+.wp8-privacy-note {
+  background: rgba(0, 80, 239, 0.1);
+  border-left: 3px solid var(--accent-color);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.wp8-privacy-note i {
+  color: var(--accent-color);
+  font-size: 16px;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   8. ICONIC WP8 BOTTOM APPLICATION BAR (2 Centered Buttons)
    ========================================================================== */
 
 .wp8-app-bar {
@@ -982,11 +1124,11 @@ html, body {
   z-index: 500;
 }
 
-.appbar-icons-row.centered-three {
+.appbar-icons-row.centered-two {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 32px;
+  gap: 40px;
   width: 100%;
 }
 
@@ -1012,7 +1154,7 @@ html, body {
 }
 
 /* ==========================================================================
-   8. MODALS & AUDIO VISUALIZER (Requirement 4)
+   9. MODALS & DIALOGS
    ========================================================================== */
 
 .wp8-modal-overlay {
@@ -1330,82 +1472,34 @@ html, body {
   font-size: 18px;
 }
 
-/* 4) Enhanced Voice Modal & Animated Audio Bars */
-.voice-modal-body {
+/* Version & Update Styles */
+.version-update-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 0;
+  gap: 12px;
 }
 
-.voice-mic-wave {
-  width: 72px;
-  height: 72px;
-  background: var(--accent-color);
-  color: #ffffff;
+.version-row-meta {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  border-radius: 50%;
-  animation: pulseVoice 1.4s infinite;
 }
 
-@keyframes pulseVoice {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 80, 239, 0.7); }
-  70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(0, 80, 239, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 80, 239, 0); }
+.version-badge {
+  font-size: 0.95rem;
+  color: var(--accent-color);
+  font-family: var(--font-mono);
 }
 
-.audio-bars-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  height: 30px;
-}
-
-.audio-bars-container .bar {
-  width: 4px;
-  height: 8px;
-  background: var(--accent-color);
-  animation: bounceBar 0.8s infinite ease-in-out alternate;
-}
-
-.audio-bars-container .bar:nth-child(2) { animation-delay: 0.1s; height: 16px; }
-.audio-bars-container .bar:nth-child(3) { animation-delay: 0.2s; height: 24px; }
-.audio-bars-container .bar:nth-child(4) { animation-delay: 0.3s; height: 30px; }
-.audio-bars-container .bar:nth-child(5) { animation-delay: 0.2s; height: 22px; }
-.audio-bars-container .bar:nth-child(6) { animation-delay: 0.1s; height: 14px; }
-.audio-bars-container .bar:nth-child(7) { animation-delay: 0.05s; height: 8px; }
-
-@keyframes bounceBar {
-  0% { transform: scaleY(0.4); opacity: 0.5; }
-  100% { transform: scaleY(1.4); opacity: 1; }
-}
-
-.voice-status-text {
-  font-size: 1rem;
-  color: var(--text-secondary);
-}
-
-.voice-transcription-input {
-  background: var(--bg-input);
-  border: 1px solid var(--border-medium);
-  padding: 12px 14px;
+.update-btn-full {
   width: 100%;
-  min-height: 80px;
-  font-size: 1.1rem;
-  color: var(--text-primary);
-  font-family: inherit;
-  outline: none;
-  resize: vertical;
-  border-radius: 0;
-}
-
-.voice-transcription-input:focus {
-  border-color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .sheet-footer {
@@ -1546,45 +1640,3 @@ html, body {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-
-/* Version & Update Styles */
-.version-update-box {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.version-row-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.version-badge {
-  font-size: 0.95rem;
-  color: var(--accent-color);
-  font-family: var(--font-mono);
-}
-
-.update-btn-full {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.voice-hint-sub {
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  background: var(--bg-surface);
-  border-left: 2px solid var(--accent-color);
-  padding: 8px 10px;
-  text-align: left;
-  line-height: 1.4;
-  margin-top: 4px;
-}
-

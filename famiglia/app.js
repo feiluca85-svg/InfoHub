@@ -2,11 +2,11 @@
  * Tribù - Authentic Windows Phone 8.1 Metro UI Engine
  * Features:
  * - Brand 'tribù' Home Reset Button
- * - 3 Centered Application Bar Buttons
- * - Perfectly Symmetrical Add Submenu with Bottom-Right 'Salva'
- * - Real-Time Audio-Analyzed Voice Dictation Engine
- * - Monumental Pivot Tab Typography & Custom Category Border Colors
- * - App Icon & Theme Accent Customization
+ * - 2 Centered Application Bar Buttons ([+] & [🔄])
+ * - 4 Horizontal Pivot Panorama Slides: [famiglia], [personale], [idee & note], [mappa]
+ * - Privacy-First On-Demand GPS Location Sharing (Zero Background Battery Drain)
+ * - Symmetrical Form Grid & Custom Category Border Colors
+ * - Real-Time AppTito Cloud Backend & Multi-Device Sync
  */
 
 // =============================================================================
@@ -41,6 +41,8 @@ try {
 // 2. STATE STORAGE & DEFAULTS
 // =============================================================================
 
+const APP_VERSION = "1.2.0";
+
 let userProfile = {
   name: 'Papà'
 };
@@ -49,7 +51,7 @@ let themeSettings = {
   mode: 'dark',
   accent: '#0050ef', // Official Lumia Cobalt
   sound: true,
-  notifications: true // Enabled by default
+  notifications: true
 };
 
 let currentFamilyCode = 'FAM-TITO';
@@ -100,120 +102,190 @@ let familyTasks = [
 let personalTasks = [
   {
     id: 'p_task_1',
-    title: 'Revisionare documento di lavoro e inviare mail',
-    priority: 'alta',
-    dueDate: '2026-08-15',
-    dueTime: '11:00',
-    category: 'casa',
-    reminder: '15m',
+    title: 'Revisione tagliando auto',
+    category: 'personale',
+    priority: 'media',
+    dueDate: '2026-08-25',
+    dueTime: '09:30',
+    reminder: '1d',
     completed: false,
-    createdAt: Date.now() - 5400000
+    createdAt: Date.now() - 14400000
   },
   {
     id: 'p_task_2',
-    title: '30 minuti di allenamento o camminata',
-    priority: 'media',
+    title: 'Comprare regalo per anniversario',
+    category: 'personale',
+    priority: 'alta',
     dueDate: '',
     dueTime: '',
-    category: 'salute',
     reminder: 'none',
     completed: false,
-    createdAt: Date.now() - 10800000
+    createdAt: Date.now() - 28800000
   }
 ];
+
+let personalCategories = ['personale', 'lavoro', 'studio', 'sport', 'hobby'];
 
 let ideasList = [
   {
     id: 'idea_1',
-    title: 'Idea Regalo Compleanno Mamma',
-    content: 'Cofanetto terme relax oppure la borsa in pelle che ha visto in vetrina.',
+    title: 'Gita in montagna domenica',
+    content: 'Andare al rifugio per pranzo, portare scarponcini e giacca a vento.',
     color: 'yellow',
-    isPinned: true,
+    pinned: true,
     createdAt: Date.now() - 86400000
   },
   {
     id: 'idea_2',
-    title: 'Gita fuori porta nel weekend',
-    content: 'Passeggiata al lago con pranzo al sacco se c\'è bel tempo.',
-    color: 'green',
-    isPinned: false,
-    createdAt: Date.now() - 43200000
+    title: 'Film da vedere insieme',
+    content: 'Inside Out 2, Dune Parte 2, Il Gladiatore 2',
+    color: 'blue',
+    pinned: false,
+    createdAt: Date.now() - 172800000
   }
 ];
 
-// Active Filters & State
-let activeTabSlide = 0; // 0: Famiglia, 1: Personale, 2: Idee
-let familyMemberFilter = 'all';
-let familyCategoryFilter = 'all';
-let personalCategoryFilter = 'all';
-let ideasActiveFilter = 'all';
+let familyLocations = {};
 
-let selectedIdeaColor = 'yellow';
-let isIdeaPinned = false;
-let ideaPendingConversion = null;
-let lastKnownTaskCount = 0;
-let categoryBeingCustomized = null;
+// Filter States
+let activeFamilyCategory = 'all';
+let activeFamilyMember = 'all';
+let activePersonalCategory = 'all';
+let activePersonalFilter = 'all';
+let activeIdeaColorFilter = 'all';
+let activeTabSlide = 0; // 0: Famiglia, 1: Personale, 2: Idee, 3: Mappa
+let customizingCatName = null;
+
+// Audio Synthesizer for Authentic Metro Clicks & Chimes
+const SoundFX = {
+  ctx: null,
+  init() {
+    if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+    }
+  },
+  click() {
+    if (!themeSettings.sound) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.04);
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.04);
+    } catch (e) {}
+  },
+  complete() {
+    if (!themeSettings.sound) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, this.ctx.currentTime + 0.07);
+      osc.frequency.setValueAtTime(783.99, this.ctx.currentTime + 0.14);
+      gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.28);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.28);
+    } catch (e) {}
+  },
+  pop() {
+    if (!themeSettings.sound) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.08);
+    } catch (e) {}
+  }
+};
 
 // =============================================================================
-// 3. PERSISTENCE & CLOUD SYNC ENGINE
+// 3. STORAGE ENGINE (Local & Cloud Sync)
 // =============================================================================
 
-function loadLocalData() {
+function loadLocalState() {
   try {
-    const savedProfile = localStorage.getItem('tribu_profile');
-    if (savedProfile) userProfile = JSON.parse(savedProfile);
+    const savedUser = localStorage.getItem('tribu_user_profile');
+    if (savedUser) userProfile = JSON.parse(savedUser);
 
-    const savedTheme = localStorage.getItem('tribu_theme');
+    const savedTheme = localStorage.getItem('tribu_theme_settings');
     if (savedTheme) themeSettings = JSON.parse(savedTheme);
 
     const savedCode = localStorage.getItem('tribu_family_code');
     if (savedCode) currentFamilyCode = savedCode;
 
-    const savedCats = localStorage.getItem('tribu_custom_cats');
-    if (savedCats) customCategories = JSON.parse(savedCats);
+    const savedMembers = localStorage.getItem('tribu_dynamic_members');
+    if (savedMembers) dynamicFamilyMembers = JSON.parse(savedMembers);
 
     const savedCatColors = localStorage.getItem('tribu_category_colors');
     if (savedCatColors) categoryColors = JSON.parse(savedCatColors);
 
-    const savedMembers = localStorage.getItem('tribu_family_members_' + currentFamilyCode);
-    if (savedMembers) {
-      dynamicFamilyMembers = JSON.parse(savedMembers);
-    } else {
-      dynamicFamilyMembers = [userProfile.name];
-    }
+    const savedCategories = localStorage.getItem('tribu_custom_categories');
+    if (savedCategories) customCategories = JSON.parse(savedCategories);
+
+    const savedFamily = localStorage.getItem('tribu_family_tasks');
+    if (savedFamily) familyTasks = JSON.parse(savedFamily);
 
     const savedPersonal = localStorage.getItem('tribu_personal_tasks');
     if (savedPersonal) personalTasks = JSON.parse(savedPersonal);
 
-    const savedIdeas = localStorage.getItem('tribu_ideas');
+    const savedIdeas = localStorage.getItem('tribu_ideas_list');
     if (savedIdeas) ideasList = JSON.parse(savedIdeas);
 
-    const savedFamily = localStorage.getItem('tribu_family_tasks_' + currentFamilyCode);
-    if (savedFamily) familyTasks = JSON.parse(savedFamily);
+    const savedLocs = localStorage.getItem('tribu_family_locations');
+    if (savedLocs) familyLocations = JSON.parse(savedLocs);
   } catch (e) {
-    console.error("Errore lettura localStorage:", e);
+    console.error("Local storage load error:", e);
   }
 }
 
-function saveLocalData() {
+function saveLocalState() {
   try {
-    localStorage.setItem('tribu_profile', JSON.stringify(userProfile));
-    localStorage.setItem('tribu_theme', JSON.stringify(themeSettings));
+    localStorage.setItem('tribu_user_profile', JSON.stringify(userProfile));
+    localStorage.setItem('tribu_theme_settings', JSON.stringify(themeSettings));
     localStorage.setItem('tribu_family_code', currentFamilyCode);
-    localStorage.setItem('tribu_custom_cats', JSON.stringify(customCategories));
+    localStorage.setItem('tribu_dynamic_members', JSON.stringify(dynamicFamilyMembers));
     localStorage.setItem('tribu_category_colors', JSON.stringify(categoryColors));
-    localStorage.setItem('tribu_family_members_' + currentFamilyCode, JSON.stringify(dynamicFamilyMembers));
+    localStorage.setItem('tribu_custom_categories', JSON.stringify(customCategories));
+    localStorage.setItem('tribu_family_tasks', JSON.stringify(familyTasks));
     localStorage.setItem('tribu_personal_tasks', JSON.stringify(personalTasks));
-    localStorage.setItem('tribu_ideas', JSON.stringify(ideasList));
-    localStorage.setItem('tribu_family_tasks_' + currentFamilyCode, JSON.stringify(familyTasks));
+    localStorage.setItem('tribu_ideas_list', JSON.stringify(ideasList));
+    localStorage.setItem('tribu_family_locations', JSON.stringify(familyLocations));
   } catch (e) {
-    console.error("Errore salvataggio localStorage:", e);
+    console.error("Local storage save error:", e);
   }
 }
+
+// =============================================================================
+// 4. FIREBASE CLOUD SYNC (AppTito Backend)
+// =============================================================================
 
 function initFirebaseSync() {
   if (!db) {
-    updateCloudStatus(false);
+    console.log("Offline mode - using LocalStorage");
     return;
   }
 
@@ -221,521 +293,104 @@ function initFirebaseSync() {
     unsubscribeFamilyListener();
   }
 
-  updateCloudStatus(true);
-  familyDocRef = db.collection("tribu_family_todos").doc(currentFamilyCode);
+  const docId = currentFamilyCode.toUpperCase().trim() || 'FAM-TITO';
+  familyDocRef = db.collection('tribu_family_todos').doc(docId);
 
-  unsubscribeFamilyListener = familyDocRef.onSnapshot((doc) => {
-    if (doc.exists) {
-      const data = doc.data();
-      
-      if (Array.isArray(data.tasks)) {
-        if (data.tasks.length > lastKnownTaskCount && lastKnownTaskCount > 0) {
-          const newest = data.tasks[0];
-          if (newest && newest.addedBy !== userProfile.name) {
-            triggerTribNotification(`Nuova attività da ${newest.addedBy}`, newest.title);
-          }
-        }
+  unsubscribeFamilyListener = familyDocRef.onSnapshot(docSnap => {
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      if (data.tasks) {
         familyTasks = data.tasks;
-        lastKnownTaskCount = familyTasks.length;
       }
-
-      if (Array.isArray(data.members) && data.members.length > 0) {
+      if (data.members && Array.isArray(data.members)) {
         dynamicFamilyMembers = data.members;
-        if (!dynamicFamilyMembers.includes(userProfile.name)) {
-          dynamicFamilyMembers.push(userProfile.name);
-          pushFamilyTasksToCloud();
-        }
-      } else {
-        dynamicFamilyMembers = [userProfile.name];
-        pushFamilyTasksToCloud();
       }
-
-      if (Array.isArray(data.customCategories)) {
-        customCategories = Array.from(new Set([...customCategories, ...data.customCategories]));
+      if (data.categories && Array.isArray(data.categories)) {
+        customCategories = data.categories;
       }
-      if (data.categoryColors && typeof data.categoryColors === 'object') {
-        categoryColors = { ...categoryColors, ...data.categoryColors };
+      if (data.categoryColors) {
+        categoryColors = Object.assign({}, categoryColors, data.categoryColors);
       }
-
-      saveLocalData();
-      renderMemberFilterBar();
-      renderCategoryOptions();
-      renderFamilyTasks();
-      renderPersonalTasks();
-      updateCloudStatus(true);
+      if (data.locations) {
+        familyLocations = Object.assign({}, familyLocations, data.locations);
+      }
+      saveLocalState();
+      renderAllViews();
     } else {
-      pushFamilyTasksToCloud();
-      updateCloudStatus(true);
+      pushFamilyStateToCloud();
     }
-  }, (error) => {
-    console.warn("Sync error:", error);
-    updateCloudStatus(false);
+  }, err => {
+    console.warn("Firestore sync warning:", err);
   });
 }
 
-function pushFamilyTasksToCloud() {
-  saveLocalData();
-  if (db && familyDocRef) {
-    if (!dynamicFamilyMembers.includes(userProfile.name)) {
-      dynamicFamilyMembers.push(userProfile.name);
-    }
-
-    familyDocRef.set({
-      familyName: activeFamilyName,
-      familyCode: currentFamilyCode,
-      members: dynamicFamilyMembers,
-      customCategories: customCategories,
-      categoryColors: categoryColors,
-      lastUpdated: Date.now(),
-      updatedBy: userProfile.name,
-      tasks: familyTasks
-    }, { merge: true }).catch(err => {
-      console.warn("Push error:", err);
-    });
-  }
-}
-
-function updateCloudStatus(isOnline) {
-  // Silent indicator
-}
-
-// =============================================================================
-// 4. NOTIFICATIONS & BELL TOGGLE ENGINE
-// =============================================================================
-
-function toggleNotifications() {
-  themeSettings.notifications = !themeSettings.notifications;
-  saveLocalData();
-  updateNotificationUI();
-
-  if (themeSettings.notifications) {
-    SoundFX.pop();
-    if ('Notification' in window) {
-      Notification.requestPermission().then((perm) => console.log("Notif perm:", perm));
-    }
-    triggerTribNotification("🔔 Notifiche Attivate", "Riceverai avvisi su compiti urgenti, scadenze e note!");
-    showToast("notifiche attivate");
-  } else {
-    SoundFX.click();
-    showToast("notifiche disattivate");
-  }
-}
-
-function triggerTribNotification(title, body) {
-  if (!themeSettings.notifications) return;
-
-  if (themeSettings.sound) SoundFX.pop();
-  if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
-
-  showInAppBanner(title, body);
-
-  if ('Notification' in window && Notification.permission === 'granted') {
-    try {
-      new Notification(title, {
-        body: body,
-        icon: 'icon-192.png',
-        badge: 'icon-192.png'
-      });
-    } catch (e) {
-      console.log("System notification note:", e);
-    }
-  }
-}
-
-function showInAppBanner(title, body) {
-  const banner = document.getElementById('inAppNotificationBanner');
-  if (!banner) return;
-  document.getElementById('inAppNotifTitle').textContent = title;
-  document.getElementById('inAppNotifBody').textContent = body;
-  banner.classList.remove('hidden');
-
-  setTimeout(() => {
-    banner.classList.add('hidden');
-  }, 4000);
-}
-
-function updateNotificationUI() {
-  const headerIcon = document.getElementById('headerNotifIcon');
-  const modalIcon = document.getElementById('notifStatusIcon');
-  const modalText = document.getElementById('notifStatusText');
-
-  const isEnabled = themeSettings.notifications;
-
-  if (headerIcon) {
-    headerIcon.className = isEnabled ? 'fa-solid fa-bell' : 'fa-solid fa-bell-slash';
-  }
-  if (modalIcon) {
-    modalIcon.className = isEnabled ? 'fa-solid fa-bell' : 'fa-solid fa-bell-slash';
-  }
-  if (modalText) {
-    modalText.textContent = isEnabled ? 'notifiche push & avvisi attivi' : 'notifiche disattivate (tocca per attivare)';
-  }
-}
-
-// Check scheduled reminders periodically
-setInterval(() => {
-  const now = Date.now();
-  [...familyTasks, ...personalTasks].forEach(task => {
-    if (!task.completed && task.dueDate && task.reminder && task.reminder !== 'none' && !task.reminderFired) {
-      const dueDateTime = new Date(`${task.dueDate}T${task.dueTime || '09:00'}`).getTime();
-      let reminderOffset = 0;
-      if (task.reminder === '15m') reminderOffset = 15 * 60 * 1000;
-      else if (task.reminder === '1h') reminderOffset = 60 * 60 * 1000;
-      else if (task.reminder === '1d') reminderOffset = 24 * 60 * 60 * 1000;
-
-      if (now >= (dueDateTime - reminderOffset) && now < (dueDateTime + 1800000)) {
-        task.reminderFired = true;
-        triggerTribNotification(`⏰ Scadenza: ${task.title}`, `(Scadenza: ${task.dueDate} ${task.dueTime || ''})`);
-        pushFamilyTasksToCloud();
-      }
-    }
-  });
-}, 30000);
-
-// =============================================================================
-// 5. WEB AUDIO SYNTHESIZER
-// =============================================================================
-
-let audioCtx = null;
-function getAudioContext() {
-  if (!audioCtx) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) audioCtx = new AudioContextClass();
-  }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-  return audioCtx;
-}
-
-const SoundFX = {
-  click() {
-    if (!themeSettings.sound) return;
-    const ctx = getAudioContext();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(540, ctx.currentTime);
-    gain.gain.setValueAtTime(0.05, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.035);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.035);
-  },
-
-  complete() {
-    if (!themeSettings.sound) return;
-    const ctx = getAudioContext();
-    if (!ctx) return;
-    const notes = [587.33, 880];
-    notes.forEach((freq, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.value = freq;
-      const startTime = ctx.currentTime + (idx * 0.07);
-      gain.gain.setValueAtTime(0.18, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(startTime);
-      osc.stop(startTime + 0.3);
-    });
-  },
-
-  pop() {
-    if (!themeSettings.sound) return;
-    const ctx = getAudioContext();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(600, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.07);
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.07);
-  }
-};
-
-// =============================================================================
-// 6. CATEGORIES, BORDER COLORS & LONG-PRESS CUSTOMIZER
-// =============================================================================
-
-const CATEGORY_MAP = {
-  spesa:    { name: 'spesa',    icon: 'fa-cart-shopping' },
-  casa:     { name: 'casa',     icon: 'fa-house' },
-  bollette: { name: 'bollette', icon: 'fa-file-invoice' },
-  figli:    { name: 'figli',    icon: 'fa-graduation-cap' },
-  salute:   { name: 'salute',   icon: 'fa-kit-medical' },
-  urgente:  { name: 'urgente',  icon: 'fa-bolt' },
-  altro:    { name: 'altro',    icon: 'fa-tag' }
-};
-
-const CATEGORY_KEYWORDS = {
-  spesa: ['latte', 'pane', 'uova', 'burro', 'pasta', 'riso', 'formaggio', 'mela', 'mele', 'frutta', 'verdura', 'carne', 'pesce', 'biscotti', 'acqua', 'olio', 'caffè', 'caffe', 'supermercato', 'pomodori', 'insalata', 'zucchero', 'farina', 'yogurt', 'prosciutto', 'spesa', 'detersivo', 'sapone'],
-  bollette: ['luce', 'gas', 'enel', 'bolletta', 'bollette', 'affitto', 'condominio', 'assicurazione', 'wifi', 'internet', 'rata', 'tributi', 'tari', 'fattura', 'f24', 'mutuo'],
-  casa: ['lampadina', 'pulizie', 'bucato', 'lavatrice', 'lavastoviglie', 'piatti', 'riparare', 'rubinetto', 'balcone', 'cantina', 'garage', 'letto', 'mobili', 'aspirapolvere'],
-  figli: ['scuola', 'compiti', 'libri', 'quaderno', 'zaino', 'mensa', 'palestra', 'catechismo', 'pediatra', 'vestiti', 'maestra', 'chiara', 'marco'],
-  salute: ['farmacia', 'medicine', 'tachipirina', 'sciroppo', 'visita', 'dentista', 'dottore', 'ricetta', 'analisi', 'termometro']
-};
-
-function autoDetectCategory(text) {
-  if (!text) return null;
-  const lower = text.toLowerCase();
-  for (const [cat, words] of Object.entries(CATEGORY_KEYWORDS)) {
-    for (const w of words) {
-      if (lower.includes(w)) return cat;
-    }
-  }
-  return null;
-}
-
-function renderCategoryOptions() {
-  const familySelect = document.getElementById('familyCategorySelect');
-  const personalSelect = document.getElementById('personalCategorySelect');
-  const familyFilterBar = document.getElementById('familyCategoryFilterBar');
-  const personalFilterBar = document.getElementById('personalCategoryFilterBar');
-
-  let selectHtml = '';
-  customCategories.forEach(cat => {
-    const meta = CATEGORY_MAP[cat] || { name: cat, icon: 'fa-tag' };
-    selectHtml += `<option value="${escapeHTML(cat)}">${escapeHTML(meta.name)}</option>`;
-  });
-  selectHtml += `<option value="__new__">+ nuova categoria...</option>`;
-
-  if (familySelect) familySelect.innerHTML = selectHtml;
-  if (personalSelect) personalSelect.innerHTML = selectHtml;
-
-  if (familyFilterBar) {
-    let chipsHtml = `
-      <button id="toggleFamilyAddBoxBtn" class="cat-chip-plus-first" title="Nuova attività per la tribù">
-        <i class="fa-solid fa-plus"></i>
-      </button>
-      <button class="cat-chip ${familyCategoryFilter === 'all' ? 'active' : ''}" data-cat="all">tutte</button>
-    `;
-    customCategories.forEach(cat => {
-      const meta = CATEGORY_MAP[cat] || { name: cat, icon: 'fa-tag' };
-      const isAct = familyCategoryFilter === cat;
-      const borderCol = categoryColors[cat] || '';
-      const styleAttr = borderCol ? `style="border-color:${borderCol};"` : '';
-      chipsHtml += `<button class="cat-chip ${isAct ? 'active' : ''}" data-cat="${escapeHTML(cat)}" ${styleAttr} title="Tocca per filtrare, tieni premuto per cambiare colore"><i class="fa-solid ${meta.icon}"></i> ${escapeHTML(meta.name)}</button>`;
-    });
-    familyFilterBar.innerHTML = chipsHtml;
-    attachCategoryChipListeners(familyFilterBar, 'family');
-  }
-
-  if (personalFilterBar) {
-    let chipsHtml = `
-      <button id="togglePersonalAddBoxBtn" class="cat-chip-plus-first" title="Nuova attività personale">
-        <i class="fa-solid fa-plus"></i>
-      </button>
-      <button class="cat-chip ${personalCategoryFilter === 'all' ? 'active' : ''}" data-cat="all">tutte</button>
-    `;
-    customCategories.forEach(cat => {
-      const meta = CATEGORY_MAP[cat] || { name: cat, icon: 'fa-tag' };
-      const isAct = personalCategoryFilter === cat;
-      const borderCol = categoryColors[cat] || '';
-      const styleAttr = borderCol ? `style="border-color:${borderCol};"` : '';
-      chipsHtml += `<button class="cat-chip ${isAct ? 'active' : ''}" data-cat="${escapeHTML(cat)}" ${styleAttr} title="Tocca per filtrare, tieni premuto per cambiare colore"><i class="fa-solid ${meta.icon}"></i> ${escapeHTML(meta.name)}</button>`;
-    });
-    personalFilterBar.innerHTML = chipsHtml;
-    attachCategoryChipListeners(personalFilterBar, 'personal');
-  }
-}
-
-function attachCategoryChipListeners(container, type) {
-  const plusBtn = container.querySelector('.cat-chip-plus-first');
-  if (plusBtn) {
-    plusBtn.addEventListener('click', () => {
-      SoundFX.click();
-      if (type === 'family') {
-        const card = document.getElementById('familyInputCard');
-        card.classList.toggle('hidden');
-        if (!card.classList.contains('hidden')) {
-          document.getElementById('familyTaskInput').focus();
-        }
-      } else {
-        const card = document.getElementById('personalInputCard');
-        card.classList.toggle('hidden');
-        if (!card.classList.contains('hidden')) {
-          document.getElementById('personalTaskInput').focus();
-        }
-      }
-    });
-  }
-
-  container.querySelectorAll('.cat-chip').forEach(chip => {
-    let pressTimer = null;
-    let isLongPress = false;
-
-    const startPress = () => {
-      isLongPress = false;
-      pressTimer = setTimeout(() => {
-        isLongPress = true;
-        const cat = chip.dataset.cat;
-        if (cat && cat !== 'all') {
-          openCategoryColorModal(cat);
-        }
-      }, 550);
-    };
-
-    const cancelPress = () => {
-      clearTimeout(pressTimer);
-    };
-
-    chip.addEventListener('mousedown', startPress);
-    chip.addEventListener('touchstart', startPress, { passive: true });
-    chip.addEventListener('mouseup', cancelPress);
-    chip.addEventListener('mouseleave', cancelPress);
-    chip.addEventListener('touchend', cancelPress);
-
-    chip.addEventListener('click', () => {
-      if (isLongPress) return;
-      container.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-
-      if (type === 'family') {
-        familyCategoryFilter = chip.dataset.cat;
-        SoundFX.click();
-        renderFamilyTasks();
-      } else {
-        personalCategoryFilter = chip.dataset.cat;
-        SoundFX.click();
-        renderPersonalTasks();
-      }
-    });
+function pushFamilyStateToCloud() {
+  if (!db || !familyDocRef) return;
+  familyDocRef.set({
+    familyCode: currentFamilyCode,
+    updatedAt: Date.now(),
+    updatedBy: userProfile.name,
+    tasks: familyTasks,
+    members: dynamicFamilyMembers,
+    categories: customCategories,
+    categoryColors: categoryColors,
+    locations: familyLocations
+  }, { merge: true }).catch(err => {
+    console.warn("Firestore write error:", err);
   });
 }
 
-function openCategoryColorModal(cat) {
-  categoryBeingCustomized = cat;
-  document.getElementById('customizingCategoryName').textContent = cat;
-  document.getElementById('categoryColorModal').classList.remove('hidden');
-  SoundFX.pop();
-}
+// =============================================================================
+// 5. THEME & PALETTE SYSTEM
+// =============================================================================
 
-function addCustomCategory(name) {
-  const clean = name.trim().toLowerCase();
-  if (!clean) return;
-  if (!customCategories.includes(clean)) {
-    customCategories.push(clean);
-    CATEGORY_MAP[clean] = { name: clean, icon: 'fa-tag' };
-    categoryColors[clean] = '#4390df';
-    saveLocalData();
-    pushFamilyTasksToCloud();
-    renderCategoryOptions();
-    document.getElementById('familyCategorySelect').value = clean;
-    showToast(`categoria "${clean}" aggiunta`);
-    SoundFX.pop();
+function applyTheme() {
+  document.body.className = themeSettings.mode === 'light' ? 'theme-light' : 'theme-dark';
+  document.documentElement.style.setProperty('--accent-color', themeSettings.accent);
+
+  document.querySelectorAll('#accentPaletteGrid .palette-tile').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-accent') === themeSettings.accent);
+  });
+
+  const btnDark = document.getElementById('btnDarkMode');
+  const btnLight = document.getElementById('btnLightMode');
+  if (btnDark && btnLight) {
+    btnDark.classList.toggle('active', themeSettings.mode === 'dark');
+    btnLight.classList.toggle('active', themeSettings.mode === 'light');
+  }
+
+  const notifIcon = document.getElementById('headerNotifIcon');
+  if (notifIcon) {
+    notifIcon.className = themeSettings.notifications ? 'fa-solid fa-bell' : 'fa-solid fa-bell-slash';
+  }
+
+  const notifSheetIcon = document.getElementById('notifStatusIcon');
+  const notifSheetText = document.getElementById('notifStatusText');
+  if (notifSheetIcon && notifSheetText) {
+    notifSheetIcon.className = themeSettings.notifications ? 'fa-solid fa-bell' : 'fa-solid fa-bell-slash';
+    notifSheetText.textContent = themeSettings.notifications ? 'notifiche push & avvisi attivi' : 'notifiche disattivate';
+  }
+
+  const soundSheetIcon = document.getElementById('soundStatusIcon');
+  const soundSheetText = document.getElementById('soundStatusText');
+  if (soundSheetIcon && soundSheetText) {
+    soundSheetIcon.className = themeSettings.sound ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+    soundSheetText.textContent = themeSettings.sound ? 'effetti sonori attivi' : 'effetti sonori disattivati';
   }
 }
 
 // =============================================================================
-// 7. ROBUST SPEECH DICTATION (Microphone Engine - Requirement 4)
-// =============================================================================
-
-let recognition = null;
-let activeVoiceTargetInput = null;
-let liveAudioStream = null;
-
-function setupSpeechRecognition() {
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRec) return;
-
-  recognition = new SpeechRec();
-  recognition.lang = 'it-IT';
-  recognition.continuous = false;
-  recognition.interimResults = true;
-
-  recognition.onstart = () => {
-    document.querySelectorAll('.wp8-inline-btn, #appbarVoiceBtn').forEach(b => b.classList.add('recording'));
-    document.getElementById('voiceStatusPrompt').textContent = "In ascolto... Parla ora!";
-  };
-
-  recognition.onresult = (event) => {
-    let interim = '';
-    let final = '';
-    for (let i = event.resultIndex; i < event.results.length; ++i) {
-      if (event.results[i].isFinal) {
-        final += event.results[i][0].transcript;
-      } else {
-        interim += event.results[i][0].transcript;
-      }
-    }
-    const current = final || interim;
-    if (current) {
-      document.getElementById('voiceTranscriptionResult').value = current;
-    }
-  };
-
-  recognition.onerror = (err) => {
-    console.warn("Speech error:", err);
-    document.getElementById('voiceStatusPrompt').textContent = "Puoi anche modificare o scrivere qui sotto:";
-  };
-
-  recognition.onend = () => {
-    document.querySelectorAll('.wp8-inline-btn, #appbarVoiceBtn').forEach(b => b.classList.remove('recording'));
-  };
-}
-
-async function startVoiceDictation(targetInput) {
-  activeVoiceTargetInput = targetInput;
-
-  document.getElementById('voiceModal').classList.remove('hidden');
-  document.getElementById('voiceStatusPrompt').textContent = "In ascolto... Parla ora!";
-  const txtArea = document.getElementById('voiceTranscriptionResult');
-  txtArea.value = targetInput.value || '';
-  txtArea.focus();
-
-  // 1. Request microphone via getUserMedia for hardware activation
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    try {
-      liveAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (e) {
-      console.log("Microphone access handled:", e);
-    }
-  }
-
-  // 2. Start speech recognizer
-  if (recognition) {
-    try {
-      recognition.start();
-    } catch (e) {
-      try { recognition.stop(); } catch(err){}
-      setTimeout(() => { try { recognition.start(); } catch(err){} }, 180);
-    }
-  }
-}
-
-function stopVoiceDictation() {
-  if (recognition) {
-    try { recognition.stop(); } catch(e){}
-  }
-  if (liveAudioStream) {
-    liveAudioStream.getTracks().forEach(t => t.stop());
-    liveAudioStream = null;
-  }
-  document.querySelectorAll('.wp8-inline-btn, #appbarVoiceBtn').forEach(b => b.classList.remove('recording'));
-}
-
-// =============================================================================
-// 8. HORIZONTAL SWIPE & GIANT WP8 PIVOT ENGINE
+// 6. GIANT WP8 PIVOT ENGINE & TOUCH SWIPE (4 Slides)
 // =============================================================================
 
 function goToSlide(index) {
   if (index < 0) index = 0;
-  if (index > 2) index = 2;
+  if (index > 3) index = 3;
   activeTabSlide = index;
 
   const track = document.getElementById('carouselTrack');
   if (track) {
-    track.style.transform = `translateX(-${index * 33.3333}%)`;
+    track.style.transform = `translateX(-${index * 25}%)`;
   }
 
   const pivotButtons = document.querySelectorAll('#pivotTitlesTrack .pivot-title-btn');
@@ -747,7 +402,12 @@ function goToSlide(index) {
   if (scroller) {
     if (index === 0) scroller.scrollTo({ left: 0, behavior: 'smooth' });
     else if (index === 1) scroller.scrollTo({ left: 140, behavior: 'smooth' });
-    else if (index === 2) scroller.scrollTo({ left: 320, behavior: 'smooth' });
+    else if (index === 2) scroller.scrollTo({ left: 280, behavior: 'smooth' });
+    else if (index === 3) scroller.scrollTo({ left: 450, behavior: 'smooth' });
+  }
+
+  if (index === 3) {
+    setTimeout(initLeafletMapIfNeeded, 200);
   }
 
   SoundFX.click();
@@ -762,6 +422,8 @@ function setupTouchSwipe() {
   let isSwiping = false;
 
   viewport.addEventListener('touchstart', (e) => {
+    // If touching inside map container, don't trigger carousel swipe
+    if (e.target.closest('#wp8MapContainer')) return;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     isSwiping = true;
@@ -775,7 +437,7 @@ function setupTouchSwipe() {
     const diffY = e.changedTouches[0].clientY - startY;
 
     if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.3) {
-      if (diffX < 0 && activeTabSlide < 2) {
+      if (diffX < 0 && activeTabSlide < 3) {
         goToSlide(activeTabSlide + 1);
       } else if (diffX > 0 && activeTabSlide > 0) {
         goToSlide(activeTabSlide - 1);
@@ -785,581 +447,970 @@ function setupTouchSwipe() {
 }
 
 // =============================================================================
-// 9. DYNAMIC MEMBERS SYSTEM
+// 7. TAB 1: FAMIGLIA (Rendering & CRUD)
 // =============================================================================
 
-function renderMemberFilterBar() {
+function renderFamilyMembersFilterBar() {
   const container = document.getElementById('familyMemberFilterBar');
-  const assigneeSelect = document.getElementById('familyAssigneeSelect');
-  const modalMemberList = document.getElementById('dynamicFamilyMembersList');
-
   if (!container) return;
 
-  let html = `<button class="filter-link ${familyMemberFilter === 'all' ? 'active' : ''}" data-member="all">tutti</button>`;
-  dynamicFamilyMembers.forEach(member => {
-    const isAct = familyMemberFilter === member;
-    html += `<button class="filter-link ${isAct ? 'active' : ''}" data-member="${escapeHTML(member)}">${escapeHTML(member.toLowerCase())}</button>`;
+  let html = `<button class="filter-link ${activeFamilyMember === 'all' ? 'active' : ''}" data-member="all">tutti</button>`;
+  dynamicFamilyMembers.forEach(mem => {
+    html += `<button class="filter-link ${activeFamilyMember === mem ? 'active' : ''}" data-member="${mem}">${mem.toLowerCase()}</button>`;
   });
   container.innerHTML = html;
 
-  container.querySelectorAll('.filter-link').forEach(link => {
-    link.addEventListener('click', () => {
-      container.querySelectorAll('.filter-link').forEach(c => c.classList.remove('active'));
-      link.classList.add('active');
-      familyMemberFilter = link.dataset.member;
-      SoundFX.click();
+  container.querySelectorAll('.filter-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFamilyMember = btn.getAttribute('data-member');
+      renderFamilyMembersFilterBar();
       renderFamilyTasks();
+      SoundFX.click();
     });
   });
 
-  if (assigneeSelect) {
+  const select = document.getElementById('familyAssigneeSelect');
+  if (select) {
     let selectHtml = `<option value="Tutti">chiunque</option>`;
-    dynamicFamilyMembers.forEach(member => {
-      selectHtml += `<option value="${escapeHTML(member)}">${escapeHTML(member)}</option>`;
+    dynamicFamilyMembers.forEach(mem => {
+      selectHtml += `<option value="${mem}">${mem}</option>`;
     });
-    assigneeSelect.innerHTML = selectHtml;
-  }
-
-  if (modalMemberList) {
-    modalMemberList.innerHTML = '';
-    dynamicFamilyMembers.forEach(member => {
-      const row = document.createElement('div');
-      row.className = 'member-row-item';
-      row.innerHTML = `
-        <div class="member-row-left">
-          <i class="fa-solid fa-user"></i>
-          <strong>${escapeHTML(member)}</strong>
-          ${member === userProfile.name ? '<small style="opacity:0.65;">(tu)</small>' : ''}
-        </div>
-        <div class="member-row-actions">
-          ${member !== userProfile.name ? `
-            <button class="wp8-icon-action delete-member-btn" title="Rimuovi dalla tribù">
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
-          ` : ''}
-        </div>
-      `;
-
-      const delBtn = row.querySelector('.delete-member-btn');
-      if (delBtn) {
-        delBtn.addEventListener('click', () => {
-          dynamicFamilyMembers = dynamicFamilyMembers.filter(m => m !== member);
-          pushFamilyTasksToCloud();
-          renderMemberFilterBar();
-          showToast(`rimosso ${member} dalla tribù`);
-        });
-      }
-
-      modalMemberList.appendChild(row);
-    });
+    select.innerHTML = selectHtml;
   }
 }
 
-function addFamilyMember(name) {
-  const cleanName = name.trim();
-  if (!cleanName) return;
-
-  if (!dynamicFamilyMembers.includes(cleanName)) {
-    dynamicFamilyMembers.push(cleanName);
-    pushFamilyTasksToCloud();
-    renderMemberFilterBar();
-    showToast(`aggiunto ${cleanName} alla tribù!`);
-    SoundFX.pop();
-  } else {
-    showToast(`${cleanName} è già nella tribù`);
-  }
-}
-
-// =============================================================================
-// 10. TAB 1: RENDERING FAMIGLIA
-// =============================================================================
-
-function renderFamilyTasks() {
-  const container = document.getElementById('familyTasksList');
-  const completedList = document.getElementById('familyCompletedList');
-  const emptyState = document.getElementById('emptyFamilyState');
-  const completedCountElem = document.getElementById('familyCompletedCount');
-
+function renderFamilyCategoriesBar() {
+  const container = document.getElementById('familyCategoryFilterBar');
   if (!container) return;
 
-  const activeTasks = familyTasks.filter(t => !t.completed);
-  const completedTasks = familyTasks.filter(t => t.completed);
+  let chipsHtml = `
+    <button id="toggleFamilyAddBoxBtn" class="cat-chip-plus-first" title="Nuova attività per la tribù">
+      <i class="fa-solid fa-plus"></i>
+    </button>
+    <button class="cat-chip ${activeFamilyCategory === 'all' ? 'active' : ''}" data-cat="all">tutte</button>
+  `;
 
-  let filtered = activeTasks.filter(t => {
-    const matchMember = familyMemberFilter === 'all' || t.assignee === familyMemberFilter || t.assignee === 'Tutti';
-    const matchCat = familyCategoryFilter === 'all' || t.category === familyCategoryFilter;
-    return matchMember && matchCat;
+  customCategories.forEach(cat => {
+    const color = categoryColors[cat] || 'var(--accent-color)';
+    chipsHtml += `
+      <button class="cat-chip ${activeFamilyCategory === cat ? 'active' : ''}" data-cat="${cat}" style="border-left: 3px solid ${color};">
+        <span class="chip-color-dot" style="background:${color};"></span>
+        ${cat}
+      </button>
+    `;
   });
 
-  container.innerHTML = '';
-  if (filtered.length === 0) {
-    emptyState.classList.remove('hidden');
-  } else {
-    emptyState.classList.add('hidden');
-    filtered.forEach(t => {
-      container.appendChild(createTaskItem(t, 'family'));
+  container.innerHTML = chipsHtml;
+
+  document.getElementById('toggleFamilyAddBoxBtn').addEventListener('click', () => {
+    const card = document.getElementById('familyInputCard');
+    card.classList.toggle('hidden');
+    if (!card.classList.contains('hidden')) {
+      document.getElementById('familyTaskInput').focus();
+    }
+    SoundFX.click();
+  });
+
+  container.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      activeFamilyCategory = chip.getAttribute('data-cat');
+      renderFamilyCategoriesBar();
+      renderFamilyTasks();
+      SoundFX.click();
     });
+
+    let pressTimer = null;
+    chip.addEventListener('touchstart', (e) => {
+      const cat = chip.getAttribute('data-cat');
+      if (cat === 'all') return;
+      pressTimer = setTimeout(() => {
+        openCategoryColorModal(cat);
+      }, 600);
+    }, { passive: true });
+
+    chip.addEventListener('touchend', () => {
+      clearTimeout(pressTimer);
+    });
+
+    chip.addEventListener('contextmenu', (e) => {
+      const cat = chip.getAttribute('data-cat');
+      if (cat !== 'all') {
+        e.preventDefault();
+        openCategoryColorModal(cat);
+      }
+    });
+  });
+
+  const select = document.getElementById('familyCategorySelect');
+  if (select) {
+    let selectHtml = '';
+    customCategories.forEach(cat => {
+      selectHtml += `<option value="${cat}">${cat}</option>`;
+    });
+    select.innerHTML = selectHtml;
+  }
+}
+
+function renderFamilyTasks() {
+  const list = document.getElementById('familyTasksList');
+  const completedList = document.getElementById('familyCompletedList');
+  const emptyState = document.getElementById('emptyFamilyState');
+  const countEl = document.getElementById('familyCompletedCount');
+  if (!list || !completedList) return;
+
+  const active = [];
+  const completed = [];
+
+  familyTasks.forEach(task => {
+    const matchCat = (activeFamilyCategory === 'all' || task.category === activeFamilyCategory);
+    const matchMember = (activeFamilyMember === 'all' || task.assignee === 'Tutti' || task.assignee === activeFamilyMember);
+    if (!matchCat || !matchMember) return;
+
+    if (task.completed) completed.push(task);
+    else active.push(task);
+  });
+
+  if (countEl) countEl.textContent = completed.length;
+
+  if (active.length === 0 && completed.length === 0) {
+    list.innerHTML = '';
+    completedList.innerHTML = '';
+    if (emptyState) emptyState.classList.remove('hidden');
+    return;
+  }
+  if (emptyState) emptyState.classList.add('hidden');
+
+  list.innerHTML = active.map(task => buildTaskItemHTML(task, 'family')).join('');
+  completedList.innerHTML = completed.map(task => buildTaskItemHTML(task, 'family')).join('');
+
+  attachTaskEventHandlers('family');
+}
+
+function buildTaskItemHTML(task, type) {
+  const catColor = categoryColors[task.category] || 'var(--accent-color)';
+  const isUrgent = task.priority === 'urgente';
+
+  let dateInfo = '';
+  if (task.dueDate) {
+    dateInfo = `<span class="meta-tag tag-schedule"><i class="fa-regular fa-clock"></i> ${task.dueDate} ${task.dueTime || ''}</span>`;
   }
 
-  completedCountElem.textContent = completedTasks.length;
-  completedList.innerHTML = '';
-  completedTasks.forEach(t => {
-    completedList.appendChild(createTaskItem(t, 'family'));
+  let assigneeBadge = '';
+  if (type === 'family' && task.assignee) {
+    assigneeBadge = `<span class="meta-tag tag-member"><i class="fa-regular fa-user"></i> ${task.assignee}</span>`;
+  }
+
+  return `
+    <div class="wp8-task-item ${task.completed ? 'is-completed' : ''} ${isUrgent ? 'is-urgent' : ''}" data-id="${task.id}" style="border-left-color: ${catColor};">
+      <button type="button" class="wp8-checkbox" aria-label="Completa compito">
+        ${task.completed ? '<i class="fa-solid fa-check"></i>' : ''}
+      </button>
+
+      <div class="task-body-col">
+        <div class="task-text">${escapeHtml(task.title)}</div>
+        <div class="task-info-meta">
+          <span class="meta-tag" style="color:${catColor}; font-weight:600;">● ${task.category}</span>
+          ${assigneeBadge}
+          ${isUrgent ? '<span class="meta-tag tag-urgent">🚨 urgente</span>' : ''}
+          ${dateInfo}
+        </div>
+      </div>
+
+      <div class="task-side-actions">
+        ${type === 'personal' ? `
+          <button type="button" class="share-to-family-link" title="Condividi con la tribù">
+            <i class="fa-solid fa-share-nodes"></i> tribù
+          </button>
+        ` : ''}
+        <button type="button" class="wp8-icon-action delete-action" title="Elimina">
+          <i class="fa-regular fa-trash-can"></i>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function attachTaskEventHandlers(type) {
+  const root = type === 'family' ? document.getElementById('slideFamiglia') : document.getElementById('slidePersonale');
+  if (!root) return;
+
+  root.querySelectorAll('.wp8-task-item').forEach(item => {
+    const taskId = item.getAttribute('data-id');
+
+    const checkbox = item.querySelector('.wp8-checkbox');
+    if (checkbox) {
+      checkbox.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleTaskCompletion(taskId, type);
+      });
+    }
+
+    const delBtn = item.querySelector('.delete-action');
+    if (delBtn) {
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteTask(taskId, type);
+      });
+    }
+
+    const shareBtn = item.querySelector('.share-to-family-link');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sharePersonalTaskToFamily(taskId);
+      });
+    }
   });
 }
 
-function addFamilyTask() {
+function toggleTaskCompletion(taskId, type) {
+  if (type === 'family') {
+    const t = familyTasks.find(x => x.id === taskId);
+    if (t) {
+      t.completed = !t.completed;
+      if (t.completed) SoundFX.complete();
+      else SoundFX.click();
+      saveLocalState();
+      pushFamilyStateToCloud();
+      renderFamilyTasks();
+    }
+  } else {
+    const t = personalTasks.find(x => x.id === taskId);
+    if (t) {
+      t.completed = !t.completed;
+      if (t.completed) SoundFX.complete();
+      else SoundFX.click();
+      saveLocalState();
+      renderPersonalTasks();
+    }
+  }
+}
+
+function deleteTask(taskId, type) {
+  if (type === 'family') {
+    familyTasks = familyTasks.filter(x => x.id !== taskId);
+    saveLocalState();
+    pushFamilyStateToCloud();
+    renderFamilyTasks();
+  } else {
+    personalTasks = personalTasks.filter(x => x.id !== taskId);
+    saveLocalState();
+    renderPersonalTasks();
+  }
+  SoundFX.pop();
+  showToast("attività eliminata");
+}
+
+function addFamilyTaskFromForm() {
   const input = document.getElementById('familyTaskInput');
-  const title = input.value.trim();
-  if (!title) {
-    showToast("inserisci cosa c'è da fare");
+  const catSelect = document.getElementById('familyCategorySelect');
+  const assigneeSelect = document.getElementById('familyAssigneeSelect');
+  const prioritySelect = document.getElementById('familyPrioritySelect');
+  const dateInput = document.getElementById('familyDueDateInput');
+  const timeInput = document.getElementById('familyDueTimeInput');
+  const reminderSelect = document.getElementById('familyReminderSelect');
+
+  const text = input.value.trim();
+  if (!text) {
+    input.focus();
     return;
   }
 
-  const category = document.getElementById('familyCategorySelect').value;
-  const assignee = document.getElementById('familyAssigneeSelect').value;
-  const priority = document.getElementById('familyPrioritySelect').value;
-  const dueDate = document.getElementById('familyDueDateInput').value;
-  const dueTime = document.getElementById('familyDueTimeInput').value;
-  const reminder = document.getElementById('familyReminderSelect').value;
-
   const newTask = {
-    id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-    title,
-    category: category === '__new__' ? 'altro' : category,
-    assignee,
-    priority,
-    dueDate,
-    dueTime,
-    reminder,
-    reminderFired: false,
+    id: 'f_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+    title: text,
+    category: catSelect ? catSelect.value : 'spesa',
+    assignee: assigneeSelect ? assigneeSelect.value : 'Tutti',
     addedBy: userProfile.name,
+    priority: prioritySelect ? prioritySelect.value : 'normale',
+    dueDate: dateInput ? dateInput.value : '',
+    dueTime: timeInput ? timeInput.value : '',
+    reminder: reminderSelect ? reminderSelect.value : 'none',
     completed: false,
     createdAt: Date.now()
   };
 
   familyTasks.unshift(newTask);
+  saveLocalState();
+  pushFamilyStateToCloud();
+
   input.value = '';
-  document.getElementById('familyDueDateInput').value = '';
-  document.getElementById('familyDueTimeInput').value = '';
-  document.getElementById('familyReminderSelect').value = 'none';
+  if (dateInput) dateInput.value = '';
+  if (timeInput) timeInput.value = '';
 
   document.getElementById('familyInputCard').classList.add('hidden');
-
-  SoundFX.pop();
-  pushFamilyTasksToCloud();
   renderFamilyTasks();
-  showToast("salvato nella tribù");
-
-  if (newTask.priority === 'urgente' || newTask.priority === 'alta') {
-    triggerTribNotification(`🚨 Attività Urgente da ${userProfile.name}`, newTask.title);
-  }
+  SoundFX.complete();
+  showToast("attività salvata per la tribù");
 }
 
 // =============================================================================
-// 11. TAB 2: RENDERING PERSONALE
+// 8. TAB 2: PERSONALE (Rendering & CRUD)
 // =============================================================================
 
-function renderPersonalTasks() {
-  const container = document.getElementById('personalTasksList');
-  const completedList = document.getElementById('personalCompletedList');
-  const emptyState = document.getElementById('emptyPersonalState');
-  const completedCountElem = document.getElementById('personalCompletedCount');
-  const activeCountElem = document.getElementById('personalActiveTotal');
-
+function renderPersonalCategoriesBar() {
+  const container = document.getElementById('personalCategoryFilterBar');
   if (!container) return;
 
-  const activeTasks = personalTasks.filter(t => !t.completed);
-  const completedTasks = personalTasks.filter(t => t.completed);
+  let chipsHtml = `
+    <button id="togglePersonalAddBoxBtn" class="cat-chip-plus-first" title="Nuova attività personale">
+      <i class="fa-solid fa-plus"></i>
+    </button>
+    <button class="cat-chip ${activePersonalCategory === 'all' ? 'active' : ''}" data-cat="all">tutte</button>
+  `;
 
-  activeCountElem.textContent = activeTasks.length;
-  completedCountElem.textContent = completedTasks.length;
-
-  let filtered = activeTasks.filter(t => {
-    const matchCat = personalCategoryFilter === 'all' || t.category === personalCategoryFilter;
-    return matchCat;
+  personalCategories.forEach(cat => {
+    const color = categoryColors[cat] || 'var(--accent-color)';
+    chipsHtml += `
+      <button class="cat-chip ${activePersonalCategory === cat ? 'active' : ''}" data-cat="${cat}" style="border-left: 3px solid ${color};">
+        <span class="chip-color-dot" style="background:${color};"></span>
+        ${cat}
+      </button>
+    `;
   });
 
-  container.innerHTML = '';
-  if (filtered.length === 0) {
-    emptyState.classList.remove('hidden');
-  } else {
-    emptyState.classList.add('hidden');
-    filtered.forEach(t => {
-      container.appendChild(createTaskItem(t, 'personal'));
+  container.innerHTML = chipsHtml;
+
+  document.getElementById('togglePersonalAddBoxBtn').addEventListener('click', () => {
+    const card = document.getElementById('personalInputCard');
+    card.classList.toggle('hidden');
+    if (!card.classList.contains('hidden')) {
+      document.getElementById('personalTaskInput').focus();
+    }
+    SoundFX.click();
+  });
+
+  container.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      activePersonalCategory = chip.getAttribute('data-cat');
+      renderPersonalCategoriesBar();
+      renderPersonalTasks();
+      SoundFX.click();
     });
-  }
-
-  completedList.innerHTML = '';
-  completedTasks.forEach(t => {
-    completedList.appendChild(createTaskItem(t, 'personal'));
   });
+
+  const select = document.getElementById('personalCategorySelect');
+  if (select) {
+    let selectHtml = '';
+    personalCategories.forEach(cat => {
+      selectHtml += `<option value="${cat}">${cat}</option>`;
+    });
+    select.innerHTML = selectHtml;
+  }
 }
 
-function addPersonalTask() {
+function renderPersonalTasks() {
+  const list = document.getElementById('personalTasksList');
+  const completedList = document.getElementById('personalCompletedList');
+  const emptyState = document.getElementById('emptyPersonalState');
+  const countEl = document.getElementById('personalCompletedCount');
+  const activeCountEl = document.getElementById('personalActiveTotal');
+  if (!list || !completedList) return;
+
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const active = [];
+  const completed = [];
+
+  personalTasks.forEach(task => {
+    const matchCat = (activePersonalCategory === 'all' || task.category === activePersonalCategory);
+    if (!matchCat) return;
+
+    if (activePersonalFilter === 'oggi' && task.dueDate !== todayStr) return;
+    if (activePersonalFilter === 'alta' && (task.priority !== 'alta' && task.priority !== 'urgente')) return;
+
+    if (task.completed) completed.push(task);
+    else active.push(task);
+  });
+
+  if (countEl) countEl.textContent = completed.length;
+  if (activeCountEl) activeCountEl.textContent = personalTasks.filter(x => !x.completed).length;
+
+  if (active.length === 0 && completed.length === 0) {
+    list.innerHTML = '';
+    completedList.innerHTML = '';
+    if (emptyState) emptyState.classList.remove('hidden');
+    return;
+  }
+  if (emptyState) emptyState.classList.add('hidden');
+
+  list.innerHTML = active.map(task => buildTaskItemHTML(task, 'personal')).join('');
+  completedList.innerHTML = completed.map(task => buildTaskItemHTML(task, 'personal')).join('');
+
+  attachTaskEventHandlers('personal');
+}
+
+function addPersonalTaskFromForm() {
   const input = document.getElementById('personalTaskInput');
-  const title = input.value.trim();
-  if (!title) {
-    showToast("scrivi cosa devi fare");
+  const catSelect = document.getElementById('personalCategorySelect');
+  const prioritySelect = document.getElementById('personalPrioritySelect');
+  const dateInput = document.getElementById('personalDueDateInput');
+  const timeInput = document.getElementById('personalDueTimeInput');
+  const reminderSelect = document.getElementById('personalReminderSelect');
+
+  const text = input.value.trim();
+  if (!text) {
+    input.focus();
     return;
   }
 
-  const priority = document.getElementById('personalPrioritySelect').value;
-  const dueDate = document.getElementById('personalDueDateInput').value;
-  const dueTime = document.getElementById('personalDueTimeInput').value;
-  const category = document.getElementById('personalCategorySelect').value;
-  const reminder = document.getElementById('personalReminderSelect').value;
-
   const newTask = {
-    id: 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-    title,
-    priority,
-    dueDate,
-    dueTime,
-    category: category === '__new__' ? 'altro' : category,
-    reminder,
-    reminderFired: false,
+    id: 'p_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+    title: text,
+    category: catSelect ? catSelect.value : 'personale',
+    priority: prioritySelect ? prioritySelect.value : 'normale',
+    dueDate: dateInput ? dateInput.value : '',
+    dueTime: timeInput ? timeInput.value : '',
+    reminder: reminderSelect ? reminderSelect.value : 'none',
     completed: false,
     createdAt: Date.now()
   };
 
   personalTasks.unshift(newTask);
+  saveLocalState();
+
   input.value = '';
-  document.getElementById('personalDueDateInput').value = '';
-  document.getElementById('personalDueTimeInput').value = '';
-  document.getElementById('personalReminderSelect').value = 'none';
+  if (dateInput) dateInput.value = '';
+  if (timeInput) timeInput.value = '';
 
   document.getElementById('personalInputCard').classList.add('hidden');
-
-  SoundFX.pop();
-  saveLocalData();
   renderPersonalTasks();
-  showToast("salvato nella lista personale");
+  SoundFX.complete();
+  showToast("attività personale salvata");
 }
 
-function createTaskItem(task, scope) {
-  const catMeta = CATEGORY_MAP[task.category] || { name: task.category, icon: 'fa-tag' };
-  const catColor = categoryColors[task.category] || varAccentColor();
-  const isUrgent = task.priority === 'urgente' || task.priority === 'alta';
-  
-  const item = document.createElement('div');
-  item.className = `wp8-task-item ${isUrgent ? 'is-urgent' : ''} ${task.completed ? 'is-completed' : ''}`;
-  item.id = `${scope === 'family' ? 'ftask' : 'ptask'}_${task.id}`;
+function sharePersonalTaskToFamily(taskId) {
+  const p = personalTasks.find(x => x.id === taskId);
+  if (!p) return;
 
-  if (!isUrgent && catColor) {
-    item.style.borderLeftColor = catColor;
-  }
+  const newFamilyTask = {
+    id: 'f_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+    title: p.title,
+    category: 'altro',
+    assignee: 'Tutti',
+    addedBy: userProfile.name,
+    priority: p.priority || 'normale',
+    dueDate: p.dueDate || '',
+    dueTime: p.dueTime || '',
+    reminder: p.reminder || 'none',
+    completed: false,
+    createdAt: Date.now()
+  };
 
-  const scheduleInfo = task.dueDate ? `${task.dueDate}${task.dueTime ? ' ore ' + task.dueTime : ''}` : '';
-
-  item.innerHTML = `
-    <button class="wp8-checkbox" aria-label="Completa" title="Segna come fatto">
-      ${task.completed ? '<i class="fa-solid fa-check"></i>' : ''}
-    </button>
-    <div class="task-body-col">
-      <div class="task-text">${escapeHTML(task.title)}</div>
-      <div class="task-info-meta">
-        <span class="meta-tag" style="color:${catColor};"><i class="fa-solid ${catMeta.icon}"></i> ${escapeHTML(catMeta.name)}</span>
-        ${task.assignee && task.assignee !== 'Tutti' ? `<span class="meta-tag tag-member"><i class="fa-solid fa-user"></i> ${escapeHTML(task.assignee)}</span>` : ''}
-        ${isUrgent ? `<span class="meta-tag tag-urgent"><i class="fa-solid fa-bolt"></i> ${task.priority}</span>` : ''}
-        ${scheduleInfo ? `<span class="meta-tag tag-schedule"><i class="fa-solid fa-clock"></i> ${scheduleInfo}</span>` : ''}
-        ${scope === 'family' ? `<span class="meta-tag" style="opacity:0.65;">di ${escapeHTML(task.addedBy || 'Tribù')}</span>` : ''}
-        ${task.completed && task.completedBy ? `<span class="meta-tag" style="color:#008a00;">fatto da ${escapeHTML(task.completedBy)}</span>` : ''}
-      </div>
-    </div>
-    <div class="task-side-actions">
-      ${scope === 'personal' && !task.completed ? `
-        <button class="share-to-family-link" title="Condividi con la tribù">
-          <i class="fa-solid fa-share-nodes"></i>
-          <span>tribù</span>
-        </button>
-      ` : ''}
-      <button class="wp8-icon-action delete-action" title="Elimina">
-        <i class="fa-solid fa-trash-can"></i>
-      </button>
-    </div>
-  `;
-
-  item.querySelector('.wp8-checkbox').addEventListener('click', () => {
-    task.completed = !task.completed;
-    if (task.completed) {
-      task.completedBy = userProfile.name;
-      task.completedAt = Date.now();
-      SoundFX.complete();
-      showToast("completato!");
-    } else {
-      task.completedBy = null;
-      task.completedAt = null;
-      SoundFX.click();
-    }
-
-    if (scope === 'family') {
-      pushFamilyTasksToCloud();
-      renderFamilyTasks();
-    } else {
-      saveLocalData();
-      renderPersonalTasks();
-    }
-  });
-
-  const shareBtn = item.querySelector('.share-to-family-link');
-  if (shareBtn) {
-    shareBtn.addEventListener('click', () => {
-      const familyCopy = {
-        id: 'f_' + Date.now(),
-        title: task.title,
-        category: task.category || 'altro',
-        assignee: userProfile.name,
-        addedBy: userProfile.name,
-        priority: task.priority || 'normale',
-        dueDate: task.dueDate || '',
-        dueTime: task.dueTime || '',
-        reminder: task.reminder || 'none',
-        completed: false,
-        createdAt: Date.now()
-      };
-      familyTasks.unshift(familyCopy);
-      pushFamilyTasksToCloud();
-      SoundFX.pop();
-      showToast("spostato nella tribù");
-    });
-  }
-
-  item.querySelector('.delete-action').addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (scope === 'family') {
-      familyTasks = familyTasks.filter(item => item.id !== task.id);
-      pushFamilyTasksToCloud();
-      renderFamilyTasks();
-    } else {
-      personalTasks = personalTasks.filter(item => item.id !== task.id);
-      saveLocalData();
-      renderPersonalTasks();
-    }
-    SoundFX.click();
-    showToast("attività eliminata");
-  });
-
-  return item;
-}
-
-function varAccentColor() {
-  return themeSettings.accent || '#0050ef';
+  familyTasks.unshift(newFamilyTask);
+  saveLocalState();
+  pushFamilyStateToCloud();
+  renderFamilyTasks();
+  SoundFX.complete();
+  showToast("condivisa con la tribù!");
 }
 
 // =============================================================================
-// 12. TAB 3: RENDERING IDEE & NOTE
+// 9. TAB 3: IDEE & NOTE (Rendering & CRUD)
 // =============================================================================
 
-function renderIdeasList() {
+function renderIdeas() {
   const grid = document.getElementById('ideasListGrid');
   const emptyState = document.getElementById('emptyIdeasState');
-  const countElem = document.getElementById('ideasTotalCount');
+  const totalCountEl = document.getElementById('ideasTotalCount');
   if (!grid) return;
 
-  countElem.textContent = ideasList.length;
+  let filtered = ideasList.filter(item => {
+    if (activeIdeaColorFilter === 'all') return true;
+    if (activeIdeaColorFilter === 'pinned') return item.pinned;
+    return item.color === activeIdeaColorFilter;
+  });
 
-  let filtered = [...ideasList];
-  if (ideasActiveFilter === 'pinned') {
-    filtered = filtered.filter(i => i.isPinned);
-  } else if (ideasActiveFilter !== 'all') {
-    filtered = filtered.filter(i => i.color === ideasActiveFilter);
-  }
+  filtered.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
 
-  filtered.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+  if (totalCountEl) totalCountEl.textContent = ideasList.length;
 
-  grid.innerHTML = '';
   if (filtered.length === 0) {
-    emptyState.classList.remove('hidden');
-  } else {
-    emptyState.classList.add('hidden');
-    filtered.forEach(idea => {
-      grid.appendChild(createIdeaMetroTile(idea));
-    });
+    grid.innerHTML = '';
+    if (emptyState) emptyState.classList.remove('hidden');
+    return;
   }
-}
+  if (emptyState) emptyState.classList.add('hidden');
 
-function createIdeaMetroTile(idea) {
-  const tile = document.createElement('div');
-  tile.className = `wp8-metro-tile tile-${idea.color || 'yellow'} ${idea.isPinned ? 'is-pinned' : ''}`;
-  tile.id = `idea_${idea.id}`;
-
-  const formattedDate = new Date(idea.createdAt).toLocaleDateString([], { day: 'numeric', month: 'short' });
-
-  tile.innerHTML = `
-    <div class="tile-top-row">
-      <h4 class="tile-headline">${escapeHTML(idea.title)}</h4>
-      ${idea.isPinned ? '<span class="tile-pin-icon"><i class="fa-solid fa-thumbtack"></i></span>' : ''}
-    </div>
-    ${idea.content ? `<div class="tile-content-text">${escapeHTML(idea.content)}</div>` : ''}
-    <div class="tile-footer-row">
-      <span class="tile-date-label">${formattedDate}</span>
-      <div class="tile-actions">
-        <button class="btn-convert-pill" title="Converti in to-do">
-          <i class="fa-solid fa-arrow-right"></i>
-          <span>to-do</span>
-        </button>
-        <button class="wp8-icon-action pin-action" title="${idea.isPinned ? 'Sblocca' : 'Fissa'}">
-          <i class="fa-solid fa-thumbtack"></i>
-        </button>
-        <button class="wp8-icon-action delete-action" title="Elimina">
-          <i class="fa-solid fa-trash-can"></i>
+  grid.innerHTML = filtered.map(idea => `
+    <div class="wp8-metro-tile tile-${idea.color || 'yellow'} ${idea.pinned ? 'is-pinned' : ''}" data-id="${idea.id}">
+      <div class="tile-top-row">
+        <h4 class="tile-headline">${escapeHtml(idea.title || 'Appunto')}</h4>
+        <button type="button" class="wp8-icon-action pin-idea-btn" title="${idea.pinned ? 'Sblocca' : 'Fissa'}">
+          <i class="fa-solid fa-thumbtack tile-pin-icon" style="${idea.pinned ? 'opacity:1;' : 'opacity:0.25;'}"></i>
         </button>
       </div>
+
+      <p class="tile-content-text">${escapeHtml(idea.content || '')}</p>
+
+      <div class="tile-footer-row">
+        <span class="tile-date-label">${formatDateShort(idea.createdAt)}</span>
+        <div class="tile-actions">
+          <button type="button" class="btn-convert-pill" title="Trasforma in To-Do">
+            <i class="fa-solid fa-arrow-right"></i> to-do
+          </button>
+          <button type="button" class="wp8-icon-action delete-idea-btn" title="Elimina">
+            <i class="fa-regular fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  `;
+  `).join('');
 
-  tile.querySelector('.btn-convert-pill').addEventListener('click', () => {
-    ideaPendingConversion = idea;
-    document.getElementById('convertIdeaPreviewText').textContent = `"${idea.title}"`;
-    document.getElementById('convertIdeaModal').classList.remove('hidden');
+  grid.querySelectorAll('.wp8-metro-tile').forEach(tile => {
+    const id = tile.getAttribute('data-id');
+
+    tile.querySelector('.pin-idea-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePinIdea(id);
+    });
+
+    tile.querySelector('.delete-idea-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteIdea(id);
+    });
+
+    tile.querySelector('.btn-convert-pill').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openConvertIdeaModal(id);
+    });
   });
-
-  tile.querySelector('.pin-action').addEventListener('click', () => {
-    idea.isPinned = !idea.isPinned;
-    SoundFX.click();
-    saveLocalData();
-    renderIdeasList();
-    showToast(idea.isPinned ? "fissata in alto" : "sbloccata");
-  });
-
-  tile.querySelector('.delete-action').addEventListener('click', (e) => {
-    e.stopPropagation();
-    ideasList = ideasList.filter(item => item.id !== idea.id);
-    SoundFX.click();
-    saveLocalData();
-    renderIdeasList();
-    showToast("idea eliminata");
-  });
-
-  return tile;
 }
 
-function addIdeaNote() {
+function addIdeaFromForm() {
   const titleInput = document.getElementById('ideaTitleInput');
-  const contentInput = document.getElementById('ideaContentInput');
-  const title = titleInput.value.trim();
-  const content = contentInput.value.trim();
+  const textInput = document.getElementById('ideaContentInput');
+  const activeColorDot = document.querySelector('#ideaColorSelector .color-picker-dot.active');
+  const pinBtn = document.getElementById('togglePinIdeaBtn');
 
+  const title = titleInput.value.trim();
+  const content = textInput.value.trim();
   if (!title && !content) {
-    showToast("scrivi un titolo o il testo");
+    titleInput.focus();
     return;
   }
 
   const newIdea = {
-    id: 'idea_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-    title: title || content.substring(0, 30) + '...',
-    content: title ? content : '',
-    color: selectedIdeaColor,
-    isPinned: isIdeaPinned,
+    id: 'idea_' + Date.now(),
+    title: title || 'Nuova idea',
+    content: content,
+    color: activeColorDot ? activeColorDot.getAttribute('data-color') : 'yellow',
+    pinned: pinBtn.classList.contains('active'),
     createdAt: Date.now()
   };
 
   ideasList.unshift(newIdea);
-  titleInput.value = '';
-  contentInput.value = '';
-  isIdeaPinned = false;
-  document.getElementById('togglePinIdeaBtn').classList.remove('active');
-  document.getElementById('ideasInputCard').classList.add('hidden');
+  saveLocalState();
 
-  SoundFX.pop();
-  saveLocalData();
-  renderIdeasList();
+  titleInput.value = '';
+  textInput.value = '';
+  document.getElementById('ideasInputCard').classList.add('hidden');
+  renderIdeas();
+  SoundFX.complete();
   showToast("idea salvata");
 }
 
+function togglePinIdea(id) {
+  const idea = ideasList.find(x => x.id === id);
+  if (idea) {
+    idea.pinned = !idea.pinned;
+    saveLocalState();
+    renderIdeas();
+    SoundFX.click();
+  }
+}
+
+function deleteIdea(id) {
+  ideasList = ideasList.filter(x => x.id !== id);
+  saveLocalState();
+  renderIdeas();
+  SoundFX.pop();
+  showToast("idea eliminata");
+}
+
+let convertingIdeaId = null;
+function openConvertIdeaModal(id) {
+  convertingIdeaId = id;
+  const idea = ideasList.find(x => x.id === id);
+  if (!idea) return;
+
+  document.getElementById('convertIdeaPreviewText').textContent = `"${idea.title} - ${idea.content}"`;
+  document.getElementById('convertIdeaModal').classList.remove('hidden');
+}
+
+function convertIdeaToTask(target) {
+  const idea = ideasList.find(x => x.id === convertingIdeaId);
+  if (!idea) return;
+
+  const title = idea.title + (idea.content ? ` (${idea.content})` : '');
+
+  if (target === 'family') {
+    const newTask = {
+      id: 'f_' + Date.now(),
+      title: title,
+      category: 'altro',
+      assignee: 'Tutti',
+      addedBy: userProfile.name,
+      priority: 'normale',
+      dueDate: '',
+      dueTime: '',
+      reminder: 'none',
+      completed: false,
+      createdAt: Date.now()
+    };
+    familyTasks.unshift(newTask);
+    saveLocalState();
+    pushFamilyStateToCloud();
+    renderFamilyTasks();
+    showToast("convertito in to-do per la tribù");
+  } else {
+    const newTask = {
+      id: 'p_' + Date.now(),
+      title: title,
+      category: 'personale',
+      priority: 'normale',
+      dueDate: '',
+      dueTime: '',
+      reminder: 'none',
+      completed: false,
+      createdAt: Date.now()
+    };
+    personalTasks.unshift(newTask);
+    saveLocalState();
+    renderPersonalTasks();
+    showToast("convertito in to-do personale");
+  }
+
+  document.getElementById('convertIdeaModal').classList.add('hidden');
+  SoundFX.complete();
+}
+
 // =============================================================================
-// 13. TOAST & UTILS
+// 10. TAB 4: MAPPA & PRIVACY-FIRST ON-DEMAND GPS SHARING
 // =============================================================================
 
-function showToast(message) {
+let familyLeafletMap = null;
+let mapMarkers = {};
+
+function initLeafletMapIfNeeded() {
+  if (familyLeafletMap) {
+    familyLeafletMap.invalidateSize();
+    return;
+  }
+
+  const mapContainer = document.getElementById('familyLeafletMap');
+  if (!mapContainer || typeof L === 'undefined') return;
+
+  // Center on Italy or default coordinates
+  familyLeafletMap = L.map('familyLeafletMap', {
+    zoomControl: true,
+    attributionControl: false
+  }).setView([41.9028, 12.4964], 6);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+  }).addTo(familyLeafletMap);
+
+  renderFamilyMapMarkers();
+}
+
+function updateMyGPSLocation() {
+  const statusLabel = document.getElementById('myLocationStatusLabel');
+  if (statusLabel) statusLabel.textContent = "rilevamento GPS in corso...";
+  showToast("rilevamento posizione GPS...");
+  SoundFX.click();
+
+  if (!navigator.geolocation) {
+    if (statusLabel) statusLabel.textContent = "GPS non supportato";
+    showToast("Geolocalizzazione non supportata su questo browser");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const accuracy = Math.round(position.coords.accuracy || 0);
+
+      const locEntry = {
+        lat: lat,
+        lng: lng,
+        accuracy: accuracy,
+        updatedAt: Date.now(),
+        updatedBy: userProfile.name
+      };
+
+      familyLocations[userProfile.name] = locEntry;
+      saveLocalState();
+      pushFamilyStateToCloud();
+
+      if (statusLabel) {
+        statusLabel.textContent = `aggiornata (${formatTimeAgo(Date.now())})`;
+      }
+
+      initLeafletMapIfNeeded();
+      renderFamilyMapMarkers();
+
+      if (familyLeafletMap) {
+        familyLeafletMap.flyTo([lat, lng], 15, { duration: 1.2 });
+      }
+
+      SoundFX.complete();
+      showToast("posizione aggiornata e condivisa!");
+    },
+    (error) => {
+      console.warn("GPS Error:", error);
+      if (statusLabel) statusLabel.textContent = "impossibile rilevare";
+      showToast("Attiva il GPS e autorizza la posizione per condividere dove sei");
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
+  );
+}
+
+function renderFamilyMapMarkers() {
+  const membersListContainer = document.getElementById('mapFamilyMembersList');
+  if (!membersListContainer) return;
+
+  let membersHtml = '';
+  const bounds = [];
+
+  dynamicFamilyMembers.forEach(member => {
+    const loc = familyLocations[member];
+    const isMe = (member === userProfile.name);
+    const initial = member.charAt(0).toUpperCase();
+
+    if (loc && loc.lat && loc.lng) {
+      const timeStr = formatTimeAgo(loc.updatedAt);
+      const coordsStr = `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
+
+      membersHtml += `
+        <div class="map-member-card" data-member="${member}" data-lat="${loc.lat}" data-lng="${loc.lng}">
+          <div class="map-member-left">
+            <div class="map-member-avatar">${initial}</div>
+            <div class="map-member-info">
+              <span class="map-member-name">${member} ${isMe ? '(tu)' : ''}</span>
+              <span class="map-member-loc"><i class="fa-solid fa-location-dot"></i> ${coordsStr}</span>
+              <span class="map-member-time">ultimo agg: ${timeStr}</span>
+            </div>
+          </div>
+          <div class="map-member-right">
+            <i class="fa-solid fa-crosshairs"></i>
+          </div>
+        </div>
+      `;
+
+      bounds.push([loc.lat, loc.lng]);
+
+      // Add or update marker on Leaflet map
+      if (familyLeafletMap && typeof L !== 'undefined') {
+        const customIcon = L.divIcon({
+          className: 'wp8-leaflet-marker',
+          html: `<div style="background:var(--accent-color); color:#fff; width:34px; height:34px; border:2px solid #fff; display:flex; align-items:center; justify-content:center; font-weight:700; box-shadow:0 3px 10px rgba(0,0,0,0.6);">${initial}</div>`,
+          iconSize: [34, 34],
+          iconAnchor: [17, 17]
+        });
+
+        if (mapMarkers[member]) {
+          mapMarkers[member].setLatLng([loc.lat, loc.lng]);
+        } else {
+          const marker = L.marker([loc.lat, loc.lng], { icon: customIcon }).addTo(familyLeafletMap);
+          marker.bindPopup(`<strong>${member}</strong><br><small>Ultimo agg: ${timeStr}</small>`);
+          mapMarkers[member] = marker;
+        }
+      }
+    } else {
+      membersHtml += `
+        <div class="map-member-card" data-member="${member}">
+          <div class="map-member-left">
+            <div class="map-member-avatar" style="background:#555;">${initial}</div>
+            <div class="map-member-info">
+              <span class="map-member-name">${member} ${isMe ? '(tu)' : ''}</span>
+              <span class="map-member-loc" style="color:var(--text-dim);">posizione non ancora aggiornata</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  });
+
+  membersListContainer.innerHTML = membersHtml;
+
+  membersListContainer.querySelectorAll('.map-member-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const lat = parseFloat(card.getAttribute('data-lat'));
+      const lng = parseFloat(card.getAttribute('data-lng'));
+      const member = card.getAttribute('data-member');
+      if (lat && lng && familyLeafletMap) {
+        familyLeafletMap.flyTo([lat, lng], 16, { duration: 1 });
+        if (mapMarkers[member]) {
+          mapMarkers[member].openPopup();
+        }
+        SoundFX.click();
+      }
+    });
+  });
+
+  if (familyLeafletMap && bounds.length > 0) {
+    if (bounds.length === 1) {
+      familyLeafletMap.setView(bounds[0], 15);
+    } else {
+      familyLeafletMap.fitBounds(bounds, { padding: [40, 40] });
+    }
+  }
+}
+
+// =============================================================================
+// 11. DYNAMIC MEMBERS & CLOUD CODE
+// =============================================================================
+
+function renderFamilySettingsModal() {
+  const container = document.getElementById('dynamicFamilyMembersList');
+  const codeInput = document.getElementById('familyCodeInput');
+  const nameInput = document.getElementById('customMemberNameInput');
+  if (!container) return;
+
+  if (codeInput) codeInput.value = currentFamilyCode;
+  if (nameInput) nameInput.value = userProfile.name;
+
+  container.innerHTML = dynamicFamilyMembers.map(m => `
+    <div class="member-row-item">
+      <div class="member-row-left">
+        <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
+        <span>${m} ${m === userProfile.name ? '<strong>(tu)</strong>' : ''}</span>
+      </div>
+      <div class="member-row-actions">
+        ${dynamicFamilyMembers.length > 1 ? `
+          <button type="button" class="wp8-icon-action remove-dyn-member-btn" data-name="${m}" title="Rimuovi">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.remove-dyn-member-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-name');
+      dynamicFamilyMembers = dynamicFamilyMembers.filter(x => x !== target);
+      saveLocalState();
+      pushFamilyStateToCloud();
+      renderFamilySettingsModal();
+      renderFamilyMembersFilterBar();
+      renderFamilyMapMarkers();
+      SoundFX.pop();
+    });
+  });
+}
+
+function openCategoryColorModal(cat) {
+  customizingCatName = cat;
+  document.getElementById('customizingCategoryName').textContent = cat;
+  const current = categoryColors[cat] || themeSettings.accent;
+
+  document.querySelectorAll('#categoryColorPaletteGrid .palette-tile').forEach(tile => {
+    tile.classList.toggle('active', tile.getAttribute('data-catcolor') === current);
+  });
+
+  document.getElementById('categoryColorModal').classList.remove('hidden');
+}
+
+// =============================================================================
+// 12. GENERAL HELPERS & NOTIFICATIONS
+// =============================================================================
+
+function showToast(msg) {
   const toast = document.getElementById('metroToast');
-  if (!toast) return;
-  document.getElementById('metroToastMessage').textContent = message;
-  toast.classList.remove('hidden');
+  const text = document.getElementById('metroToastMessage');
+  if (!toast || !text) return;
 
-  setTimeout(() => {
+  text.textContent = msg;
+  toast.classList.remove('hidden');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => {
     toast.classList.add('hidden');
   }, 2400);
 }
 
-function escapeHTML(str) {
+function toggleNotifications() {
+  themeSettings.notifications = !themeSettings.notifications;
+  saveLocalState();
+  applyTheme();
+  SoundFX.click();
+  showToast(themeSettings.notifications ? "notifiche attivate" : "notifiche disattivate");
+}
+
+function toggleSound() {
+  themeSettings.sound = !themeSettings.sound;
+  saveLocalState();
+  applyTheme();
+  SoundFX.click();
+  showToast(themeSettings.sound ? "suoni attivati" : "suoni disattivati");
+}
+
+function resetToHome() {
+  goToSlide(0);
+  activeFamilyCategory = 'all';
+  activeFamilyMember = 'all';
+  document.getElementById('familyInputCard')?.classList.add('hidden');
+  document.getElementById('personalInputCard')?.classList.add('hidden');
+  document.getElementById('ideasInputCard')?.classList.add('hidden');
+  renderFamilyCategoriesBar();
+  renderFamilyMembersFilterBar();
+  renderFamilyTasks();
+  document.getElementById('slideFamiglia')?.scrollTo({ top: 0, behavior: 'smooth' });
+  SoundFX.click();
+}
+
+function formatDateShort(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return `${d.getDate()}/${d.getMonth()+1}`;
+}
+
+function formatTimeAgo(ts) {
+  if (!ts) return 'mai';
+  const diffSec = Math.floor((Date.now() - ts) / 1000);
+  if (diffSec < 60) return 'pochi secondi fa';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)} min fa`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} ore fa`;
+  return `${Math.floor(diffSec / 86400)} gg fa`;
+}
+
+function escapeHtml(str) {
   if (!str) return '';
-  const cleanStr = String(str).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
-  const div = document.createElement('div');
-  div.textContent = cleanStr;
-  return div.innerHTML;
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function renderAllViews() {
+  renderFamilyMembersFilterBar();
+  renderFamilyCategoriesBar();
+  renderFamilyTasks();
+  renderPersonalCategoriesBar();
+  renderPersonalTasks();
+  renderIdeas();
+  renderFamilyMapMarkers();
 }
 
 // =============================================================================
-// 14. THEME, HOME & EVENT LISTENERS
+// 13. DOM INITIALIZATION & EVENT WIRING
 // =============================================================================
 
-function applyTheme() {
-  document.body.className = themeSettings.mode === 'light' ? 'theme-light' : 'theme-dark';
-  document.documentElement.style.setProperty('--accent-color', themeSettings.accent || '#0050ef');
+document.addEventListener('DOMContentLoaded', () => {
+  loadLocalState();
+  applyTheme();
+  initFirebaseSync();
+  renderAllViews();
+  setupTouchSwipe();
 
-  document.getElementById('btnDarkMode').classList.toggle('active', themeSettings.mode === 'dark');
-  document.getElementById('btnLightMode').classList.toggle('active', themeSettings.mode === 'light');
-
-  const liveTile = document.getElementById('liveTilePreview');
-  if (liveTile) {
-    liveTile.style.backgroundColor = themeSettings.accent || '#0050ef';
+  // 1) 'tribù' Home Reset Button
+  const brandHomeBtn = document.getElementById('brandHomeBtn');
+  if (brandHomeBtn) {
+    brandHomeBtn.addEventListener('click', resetToHome);
   }
 
-  document.querySelectorAll('#accentPaletteGrid .palette-tile').forEach(b => {
-    b.classList.toggle('active', b.dataset.accent === themeSettings.accent);
-  });
-
-  const soundIcon = document.getElementById('soundStatusIcon');
-  const soundText = document.getElementById('soundStatusText');
-  if (soundIcon) soundIcon.className = themeSettings.sound ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
-  if (soundText) soundText.textContent = themeSettings.sound ? 'effetti sonori attivi' : 'audio disattivato';
-
-  updateNotificationUI();
-}
-
-function setupEventListeners() {
-  // 7) Brand Home Button (Clicking 'tribù' returns to home)
-  const homeBtn = document.getElementById('brandHomeBtn');
-  if (homeBtn) {
-    homeBtn.addEventListener('click', () => {
-      goToSlide(0);
-      familyMemberFilter = 'all';
-      familyCategoryFilter = 'all';
-      document.querySelectorAll('#familyMemberFilterBar .filter-link').forEach(l => l.classList.remove('active'));
-      const firstMember = document.querySelector('#familyMemberFilterBar .filter-link');
-      if (firstMember) firstMember.classList.add('active');
-
-      document.querySelectorAll('#familyCategoryFilterBar .cat-chip').forEach(c => c.classList.remove('active'));
-      const firstCat = document.querySelector('#familyCategoryFilterBar .cat-chip');
-      if (firstCat) firstCat.classList.add('active');
-
-      document.getElementById('familyInputCard').classList.add('hidden');
-      document.getElementById('personalInputCard').classList.add('hidden');
-      document.getElementById('ideasInputCard').classList.add('hidden');
-
-      const slideFam = document.getElementById('slideFamiglia');
-      if (slideFam) slideFam.scrollTo({ top: 0, behavior: 'smooth' });
-
-      renderFamilyTasks();
-      SoundFX.click();
-      showToast("tribù - inizio");
-    });
-  }
-
-  // Pivot Tabs
-  document.querySelectorAll('#pivotTitlesTrack .pivot-title-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const idx = parseInt(btn.dataset.index, 10);
-      goToSlide(idx);
-    });
-  });
-
-  // 1) Bell Toggle in Header
+  // 2) Header Action Buttons
   document.getElementById('headerNotifBtn').addEventListener('click', toggleNotifications);
 
-  // 2) Gear Icon for Settings / Colors
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
     document.getElementById('themeModal').classList.remove('hidden');
   });
@@ -1370,7 +1421,7 @@ function setupEventListeners() {
     document.getElementById('themeModal').classList.add('hidden');
   });
 
-  // App Update Check Button
+  // Check App Updates Button
   const updateBtn = document.getElementById('btnCheckAppUpdate');
   if (updateBtn) {
     updateBtn.addEventListener('click', () => {
@@ -1383,12 +1434,14 @@ function setupEventListeners() {
       }
       initFirebaseSync();
       setTimeout(() => {
-        showToast("Tribù v1.2.0 (Lumia Amber) - Versione più recente attiva!");
-      }, 1000);
+        showToast(`Tribù v${APP_VERSION} - Versione più recente attiva!`);
+      }, 900);
     });
   }
 
+  // Family Members Modal
   document.getElementById('familySettingsBtn').addEventListener('click', () => {
+    renderFamilySettingsModal();
     document.getElementById('familySettingsModal').classList.remove('hidden');
   });
   document.getElementById('closeFamilyModalBtn').addEventListener('click', () => {
@@ -1398,88 +1451,66 @@ function setupEventListeners() {
     document.getElementById('familySettingsModal').classList.add('hidden');
   });
 
-  // Category Color Customizer Modal Listeners
-  document.querySelectorAll('#categoryColorPaletteGrid .palette-tile').forEach(tile => {
-    tile.addEventListener('click', () => {
-      if (categoryBeingCustomized) {
-        const color = tile.dataset.catcolor;
-        categoryColors[categoryBeingCustomized] = color;
-        saveLocalData();
-        pushFamilyTasksToCloud();
-        renderCategoryOptions();
-        renderFamilyTasks();
-        renderPersonalTasks();
-        document.getElementById('categoryColorModal').classList.add('hidden');
-        showToast(`colore impostato per ${categoryBeingCustomized}`);
-        SoundFX.pop();
+  // Save profile name
+  document.getElementById('saveMemberNameBtn').addEventListener('click', () => {
+    const input = document.getElementById('customMemberNameInput');
+    const val = input.value.trim();
+    if (val) {
+      userProfile.name = val;
+      if (!dynamicFamilyMembers.includes(val)) {
+        dynamicFamilyMembers.push(val);
       }
-    });
-  });
-
-  document.getElementById('closeCategoryColorModalBtn').addEventListener('click', () => {
-    document.getElementById('categoryColorModal').classList.add('hidden');
-  });
-  document.getElementById('closeCategoryColorModalFooterBtn').addEventListener('click', () => {
-    document.getElementById('categoryColorModal').classList.add('hidden');
-  });
-  document.getElementById('resetCategoryColorBtn').addEventListener('click', () => {
-    if (categoryBeingCustomized) {
-      delete categoryColors[categoryBeingCustomized];
-      saveLocalData();
-      pushFamilyTasksToCloud();
-      renderCategoryOptions();
-      renderFamilyTasks();
-      renderPersonalTasks();
-      document.getElementById('categoryColorModal').classList.add('hidden');
-      showToast(`colore predefinito ripristinato`);
-      SoundFX.click();
+      saveLocalState();
+      pushFamilyStateToCloud();
+      renderFamilySettingsModal();
+      renderFamilyMembersFilterBar();
+      renderFamilyMapMarkers();
+      SoundFX.complete();
+      showToast(`profilo salvato: ${val}`);
     }
   });
 
-  // Toggle Ideas Add Card
-  const toggleIdeasBtn = document.getElementById('toggleIdeasAddBoxBtn');
-  if (toggleIdeasBtn) {
-    toggleIdeasBtn.addEventListener('click', () => {
-      const card = document.getElementById('ideasInputCard');
-      card.classList.toggle('hidden');
-      if (!card.classList.contains('hidden')) {
-        document.getElementById('ideaTitleInput').focus();
-      }
-      SoundFX.click();
-    });
-  }
-
-  // Cancel buttons in Submenus (Requirement 3)
-  document.getElementById('cancelFamilyTaskBtn').addEventListener('click', () => {
-    document.getElementById('familyInputCard').classList.add('hidden');
-    SoundFX.click();
-  });
-  document.getElementById('cancelPersonalTaskBtn').addEventListener('click', () => {
-    document.getElementById('personalInputCard').classList.add('hidden');
-    SoundFX.click();
-  });
-  document.getElementById('cancelIdeaBtn').addEventListener('click', () => {
-    document.getElementById('ideasInputCard').classList.add('hidden');
-    SoundFX.click();
+  // Save Cloud Code
+  document.getElementById('saveFamilyCodeBtn').addEventListener('click', () => {
+    const input = document.getElementById('familyCodeInput');
+    const val = input.value.trim().toUpperCase();
+    if (val) {
+      currentFamilyCode = val;
+      saveLocalState();
+      initFirebaseSync();
+      SoundFX.complete();
+      showToast(`connesso al cloud: ${val}`);
+    }
   });
 
-  // Ideas filter chips
-  document.querySelectorAll('#ideasCategoryFilterBar .cat-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('#ideasCategoryFilterBar .cat-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      ideasActiveFilter = chip.dataset.color;
-      SoundFX.click();
-      renderIdeasList();
+  document.querySelectorAll('.code-preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const code = btn.getAttribute('data-code');
+      document.getElementById('familyCodeInput').value = code;
+      currentFamilyCode = code;
+      saveLocalState();
+      initFirebaseSync();
+      SoundFX.complete();
+      showToast(`codice impostato: ${code}`);
     });
   });
 
-  // Add member buttons
-  document.getElementById('addMemberFilterBtn').addEventListener('click', () => {
+  document.getElementById('generateRandomCodeBtn').addEventListener('click', () => {
+    const randomCode = 'TRIBU-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('familyCodeInput').value = randomCode;
+    currentFamilyCode = randomCode;
+    saveLocalState();
+    initFirebaseSync();
+    SoundFX.complete();
+    showToast(`nuovo codice: ${randomCode}`);
+  });
+
+  // Quick Add Member Modal
+  document.getElementById('openAddMemberDialogBtn')?.addEventListener('click', () => {
     document.getElementById('addMemberModal').classList.remove('hidden');
     document.getElementById('newMemberNameInput').focus();
   });
-  document.getElementById('openAddMemberDialogBtn').addEventListener('click', () => {
+  document.getElementById('addMemberFilterBtn')?.addEventListener('click', () => {
     document.getElementById('addMemberModal').classList.remove('hidden');
     document.getElementById('newMemberNameInput').focus();
   });
@@ -1489,347 +1520,230 @@ function setupEventListeners() {
   document.getElementById('cancelAddMemberBtn').addEventListener('click', () => {
     document.getElementById('addMemberModal').classList.add('hidden');
   });
-
   document.getElementById('confirmAddMemberBtn').addEventListener('click', () => {
     const input = document.getElementById('newMemberNameInput');
-    if (input.value.trim()) {
-      addFamilyMember(input.value);
+    const val = input.value.trim();
+    if (val) {
+      if (!dynamicFamilyMembers.includes(val)) {
+        dynamicFamilyMembers.push(val);
+        saveLocalState();
+        pushFamilyStateToCloud();
+        renderFamilyMembersFilterBar();
+        renderFamilySettingsModal();
+        renderFamilyMapMarkers();
+      }
       input.value = '';
       document.getElementById('addMemberModal').classList.add('hidden');
+      SoundFX.complete();
+      showToast(`${val} aggiunto alla tribù`);
     }
   });
 
   document.querySelectorAll('#quickRoleChips .role-chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.getElementById('newMemberNameInput').value = chip.dataset.role;
+      document.getElementById('newMemberNameInput').value = chip.getAttribute('data-role');
     });
   });
 
-  // Custom Category trigger
-  document.getElementById('familyCategorySelect').addEventListener('change', (e) => {
-    if (e.target.value === '__new__') {
-      document.getElementById('customCategoryModal').classList.remove('hidden');
-      document.getElementById('newCategoryNameInput').focus();
-    }
-  });
-  document.getElementById('personalCategorySelect').addEventListener('change', (e) => {
-    if (e.target.value === '__new__') {
-      document.getElementById('customCategoryModal').classList.remove('hidden');
-      document.getElementById('newCategoryNameInput').focus();
-    }
+  // Pivot Tab Buttons
+  document.querySelectorAll('#pivotTitlesTrack .pivot-title-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-index'), 10);
+      goToSlide(idx);
+    });
   });
 
-  document.getElementById('closeCustomCategoryModalBtn').addEventListener('click', () => {
-    document.getElementById('customCategoryModal').classList.add('hidden');
-  });
-  document.getElementById('cancelCustomCategoryBtn').addEventListener('click', () => {
-    document.getElementById('customCategoryModal').classList.add('hidden');
-  });
-  document.getElementById('confirmCustomCategoryBtn').addEventListener('click', () => {
-    const input = document.getElementById('newCategoryNameInput');
-    if (input.value.trim()) {
-      addCustomCategory(input.value);
-      input.value = '';
-      document.getElementById('customCategoryModal').classList.add('hidden');
-    }
-  });
-
-  // 2) Bottom 3 Centered Application Bar Buttons
+  // Application Bar 2 Centered Buttons
   document.getElementById('appbarAddBtn').addEventListener('click', () => {
-    SoundFX.click();
     if (activeTabSlide === 0) {
       const card = document.getElementById('familyInputCard');
-      card.classList.remove('hidden');
-      document.getElementById('familyTaskInput').focus();
+      card.classList.toggle('hidden');
+      if (!card.classList.contains('hidden')) document.getElementById('familyTaskInput').focus();
     } else if (activeTabSlide === 1) {
       const card = document.getElementById('personalInputCard');
-      card.classList.remove('hidden');
-      document.getElementById('personalTaskInput').focus();
-    } else {
+      card.classList.toggle('hidden');
+      if (!card.classList.contains('hidden')) document.getElementById('personalTaskInput').focus();
+    } else if (activeTabSlide === 2) {
       const card = document.getElementById('ideasInputCard');
-      card.classList.remove('hidden');
-      document.getElementById('ideaTitleInput').focus();
+      card.classList.toggle('hidden');
+      if (!card.classList.contains('hidden')) document.getElementById('ideaTitleInput').focus();
+    } else if (activeTabSlide === 3) {
+      updateMyGPSLocation();
     }
-  });
-
-  document.getElementById('appbarVoiceBtn').addEventListener('click', () => {
-    if (activeTabSlide === 0) {
-      document.getElementById('familyInputCard').classList.remove('hidden');
-      startVoiceDictation(document.getElementById('familyTaskInput'));
-    } else if (activeTabSlide === 1) {
-      document.getElementById('personalInputCard').classList.remove('hidden');
-      startVoiceDictation(document.getElementById('personalTaskInput'));
-    } else {
-      document.getElementById('ideasInputCard').classList.remove('hidden');
-      startVoiceDictation(document.getElementById('ideaTitleInput'));
-    }
+    SoundFX.click();
   });
 
   document.getElementById('appbarSyncBtn').addEventListener('click', () => {
     SoundFX.pop();
-    initFirebaseSync();
     showToast("sincronizzazione in corso...");
-  });
-
-  // Voice buttons
-  document.getElementById('voiceFamilyTaskBtn').addEventListener('click', () => {
-    startVoiceDictation(document.getElementById('familyTaskInput'));
-  });
-  document.getElementById('voicePersonalTaskBtn').addEventListener('click', () => {
-    startVoiceDictation(document.getElementById('personalTaskInput'));
-  });
-  document.getElementById('voiceIdeaBtn').addEventListener('click', () => {
-    startVoiceDictation(document.getElementById('ideaTitleInput'));
-  });
-
-  // Voice modal confirm/cancel (Requirement 4)
-  document.getElementById('closeVoiceModalBtn').addEventListener('click', () => {
-    stopVoiceDictation();
-    document.getElementById('voiceModal').classList.add('hidden');
-  });
-  document.getElementById('cancelVoiceBtn').addEventListener('click', () => {
-    stopVoiceDictation();
-    document.getElementById('voiceModal').classList.add('hidden');
-  });
-  document.getElementById('confirmVoiceBtn').addEventListener('click', () => {
-    stopVoiceDictation();
-    const transcribedText = document.getElementById('voiceTranscriptionResult').value.trim();
-    if (transcribedText && activeVoiceTargetInput) {
-      activeVoiceTargetInput.value = transcribedText;
-      const detected = autoDetectCategory(transcribedText);
-      if (detected) {
-        if (activeVoiceTargetInput.id === 'familyTaskInput') {
-          document.getElementById('familyCategorySelect').value = detected;
-        } else if (activeVoiceTargetInput.id === 'personalTaskInput') {
-          document.getElementById('personalCategorySelect').value = detected;
-        }
-      }
+    initFirebaseSync();
+    if (activeTabSlide === 3) {
+      renderFamilyMapMarkers();
     }
-    document.getElementById('voiceModal').classList.add('hidden');
-    SoundFX.pop();
   });
 
-  // Enter keys
+  // Family Tasks Add & Cancel
+  document.getElementById('addFamilyTaskBtn').addEventListener('click', addFamilyTaskFromForm);
+  document.getElementById('cancelFamilyTaskBtn').addEventListener('click', () => {
+    document.getElementById('familyInputCard').classList.add('hidden');
+  });
   document.getElementById('familyTaskInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addFamilyTask();
+    if (e.key === 'Enter') addFamilyTaskFromForm();
+  });
+
+  // Personal Tasks Add & Cancel
+  document.getElementById('addPersonalTaskBtn').addEventListener('click', addPersonalTaskFromForm);
+  document.getElementById('cancelPersonalTaskBtn').addEventListener('click', () => {
+    document.getElementById('personalInputCard').classList.add('hidden');
   });
   document.getElementById('personalTaskInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addPersonalTask();
+    if (e.key === 'Enter') addPersonalTaskFromForm();
   });
 
-  // Add buttons
-  document.getElementById('addFamilyTaskBtn').addEventListener('click', addFamilyTask);
-  document.getElementById('addPersonalTaskBtn').addEventListener('click', addPersonalTask);
-  document.getElementById('addIdeaBtn').addEventListener('click', addIdeaNote);
-
-  // Personal sub filter links
-  document.querySelectorAll('#personalFilterBar .filter-link').forEach(link => {
-    link.addEventListener('click', () => {
-      document.querySelectorAll('#personalFilterBar .filter-link').forEach(c => c.classList.remove('active'));
-      link.classList.add('active');
-      SoundFX.click();
+  // Personal Filter Links
+  document.querySelectorAll('#personalFilterBar .filter-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#personalFilterBar .filter-link').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activePersonalFilter = btn.getAttribute('data-filter');
       renderPersonalTasks();
+      SoundFX.click();
     });
   });
 
-  // Color picker dots for ideas
+  // Ideas Add & Cancel
+  document.getElementById('toggleIdeasAddBoxBtn').addEventListener('click', () => {
+    const card = document.getElementById('ideasInputCard');
+    card.classList.toggle('hidden');
+    if (!card.classList.contains('hidden')) document.getElementById('ideaTitleInput').focus();
+    SoundFX.click();
+  });
+  document.getElementById('addIdeaBtn').addEventListener('click', addIdeaFromForm);
+  document.getElementById('cancelIdeaBtn').addEventListener('click', () => {
+    document.getElementById('ideasInputCard').classList.add('hidden');
+  });
+
   document.querySelectorAll('#ideaColorSelector .color-picker-dot').forEach(dot => {
     dot.addEventListener('click', () => {
       document.querySelectorAll('#ideaColorSelector .color-picker-dot').forEach(d => d.classList.remove('active'));
       dot.classList.add('active');
-      selectedIdeaColor = dot.dataset.color;
       SoundFX.click();
     });
   });
 
-  // Pin toggle for idea
-  const pinIdeaBtn = document.getElementById('togglePinIdeaBtn');
-  pinIdeaBtn.addEventListener('click', () => {
-    isIdeaPinned = !isIdeaPinned;
-    pinIdeaBtn.classList.toggle('active', isIdeaPinned);
+  document.getElementById('togglePinIdeaBtn').addEventListener('click', (e) => {
+    e.currentTarget.classList.toggle('active');
     SoundFX.click();
   });
 
-  // Accordion Toggles
-  document.getElementById('toggleFamilyCompleted').addEventListener('click', () => {
-    const list = document.getElementById('familyCompletedList');
-    list.classList.toggle('hidden');
-  });
-  document.getElementById('clearFamilyCompletedBtn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    familyTasks = familyTasks.filter(t => !t.completed);
-    pushFamilyTasksToCloud();
-    renderFamilyTasks();
-    showToast("completati rimossi");
-  });
-
-  document.getElementById('togglePersonalCompleted').addEventListener('click', () => {
-    const list = document.getElementById('personalCompletedList');
-    list.classList.toggle('hidden');
-  });
-  document.getElementById('clearPersonalCompletedBtn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    personalTasks = personalTasks.filter(t => !t.completed);
-    saveLocalData();
-    renderPersonalTasks();
-    showToast("completati rimossi");
-  });
-
-  // Save member profile name in modal
-  document.getElementById('saveMemberNameBtn').addEventListener('click', () => {
-    const newName = document.getElementById('customMemberNameInput').value.trim();
-    if (newName) {
-      userProfile.name = newName;
-      if (!dynamicFamilyMembers.includes(newName)) {
-        dynamicFamilyMembers.push(newName);
-      }
-      saveLocalData();
-      pushFamilyTasksToCloud();
-      renderMemberFilterBar();
-      showToast(`profilo salvato: ${newName}`);
-      SoundFX.click();
-    }
-  });
-
-  // Family code
-  document.getElementById('saveFamilyCodeBtn').addEventListener('click', () => {
-    const code = document.getElementById('familyCodeInput').value.trim().toUpperCase();
-    if (!code) {
-      showToast("inserisci un codice valido");
-      return;
-    }
-    currentFamilyCode = code;
-    saveLocalData();
-    initFirebaseSync();
-    document.getElementById('familySettingsModal').classList.add('hidden');
-    SoundFX.pop();
-    showToast(`collegato a ${code}`);
-  });
-
-  document.getElementById('generateRandomCodeBtn').addEventListener('click', () => {
-    const randomCode = 'FAM-' + Math.floor(1000 + Math.random() * 9000);
-    document.getElementById('familyCodeInput').value = randomCode;
-    SoundFX.click();
-  });
-
-  document.querySelectorAll('.code-preset-btn[data-code]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('familyCodeInput').value = btn.dataset.code;
+  document.querySelectorAll('#ideasCategoryFilterBar .cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#ideasCategoryFilterBar .cat-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeIdeaColorFilter = chip.getAttribute('data-color');
+      renderIdeas();
       SoundFX.click();
     });
   });
 
-  // Themes
-  document.getElementById('btnDarkMode').addEventListener('click', () => {
-    themeSettings.mode = 'dark';
-    saveLocalData();
-    applyTheme();
-    SoundFX.click();
-  });
+  // GPS Map Buttons
+  document.getElementById('btnUpdateMyGPS').addEventListener('click', updateMyGPSLocation);
 
-  document.getElementById('btnLightMode').addEventListener('click', () => {
-    themeSettings.mode = 'light';
-    saveLocalData();
-    applyTheme();
-    SoundFX.click();
-  });
-
-  // 15-Color WP8.1 Palette selection (Requirement 1)
-  document.querySelectorAll('#accentPaletteGrid .palette-tile').forEach(tile => {
-    tile.addEventListener('click', () => {
-      themeSettings.accent = tile.dataset.accent;
-      saveLocalData();
-      applyTheme();
-      SoundFX.click();
-      showToast(`colore icona & app: ${tile.textContent}`);
-    });
-  });
-
-  document.getElementById('toggleSoundBtn').addEventListener('click', () => {
-    themeSettings.sound = !themeSettings.sound;
-    saveLocalData();
-    applyTheme();
-    if (themeSettings.sound) SoundFX.click();
-    showToast(themeSettings.sound ? "audio attivato" : "audio disattivato");
-  });
-
-  document.getElementById('toggleNotifBtn').addEventListener('click', toggleNotifications);
-
-  // Convert Idea Modal
+  // Convert Idea Modal Listeners
   document.getElementById('closeConvertModalBtn').addEventListener('click', () => {
     document.getElementById('convertIdeaModal').classList.add('hidden');
-    ideaPendingConversion = null;
   });
+  document.getElementById('convertDestFamilyBtn').addEventListener('click', () => convertIdeaToTask('family'));
+  document.getElementById('convertDestPersonalBtn').addEventListener('click', () => convertIdeaToTask('personal'));
 
-  document.getElementById('convertDestFamilyBtn').addEventListener('click', () => {
-    if (!ideaPendingConversion) return;
-    const newTask = {
-      id: 'f_' + Date.now(),
-      title: `${ideaPendingConversion.title}${ideaPendingConversion.content ? ': ' + ideaPendingConversion.content : ''}`,
-      category: autoDetectCategory(ideaPendingConversion.title) || 'altro',
-      assignee: 'Tutti',
-      priority: 'normale',
-      addedBy: userProfile.name,
-      completed: false,
-      createdAt: Date.now()
-    };
-    familyTasks.unshift(newTask);
-    pushFamilyTasksToCloud();
-    document.getElementById('convertIdeaModal').classList.add('hidden');
-    ideaPendingConversion = null;
-    SoundFX.complete();
-    showToast("convertito in attività della tribù");
-    goToSlide(0);
+  // Toggle Completed Sections
+  document.getElementById('toggleFamilyCompleted').addEventListener('click', (e) => {
+    if (e.target.closest('#clearFamilyCompletedBtn')) return;
+    document.getElementById('familyCompletedList').classList.toggle('hidden');
+    SoundFX.click();
+  });
+  document.getElementById('clearFamilyCompletedBtn').addEventListener('click', () => {
+    familyTasks = familyTasks.filter(x => !x.completed);
+    saveLocalState();
+    pushFamilyStateToCloud();
     renderFamilyTasks();
+    showToast("completate eliminate");
   });
 
-  document.getElementById('convertDestPersonalBtn').addEventListener('click', () => {
-    if (!ideaPendingConversion) return;
-    const newTask = {
-      id: 'p_' + Date.now(),
-      title: `${ideaPendingConversion.title}${ideaPendingConversion.content ? ': ' + ideaPendingConversion.content : ''}`,
-      priority: 'media',
-      dueDate: '',
-      category: 'altro',
-      completed: false,
-      createdAt: Date.now()
-    };
-    personalTasks.unshift(newTask);
-    saveLocalData();
-    document.getElementById('convertIdeaModal').classList.add('hidden');
-    ideaPendingConversion = null;
-    SoundFX.complete();
-    showToast("convertito in attività personale");
-    goToSlide(1);
+  document.getElementById('togglePersonalCompleted').addEventListener('click', (e) => {
+    if (e.target.closest('#clearPersonalCompletedBtn')) return;
+    document.getElementById('personalCompletedList').classList.toggle('hidden');
+    SoundFX.click();
+  });
+  document.getElementById('clearPersonalCompletedBtn').addEventListener('click', () => {
+    personalTasks = personalTasks.filter(x => !x.completed);
+    saveLocalState();
     renderPersonalTasks();
+    showToast("completate personali eliminate");
   });
-}
 
-// =============================================================================
-// 15. INITIALIZATION
-// =============================================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-  loadLocalData();
-  applyTheme();
-  setupSpeechRecognition();
-  setupTouchSwipe();
-  setupEventListeners();
-
-  document.getElementById('familyCodeInput').value = currentFamilyCode;
-  document.getElementById('customMemberNameInput').value = userProfile.name;
-
-  renderMemberFilterBar();
-  renderCategoryOptions();
-  renderFamilyTasks();
-  renderPersonalTasks();
-  renderIdeasList();
-
-  initFirebaseSync();
-
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(err => {
-      console.log('SW note:', err);
+  // Category Color Modal
+  document.querySelectorAll('#categoryColorPaletteGrid .palette-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      const color = tile.getAttribute('data-catcolor');
+      if (customizingCatName) {
+        categoryColors[customizingCatName] = color;
+        saveLocalState();
+        pushFamilyStateToCloud();
+        renderFamilyCategoriesBar();
+        renderFamilyTasks();
+        renderPersonalCategoriesBar();
+        renderPersonalTasks();
+        document.getElementById('categoryColorModal').classList.add('hidden');
+        SoundFX.complete();
+        showToast(`colore aggiornato per ${customizingCatName}`);
+      }
     });
-  }
+  });
+  document.getElementById('closeCategoryColorModalBtn').addEventListener('click', () => {
+    document.getElementById('categoryColorModal').classList.add('hidden');
+  });
+  document.getElementById('closeCategoryColorModalFooterBtn').addEventListener('click', () => {
+    document.getElementById('categoryColorModal').classList.add('hidden');
+  });
+  document.getElementById('resetCategoryColorBtn').addEventListener('click', () => {
+    if (customizingCatName) {
+      delete categoryColors[customizingCatName];
+      saveLocalState();
+      pushFamilyStateToCloud();
+      renderFamilyCategoriesBar();
+      renderFamilyTasks();
+      renderPersonalCategoriesBar();
+      renderPersonalTasks();
+      document.getElementById('categoryColorModal').classList.add('hidden');
+      SoundFX.pop();
+    }
+  });
+
+  // Theme Colors
+  document.querySelectorAll('#accentPaletteGrid .palette-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      themeSettings.accent = tile.getAttribute('data-accent');
+      saveLocalState();
+      applyTheme();
+      renderFamilyTasks();
+      renderPersonalTasks();
+      SoundFX.click();
+    });
+  });
+
+  document.getElementById('btnDarkMode').addEventListener('click', () => {
+    themeSettings.mode = 'dark';
+    saveLocalState();
+    applyTheme();
+    SoundFX.click();
+  });
+  document.getElementById('btnLightMode').addEventListener('click', () => {
+    themeSettings.mode = 'light';
+    saveLocalState();
+    applyTheme();
+    SoundFX.click();
+  });
+  document.getElementById('toggleNotifBtn').addEventListener('click', toggleNotifications);
+  document.getElementById('toggleSoundBtn').addEventListener('click', toggleSound);
 });
