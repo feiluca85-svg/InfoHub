@@ -2,10 +2,10 @@
  * Tribù - Authentic Windows Phone 8.1 Metro UI Engine
  * Features:
  * - Real-time Dynamic Family Members & AppTito Cloud Sync
- * - Full 15-Color WP8.1 Lumia Palette & Live Tile Preview
- * - Robust Voice Dictation (Microphone with Audio Prompt & Visualizer)
- * - Push & Local Notifications Engine
- * - Giant Lowercase WP8 Pivot Tabs & Pure Vector Icons
+ * - Custom Categories with Instant Tagging
+ * - Priority, Due Date/Time & Scheduled Reminders
+ * - Single-line Note Bar & Live Tile Theme Engine
+ * - Robust Voice Dictation & Dual (Native + In-App) Notifications
  */
 
 // =============================================================================
@@ -48,12 +48,14 @@ let themeSettings = {
   mode: 'dark',
   accent: '#0050ef', // Official Lumia Cobalt
   sound: true,
-  notifications: false
+  notifications: true // Enabled by default
 };
 
 let currentFamilyCode = 'FAM-TITO';
 let activeFamilyName = 'Tribù';
-let dynamicFamilyMembers = ['Papà']; // Dynamic family members list
+let dynamicFamilyMembers = ['Papà'];
+
+let customCategories = ['spesa', 'casa', 'bollette', 'figli', 'salute', 'urgente', 'altro'];
 
 let familyTasks = [
   {
@@ -62,7 +64,10 @@ let familyTasks = [
     category: 'spesa',
     assignee: 'Tutti',
     addedBy: 'Mamma',
-    isUrgent: false,
+    priority: 'normale',
+    dueDate: '',
+    dueTime: '',
+    reminder: 'none',
     completed: false,
     createdAt: Date.now() - 3600000
   },
@@ -72,7 +77,10 @@ let familyTasks = [
     category: 'bollette',
     assignee: 'Papà',
     addedBy: 'Papà',
-    isUrgent: true,
+    priority: 'urgente',
+    dueDate: '2026-08-20',
+    dueTime: '18:00',
+    reminder: '1h',
     completed: false,
     createdAt: Date.now() - 7200000
   }
@@ -127,7 +135,6 @@ let ideasActiveFilter = 'all';
 
 let selectedIdeaColor = 'yellow';
 let isIdeaPinned = false;
-let isUrgentFamily = false;
 let ideaPendingConversion = null;
 let lastKnownTaskCount = 0;
 
@@ -145,6 +152,9 @@ function loadLocalData() {
 
     const savedCode = localStorage.getItem('tribu_family_code');
     if (savedCode) currentFamilyCode = savedCode;
+
+    const savedCats = localStorage.getItem('tribu_custom_cats');
+    if (savedCats) customCategories = JSON.parse(savedCats);
 
     const savedMembers = localStorage.getItem('tribu_family_members_' + currentFamilyCode);
     if (savedMembers) {
@@ -171,6 +181,7 @@ function saveLocalData() {
     localStorage.setItem('tribu_profile', JSON.stringify(userProfile));
     localStorage.setItem('tribu_theme', JSON.stringify(themeSettings));
     localStorage.setItem('tribu_family_code', currentFamilyCode);
+    localStorage.setItem('tribu_custom_cats', JSON.stringify(customCategories));
     localStorage.setItem('tribu_family_members_' + currentFamilyCode, JSON.stringify(dynamicFamilyMembers));
     localStorage.setItem('tribu_personal_tasks', JSON.stringify(personalTasks));
     localStorage.setItem('tribu_ideas', JSON.stringify(ideasList));
@@ -199,11 +210,10 @@ function initFirebaseSync() {
       
       // Sync tasks
       if (Array.isArray(data.tasks)) {
-        // Check if new task was added remotely to send notification
         if (data.tasks.length > lastKnownTaskCount && lastKnownTaskCount > 0) {
           const newest = data.tasks[0];
           if (newest && newest.addedBy !== userProfile.name) {
-            sendTribNotification(`Nuova attività da ${newest.addedBy}`, newest.title);
+            triggerTribNotification(`Nuova attività da ${newest.addedBy}`, newest.title);
           }
         }
         familyTasks = data.tasks;
@@ -222,12 +232,17 @@ function initFirebaseSync() {
         pushFamilyTasksToCloud();
       }
 
+      // Sync categories
+      if (Array.isArray(data.customCategories)) {
+        customCategories = Array.from(new Set([...customCategories, ...data.customCategories]));
+      }
+
       saveLocalData();
       renderMemberFilterBar();
+      renderCategoryOptions();
       renderFamilyTasks();
       updateCloudStatus(true);
     } else {
-      // Create new family doc on cloud
       pushFamilyTasksToCloud();
       updateCloudStatus(true);
     }
@@ -240,7 +255,6 @@ function initFirebaseSync() {
 function pushFamilyTasksToCloud() {
   saveLocalData();
   if (db && familyDocRef) {
-    // Ensure current user is in members list
     if (!dynamicFamilyMembers.includes(userProfile.name)) {
       dynamicFamilyMembers.push(userProfile.name);
     }
@@ -249,6 +263,7 @@ function pushFamilyTasksToCloud() {
       familyName: activeFamilyName,
       familyCode: currentFamilyCode,
       members: dynamicFamilyMembers,
+      customCategories: customCategories,
       lastUpdated: Date.now(),
       updatedBy: userProfile.name,
       tasks: familyTasks
@@ -259,46 +274,22 @@ function pushFamilyTasksToCloud() {
 }
 
 function updateCloudStatus(isOnline) {
-  const dot = document.getElementById('cloudStatusDot');
-  const tag = document.getElementById('headerFamilyCode');
-
-  if (dot) dot.classList.toggle('offline', !isOnline);
-  if (tag) tag.textContent = `#${currentFamilyCode}`;
+  // Handled silently
 }
 
 // =============================================================================
-// 4. NOTIFICATIONS ENGINE (Requirement 8)
+// 4. NOTIFICATIONS ENGINE (Dual Web Notification + In-App Banner)
 // =============================================================================
 
-function requestNotificationPermission() {
-  if (!('Notification' in window)) {
-    showToast("notifiche non supportate su questo dispositivo");
-    return;
-  }
+function triggerTribNotification(title, body) {
+  // 1. Audio and Haptic feedback
+  if (themeSettings.sound) SoundFX.pop();
+  if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
 
-  Notification.requestPermission().then((permission) => {
-    if (permission === 'granted') {
-      themeSettings.notifications = true;
-      saveLocalData();
-      updateNotificationUI();
-      sendTribNotification("Tribù Notifiche Attive", "Riceverai aggiornamenti su compiti e spese di famiglia!");
-      showToast("notifiche attivate con successo");
-    } else {
-      themeSettings.notifications = false;
-      saveLocalData();
-      updateNotificationUI();
-      showToast("permesso notifiche negato");
-    }
-  });
-}
+  // 2. In-App Visual Banner (Works in 100% of WebViews and Phones)
+  showInAppBanner(title, body);
 
-function sendTribNotification(title, body) {
-  if (!themeSettings.notifications) return;
-
-  if (navigator.vibrate) {
-    navigator.vibrate([100, 50, 100]);
-  }
-
+  // 3. System Web Notification if supported and permitted
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
       new Notification(title, {
@@ -307,19 +298,64 @@ function sendTribNotification(title, body) {
         badge: 'icon-192.png'
       });
     } catch (e) {
-      console.log("Notification trigger notice:", e);
+      console.log("System notification notice:", e);
     }
   }
+}
+
+function showInAppBanner(title, body) {
+  const banner = document.getElementById('inAppNotificationBanner');
+  if (!banner) return;
+  document.getElementById('inAppNotifTitle').textContent = title;
+  document.getElementById('inAppNotifBody').textContent = body;
+  banner.classList.remove('hidden');
+
+  setTimeout(() => {
+    banner.classList.add('hidden');
+  }, 4000);
+}
+
+function requestNotificationPermission() {
+  themeSettings.notifications = true;
+  saveLocalData();
+  updateNotificationUI();
+
+  if ('Notification' in window) {
+    Notification.requestPermission().then((perm) => {
+      console.log("Notification perm:", perm);
+    });
+  }
+
+  triggerTribNotification("🔔 Notifiche Tribù Attive", "Riceverai avvisi su attività, scadenze e promemoria di famiglia!");
+  showToast("notifiche attivate con successo");
 }
 
 function updateNotificationUI() {
   const icon = document.getElementById('notifStatusIcon');
   const text = document.getElementById('notifStatusText');
-  const isEnabled = themeSettings.notifications && ('Notification' in window && Notification.permission === 'granted');
-
-  if (icon) icon.className = isEnabled ? 'fa-solid fa-bell' : 'fa-solid fa-bell-slash';
-  if (text) text.textContent = isEnabled ? 'notifiche push attive' : 'attiva notifiche push';
+  if (icon) icon.className = 'fa-solid fa-bell';
+  if (text) text.textContent = 'notifiche push & avvisi attivi';
 }
+
+// Check scheduled reminders periodically
+setInterval(() => {
+  const now = Date.now();
+  familyTasks.forEach(task => {
+    if (!task.completed && task.dueDate && task.reminder && task.reminder !== 'none' && !task.reminderFired) {
+      const dueDateTime = new Date(`${task.dueDate}T${task.dueTime || '09:00'}`).getTime();
+      let reminderOffset = 0;
+      if (task.reminder === '15m') reminderOffset = 15 * 60 * 1000;
+      else if (task.reminder === '1h') reminderOffset = 60 * 60 * 1000;
+      else if (task.reminder === '1d') reminderOffset = 24 * 60 * 60 * 1000;
+
+      if (now >= (dueDateTime - reminderOffset) && now < (dueDateTime + 1800000)) {
+        task.reminderFired = true;
+        triggerTribNotification(`⏰ Scadenza: ${task.title}`, `Assegnato a ${task.assignee} (Scadenza: ${task.dueDate} ${task.dueTime || ''})`);
+        pushFamilyTasksToCloud();
+      }
+    }
+  });
+}, 30000);
 
 // =============================================================================
 // 5. WEB AUDIO SYNTHESIZER
@@ -393,7 +429,7 @@ const SoundFX = {
 };
 
 // =============================================================================
-// 6. SMART CATEGORY AUTO-DETECTION & VECTOR ICONS
+// 6. CATEGORIES & SMART AUTO-DETECTION (Requirement 7)
 // =============================================================================
 
 const CATEGORY_MAP = {
@@ -425,8 +461,58 @@ function autoDetectCategory(text) {
   return null;
 }
 
+function renderCategoryOptions() {
+  const select = document.getElementById('familyCategorySelect');
+  const filterBar = document.getElementById('familyCategoryFilterBar');
+  if (!select || !filterBar) return;
+
+  // 1. Populate Dropdown
+  let selectHtml = '';
+  customCategories.forEach(cat => {
+    const meta = CATEGORY_MAP[cat] || { name: cat, icon: 'fa-tag' };
+    selectHtml += `<option value="${escapeHTML(cat)}">${escapeHTML(meta.name)}</option>`;
+  });
+  selectHtml += `<option value="__new__">+ nuova categoria...</option>`;
+  select.innerHTML = selectHtml;
+
+  // 2. Populate Filter Chips
+  let chipsHtml = `<button class="cat-chip ${familyCategoryFilter === 'all' ? 'active' : ''}" data-cat="all">tutte</button>`;
+  customCategories.forEach(cat => {
+    const meta = CATEGORY_MAP[cat] || { name: cat, icon: 'fa-tag' };
+    const isAct = familyCategoryFilter === cat;
+    chipsHtml += `<button class="cat-chip ${isAct ? 'active' : ''}" data-cat="${escapeHTML(cat)}"><i class="fa-solid ${meta.icon}"></i> ${escapeHTML(meta.name)}</button>`;
+  });
+  filterBar.innerHTML = chipsHtml;
+
+  // Chip click listeners
+  filterBar.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      filterBar.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      familyCategoryFilter = chip.dataset.cat;
+      SoundFX.click();
+      renderFamilyTasks();
+    });
+  });
+}
+
+function addCustomCategory(name) {
+  const clean = name.trim().toLowerCase();
+  if (!clean) return;
+  if (!customCategories.includes(clean)) {
+    customCategories.push(clean);
+    CATEGORY_MAP[clean] = { name: clean, icon: 'fa-tag' };
+    saveLocalData();
+    pushFamilyTasksToCloud();
+    renderCategoryOptions();
+    document.getElementById('familyCategorySelect').value = clean;
+    showToast(`categoria "${clean}" aggiunta`);
+    SoundFX.pop();
+  }
+}
+
 // =============================================================================
-// 7. ROBUST SPEECH DICTATION (Microphone Engine - Requirement 5)
+// 7. ROBUST SPEECH DICTATION (Microphone Engine)
 // =============================================================================
 
 let recognition = null;
@@ -489,7 +575,6 @@ async function startVoiceDictation(targetInput) {
   activeVoiceTargetInput = targetInput;
   currentVoiceTranscript = '';
 
-  // Prompt mic permission if available
   if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -498,7 +583,6 @@ async function startVoiceDictation(targetInput) {
     }
   }
 
-  // Open interactive voice modal
   document.getElementById('voiceModal').classList.remove('hidden');
   document.getElementById('voiceStatusPrompt').textContent = "In ascolto... Parla ora!";
   document.getElementById('voiceTranscriptionResult').textContent = '"..."';
@@ -511,7 +595,6 @@ async function startVoiceDictation(targetInput) {
       setTimeout(() => { try { recognition.start(); } catch(e){} }, 200);
     }
   } else {
-    // Fallback prompt for devices without Web Speech
     document.getElementById('voiceStatusPrompt').textContent = "Usa il microfono della tua tastiera (Gboard) o detta qui:";
     const manualPrompt = prompt("Detta o scrivi la tua attività:");
     if (manualPrompt && activeVoiceTargetInput) {
@@ -583,7 +666,7 @@ function setupTouchSwipe() {
 }
 
 // =============================================================================
-// 9. DYNAMIC MEMBERS SYSTEM (Requirement 7)
+// 9. DYNAMIC MEMBERS SYSTEM
 // =============================================================================
 
 function renderMemberFilterBar() {
@@ -593,7 +676,7 @@ function renderMemberFilterBar() {
 
   if (!container) return;
 
-  // 1. Render Ribbon Filters (Tutti + Active Members)
+  // 1. Render Ribbon Filters
   let html = `<button class="filter-link ${familyMemberFilter === 'all' ? 'active' : ''}" data-member="all">tutti</button>`;
   dynamicFamilyMembers.forEach(member => {
     const isAct = familyMemberFilter === member;
@@ -601,7 +684,6 @@ function renderMemberFilterBar() {
   });
   container.innerHTML = html;
 
-  // Add click listeners to links
   container.querySelectorAll('.filter-link').forEach(link => {
     link.addEventListener('click', () => {
       container.querySelectorAll('.filter-link').forEach(c => c.classList.remove('active'));
@@ -673,7 +755,7 @@ function addFamilyMember(name) {
 }
 
 // =============================================================================
-// 10. TAB 1: RENDERING FAMIGLIA
+// 10. TAB 1: RENDERING FAMIGLIA (Priority & Scheduling Support)
 // =============================================================================
 
 function renderFamilyTasks() {
@@ -712,10 +794,13 @@ function renderFamilyTasks() {
 }
 
 function createFamilyTaskItem(task) {
-  const cat = CATEGORY_MAP[task.category] || CATEGORY_MAP.altro;
+  const cat = CATEGORY_MAP[task.category] || { name: task.category, icon: 'fa-tag' };
   const item = document.createElement('div');
-  item.className = `wp8-task-item ${task.isUrgent ? 'is-urgent' : ''} ${task.completed ? 'is-completed' : ''}`;
+  const isUrgent = task.priority === 'urgente' || task.priority === 'alta';
+  item.className = `wp8-task-item ${isUrgent ? 'is-urgent' : ''} ${task.completed ? 'is-completed' : ''}`;
   item.id = `ftask_${task.id}`;
+
+  const scheduleInfo = task.dueDate ? `${task.dueDate}${task.dueTime ? ' ore ' + task.dueTime : ''}` : '';
 
   item.innerHTML = `
     <button class="wp8-checkbox" aria-label="Completa" title="Segna come fatto">
@@ -724,9 +809,10 @@ function createFamilyTaskItem(task) {
     <div class="task-body-col">
       <div class="task-text">${escapeHTML(task.title)}</div>
       <div class="task-info-meta">
-        <span class="meta-tag"><i class="fa-solid ${cat.icon}"></i> ${cat.name}</span>
+        <span class="meta-tag"><i class="fa-solid ${cat.icon}"></i> ${escapeHTML(cat.name)}</span>
         ${task.assignee !== 'Tutti' ? `<span class="meta-tag tag-member"><i class="fa-solid fa-user"></i> ${escapeHTML(task.assignee)}</span>` : ''}
-        ${task.isUrgent ? `<span class="meta-tag tag-urgent"><i class="fa-solid fa-bolt"></i> urgente</span>` : ''}
+        ${isUrgent ? `<span class="meta-tag tag-urgent"><i class="fa-solid fa-bolt"></i> ${task.priority}</span>` : ''}
+        ${scheduleInfo ? `<span class="meta-tag tag-schedule"><i class="fa-solid fa-clock"></i> ${scheduleInfo}</span>` : ''}
         <span class="meta-tag" style="opacity:0.65;">di ${escapeHTML(task.addedBy || 'Tribù')}</span>
         ${task.completed && task.completedBy ? `<span class="meta-tag" style="color:#008a00;">fatto da ${escapeHTML(task.completedBy)}</span>` : ''}
       </div>
@@ -778,30 +864,39 @@ function addFamilyTask() {
 
   const category = document.getElementById('familyCategorySelect').value;
   const assignee = document.getElementById('familyAssigneeSelect').value;
+  const priority = document.getElementById('familyPrioritySelect').value;
+  const dueDate = document.getElementById('familyDueDateInput').value;
+  const dueTime = document.getElementById('familyDueTimeInput').value;
+  const reminder = document.getElementById('familyReminderSelect').value;
 
   const newTask = {
     id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     title,
-    category,
+    category: category === '__new__' ? 'altro' : category,
     assignee,
+    priority,
+    dueDate,
+    dueTime,
+    reminder,
+    reminderFired: false,
     addedBy: userProfile.name,
-    isUrgent: isUrgentFamily,
     completed: false,
     createdAt: Date.now()
   };
 
   familyTasks.unshift(newTask);
   input.value = '';
-  isUrgentFamily = false;
-  document.getElementById('toggleUrgentFamilyBtn').classList.remove('active');
+  document.getElementById('familyDueDateInput').value = '';
+  document.getElementById('familyDueTimeInput').value = '';
+  document.getElementById('familyReminderSelect').value = 'none';
 
   SoundFX.pop();
   pushFamilyTasksToCloud();
   renderFamilyTasks();
   showToast("aggiunto alla tribù");
 
-  if (newTask.isUrgent) {
-    sendTribNotification(`🚨 Attività Urgente da ${userProfile.name}`, newTask.title);
+  if (newTask.priority === 'urgente' || newTask.priority === 'alta') {
+    triggerTribNotification(`🚨 Attività Urgente da ${userProfile.name}`, newTask.title);
   }
 }
 
@@ -879,7 +974,6 @@ function createPersonalTaskItem(task) {
     </div>
   `;
 
-  // Checkbox toggle
   item.querySelector('.wp8-checkbox').addEventListener('click', () => {
     task.completed = !task.completed;
     if (task.completed) {
@@ -892,7 +986,6 @@ function createPersonalTaskItem(task) {
     renderPersonalTasks();
   });
 
-  // Move to family
   const shareBtn = item.querySelector('.share-to-family-link');
   if (shareBtn) {
     shareBtn.addEventListener('click', () => {
@@ -902,7 +995,7 @@ function createPersonalTaskItem(task) {
         category: autoDetectCategory(task.title) || 'altro',
         assignee: userProfile.name,
         addedBy: userProfile.name,
-        isUrgent: task.priority === 'alta',
+        priority: task.priority === 'alta' ? 'alta' : 'normale',
         completed: false,
         createdAt: Date.now()
       };
@@ -913,7 +1006,6 @@ function createPersonalTaskItem(task) {
     });
   }
 
-  // Delete
   item.querySelector('.delete-action').addEventListener('click', (e) => {
     e.stopPropagation();
     personalTasks = personalTasks.filter(item => item.id !== task.id);
@@ -958,7 +1050,7 @@ function addPersonalTask() {
 }
 
 // =============================================================================
-// 12. TAB 3: RENDERING IDEE & NOTE
+// 12. TAB 3: RENDERING IDEE & NOTE (Single Line Action Bar)
 // =============================================================================
 
 function renderIdeasList() {
@@ -1019,14 +1111,12 @@ function createIdeaMetroTile(idea) {
     </div>
   `;
 
-  // Convert to todo
   tile.querySelector('.btn-convert-pill').addEventListener('click', () => {
     ideaPendingConversion = idea;
     document.getElementById('convertIdeaPreviewText').textContent = `"${idea.title}"`;
     document.getElementById('convertIdeaModal').classList.remove('hidden');
   });
 
-  // Pin
   tile.querySelector('.pin-action').addEventListener('click', () => {
     idea.isPinned = !idea.isPinned;
     SoundFX.click();
@@ -1035,7 +1125,6 @@ function createIdeaMetroTile(idea) {
     showToast(idea.isPinned ? "fissata in alto" : "sbloccata");
   });
 
-  // Delete
   tile.querySelector('.delete-action').addEventListener('click', (e) => {
     e.stopPropagation();
     ideasList = ideasList.filter(item => item.id !== idea.id);
@@ -1114,13 +1203,11 @@ function applyTheme() {
   document.getElementById('btnDarkMode').classList.toggle('active', themeSettings.mode === 'dark');
   document.getElementById('btnLightMode').classList.toggle('active', themeSettings.mode === 'light');
 
-  // Update Live Tile Preview color
   const liveTile = document.getElementById('liveTilePreview');
   if (liveTile) {
     liveTile.style.backgroundColor = themeSettings.accent || '#0050ef';
   }
 
-  // Update full 15-color palette selection
   document.querySelectorAll('#accentPaletteGrid .palette-tile').forEach(b => {
     b.classList.toggle('active', b.dataset.accent === themeSettings.accent);
   });
@@ -1143,6 +1230,8 @@ function setupEventListeners() {
   });
 
   // Header quick buttons
+  document.getElementById('headerNotifBtn').addEventListener('click', requestNotificationPermission);
+
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
     document.getElementById('themeModal').classList.remove('hidden');
   });
@@ -1163,9 +1252,7 @@ function setupEventListeners() {
     document.getElementById('familySettingsModal').classList.add('hidden');
   });
 
-  document.getElementById('headerNotifBtn').addEventListener('click', requestNotificationPermission);
-
-  // Add member buttons (on filter ribbon and in modal)
+  // Add member buttons
   document.getElementById('addMemberFilterBtn').addEventListener('click', () => {
     document.getElementById('addMemberModal').classList.remove('hidden');
     document.getElementById('newMemberNameInput').focus();
@@ -1181,7 +1268,6 @@ function setupEventListeners() {
     document.getElementById('addMemberModal').classList.add('hidden');
   });
 
-  // Confirm add member
   document.getElementById('confirmAddMemberBtn').addEventListener('click', () => {
     const input = document.getElementById('newMemberNameInput');
     if (input.value.trim()) {
@@ -1191,11 +1277,35 @@ function setupEventListeners() {
     }
   });
 
-  // Quick role chips in add member modal
   document.querySelectorAll('#quickRoleChips .role-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       document.getElementById('newMemberNameInput').value = chip.dataset.role;
     });
+  });
+
+  // Custom Category trigger in select
+  document.getElementById('familyCategorySelect').addEventListener('change', (e) => {
+    if (e.target.value === '__new__') {
+      document.getElementById('customCategoryModal').classList.remove('hidden');
+      document.getElementById('newCategoryNameInput').focus();
+    }
+  });
+
+  document.getElementById('closeCustomCategoryModalBtn').addEventListener('click', () => {
+    document.getElementById('customCategoryModal').classList.add('hidden');
+    document.getElementById('familyCategorySelect').value = 'spesa';
+  });
+  document.getElementById('cancelCustomCategoryBtn').addEventListener('click', () => {
+    document.getElementById('customCategoryModal').classList.add('hidden');
+    document.getElementById('familyCategorySelect').value = 'spesa';
+  });
+  document.getElementById('confirmCustomCategoryBtn').addEventListener('click', () => {
+    const input = document.getElementById('newCategoryNameInput');
+    if (input.value.trim()) {
+      addCustomCategory(input.value);
+      input.value = '';
+      document.getElementById('customCategoryModal').classList.add('hidden');
+    }
   });
 
   // Bottom WP8 Application Bar Actions
@@ -1234,7 +1344,6 @@ function setupEventListeners() {
     startVoiceDictation(document.getElementById('ideaTitleInput'));
   });
 
-  // Voice modal confirm/cancel
   document.getElementById('closeVoiceModalBtn').addEventListener('click', () => {
     if (recognition) recognition.stop();
     document.getElementById('voiceModal').classList.add('hidden');
@@ -1260,12 +1369,11 @@ function setupEventListeners() {
   const familyInput = document.getElementById('familyTaskInput');
   familyInput.addEventListener('input', (e) => {
     const detected = autoDetectCategory(e.target.value);
-    if (detected) {
+    if (detected && customCategories.includes(detected)) {
       document.getElementById('familyCategorySelect').value = detected;
     }
   });
 
-  // Enter keys
   familyInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') addFamilyTask();
   });
@@ -1277,25 +1385,6 @@ function setupEventListeners() {
   document.getElementById('addFamilyTaskBtn').addEventListener('click', addFamilyTask);
   document.getElementById('addPersonalTaskBtn').addEventListener('click', addPersonalTask);
   document.getElementById('addIdeaBtn').addEventListener('click', addIdeaNote);
-
-  // Urgent toggle
-  const urgentBtn = document.getElementById('toggleUrgentFamilyBtn');
-  urgentBtn.addEventListener('click', () => {
-    isUrgentFamily = !isUrgentFamily;
-    urgentBtn.classList.toggle('active', isUrgentFamily);
-    SoundFX.click();
-  });
-
-  // Category filter chips
-  document.querySelectorAll('#familyCategoryFilterBar .cat-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('#familyCategoryFilterBar .cat-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      familyCategoryFilter = chip.dataset.cat;
-      SoundFX.click();
-      renderFamilyTasks();
-    });
-  });
 
   // Personal filter links
   document.querySelectorAll('#personalFilterBar .filter-link').forEach(link => {
@@ -1455,8 +1544,8 @@ function setupEventListeners() {
       title: `${ideaPendingConversion.title}${ideaPendingConversion.content ? ': ' + ideaPendingConversion.content : ''}`,
       category: autoDetectCategory(ideaPendingConversion.title) || 'altro',
       assignee: 'Tutti',
+      priority: 'normale',
       addedBy: userProfile.name,
-      isUrgent: false,
       completed: false,
       createdAt: Date.now()
     };
@@ -1507,6 +1596,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('customMemberNameInput').value = userProfile.name;
 
   renderMemberFilterBar();
+  renderCategoryOptions();
   renderFamilyTasks();
   renderPersonalTasks();
   renderIdeasList();

@@ -110,55 +110,31 @@ html, body {
 }
 
 .app-kicker {
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  color: var(--text-secondary);
+  font-size: 1.15rem; /* Lowercase tribù in WP8 style */
+  font-weight: 300;
+  text-transform: lowercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
 }
 
 .header-right-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.cloud-status-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  padding: 4px 10px;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
-}
-
-.status-indicator-dot {
-  width: 8px;
-  height: 8px;
-  background: #008a00; /* Green connected */
-  border-radius: 50%;
-}
-
-.status-indicator-dot.offline {
-  background: #a20025;
+  gap: 10px;
 }
 
 .metro-header-icon-btn {
   background: transparent;
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   transition: all 0.15s ease;
 }
 
@@ -250,22 +226,17 @@ html, body {
    3. CLEAN WP8 CONTROLS & DYNAMIC MEMBER FILTER
    ========================================================================== */
 
-/* Sub-Filter Row */
+/* 6) Sub-Filter Row that never overflows */
 .wp8-sub-filter-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   padding-bottom: 2px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.wp8-sub-filter-row::-webkit-scrollbar {
-  display: none;
 }
 
 .sub-filter-label {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-transform: lowercase;
   color: var(--text-dim);
@@ -275,15 +246,22 @@ html, body {
 
 .sub-filter-buttons {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+}
+
+.sub-filter-buttons::-webkit-scrollbar {
+  display: none;
 }
 
 .filter-link {
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 1.05rem; /* Larger font */
+  font-size: 1.05rem;
   font-weight: 300;
   text-transform: lowercase;
   cursor: pointer;
@@ -315,14 +293,14 @@ html, body {
 /* Add member plus button on filter ribbon */
 .add-member-plus-btn {
   background: transparent;
-  border: 1px dashed var(--border-medium);
-  color: var(--text-secondary);
-  width: 28px;
-  height: 28px;
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.15s ease;
@@ -355,7 +333,7 @@ html, body {
   border: none;
   border-bottom: 2px solid var(--border-medium);
   color: var(--text-primary);
-  font-size: 1.1rem; /* Larger font */
+  font-size: 1.1rem;
   font-weight: 300;
   font-family: inherit;
   padding: 8px 2px;
@@ -389,7 +367,7 @@ html, body {
   color: #ffffff;
 }
 
-/* WP8 Plus-Only Action Button (Requirement 4) */
+/* WP8 Plus-Only Action Button */
 .wp8-btn-plus-only {
   background: var(--accent-color);
   border: none;
@@ -420,6 +398,11 @@ html, body {
   padding-top: 4px;
 }
 
+.input-meta-row.schedule-row {
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
 .meta-field {
   display: flex;
   align-items: center;
@@ -443,26 +426,15 @@ html, body {
   border-radius: 0;
 }
 
-.wp8-urgent-flag {
-  background: transparent;
-  border: 1px solid var(--border-medium);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: lowercase;
-  padding: 4px 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  margin-left: auto;
-  transition: all 0.15s ease;
-}
-
-.wp8-urgent-flag.active {
-  background: #a20025;
-  border-color: #a20025;
-  color: #ffffff;
+.wp8-date-input, .wp8-time-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-family: inherit;
+  padding: 4px 8px;
+  outline: none;
+  border-radius: 0;
 }
 
 /* Clean Category Filter Chips */
@@ -577,7 +549,7 @@ html, body {
 }
 
 .task-text {
-  font-size: 1.15rem; /* Larger and crisper */
+  font-size: 1.15rem;
   font-weight: 300;
   color: var(--text-primary);
   word-break: break-word;
@@ -590,7 +562,7 @@ html, body {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  font-size: 0.85rem; /* Larger text */
+  font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
@@ -608,6 +580,11 @@ html, body {
 .meta-tag.tag-urgent {
   color: #a20025;
   font-weight: 700;
+}
+
+.meta-tag.tag-schedule {
+  color: #f09609;
+  font-weight: 600;
 }
 
 .task-side-actions {
@@ -768,18 +745,20 @@ html, body {
   border-radius: 0;
 }
 
-.idea-action-row {
+/* 8) Single clean horizontal line for note actions */
+.idea-action-row.single-line {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  flex-wrap: wrap;
-  padding-top: 4px;
+  flex-wrap: nowrap;
+  padding-top: 6px;
 }
 
 .metro-color-dots {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .color-picker-dot {
@@ -807,27 +786,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto;
-}
-
-.wp8-pin-btn {
-  background: transparent;
-  border: 1px solid var(--border-medium);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  text-transform: lowercase;
-  padding: 0 12px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.wp8-pin-btn.active {
-  background: #f09609;
-  border-color: #f09609;
-  color: #ffffff;
+  flex-shrink: 0;
 }
 
 /* Ideas Metro Tiles Grid */
@@ -1023,14 +982,6 @@ html, body {
   position: relative;
 }
 
-.sheet-kicker {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--accent-color);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
 .sheet-title {
   font-size: 2.2rem;
   font-weight: 200;
@@ -1125,7 +1076,7 @@ html, body {
   cursor: pointer;
 }
 
-/* Live App Icon Preview (Requirement 2) */
+/* Live App Icon Preview */
 .icon-preview-box {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -1168,7 +1119,7 @@ html, body {
   color: var(--text-secondary);
 }
 
-/* Full 15-Color WP8.1 Palette Grid (Requirement 6) */
+/* Full 15-Color WP8.1 Palette Grid */
 .wp8-full-palette-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1200,7 +1151,7 @@ html, body {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
 }
 
-/* Dynamic Members List in Modal (Requirement 7) */
+/* Dynamic Members List in Modal */
 .section-title-with-btn {
   display: flex;
   justify-content: space-between;
@@ -1326,7 +1277,7 @@ html, body {
   font-size: 18px;
 }
 
-/* Voice Dictation Modal (Requirement 5) */
+/* Voice Dictation Modal */
 .voice-modal-body {
   display: flex;
   flex-direction: column;
@@ -1424,6 +1375,50 @@ html, body {
 .wp8-convert-card small {
   font-size: 0.82rem;
   opacity: 0.85;
+}
+
+/* In-App Floating Notification Banner */
+.in-app-notif-banner {
+  position: fixed;
+  top: calc(14px + var(--sat));
+  left: 16px;
+  right: 16px;
+  max-width: 480px;
+  margin: 0 auto;
+  z-index: 3000;
+  background: var(--bg-dialog);
+  border: 1px solid var(--accent-color);
+  padding: 12px 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: slideDownBanner 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDownBanner {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.notif-icon-col {
+  font-size: 22px;
+  color: var(--accent-color);
+}
+
+.notif-text-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-text-col strong {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.notif-text-col span {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
 }
 
 /* Toast */

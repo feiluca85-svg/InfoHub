@@ -40,25 +40,20 @@
     <!-- 1. WP8 METRO PANORAMA PIVOT HEADER             -->
     <!-- ============================================== -->
     <header class="metro-header">
-      <!-- Top Small Brand & Cloud Status -->
+      <!-- Top Small Brand & Header Icons -->
       <div class="header-top-row">
-        <span class="app-kicker">TRIBÙ</span>
+        <!-- 2) Lowercase WP8.1 'tribù' -->
+        <span class="app-kicker">tribù</span>
         
+        <!-- 3) Clean header actions (removed confusing code box) -->
         <div class="header-right-actions">
-          <div class="cloud-status-badge" id="cloudStatusPill" title="Stato Cloud">
-            <span class="status-indicator-dot" id="cloudStatusDot"></span>
-            <span class="code-label" id="headerFamilyCode">#FAM-TITO</span>
-          </div>
-          <!-- Notifications Bell -->
-          <button id="headerNotifBtn" class="metro-header-icon-btn" title="Notifiche" aria-label="Notifiche">
+          <button id="headerNotifBtn" class="metro-header-icon-btn" title="Notifiche e Avvisi" aria-label="Notifiche">
             <i class="fa-solid fa-bell"></i>
           </button>
-          <!-- Settings / Colors -->
-          <button id="themeToggleBtn" class="metro-header-icon-btn" title="Palette WP8.1 & Icona">
+          <button id="themeToggleBtn" class="metro-header-icon-btn" title="Palette WP8.1 & Icona" aria-label="Tema">
             <i class="fa-solid fa-palette"></i>
           </button>
-          <!-- Family Management -->
-          <button id="familySettingsBtn" class="metro-header-icon-btn" title="Gestisci Membri">
+          <button id="familySettingsBtn" class="metro-header-icon-btn" title="Gestisci Membri Tribù" aria-label="Membri">
             <i class="fa-solid fa-users"></i>
           </button>
         </div>
@@ -86,19 +81,19 @@
         <section class="carousel-slide" id="slideFamiglia">
           <div class="slide-content-wrapper">
             
-            <!-- Dynamic Member Filter Ribbon (Tutti + Membri Effettivi + Pulsante '+') -->
+            <!-- 6) Dynamic Member Filter Ribbon with unified '+' button -->
             <div class="wp8-sub-filter-row">
               <span class="sub-filter-label">membro:</span>
               <div class="sub-filter-buttons" id="familyMemberFilterBar">
                 <button class="filter-link active" data-member="all">tutti</button>
-                <!-- Dynamic member buttons populated from Firestore -->
+                <!-- Dynamic member buttons -->
               </div>
-              <button id="addMemberFilterBtn" class="add-member-plus-btn" title="Aggiungi o invita un familiare">
+              <button id="addMemberFilterBtn" class="add-member-plus-btn" title="Aggiungi familiare alla tribù">
                 <i class="fa-solid fa-plus"></i>
               </button>
             </div>
 
-            <!-- Quick Add Bar (Ultra-clean WP8 Flat Input with '+' only button) -->
+            <!-- Quick Add Bar with '+' only and full scheduling (Requirement 7) -->
             <div class="wp8-input-card">
               <div class="input-line-row">
                 <input type="text" id="familyTaskInput" placeholder="cosa c'è da fare per la famiglia..." autocomplete="off">
@@ -110,18 +105,19 @@
                 </button>
               </div>
 
-              <!-- Meta Dropdowns -->
+              <!-- Meta Options Row 1: Categoria & Assegna a -->
               <div class="input-meta-row">
                 <div class="meta-field">
                   <span class="meta-label">categoria:</span>
                   <select id="familyCategorySelect" class="wp8-select">
-                    <option value="spesa">spesa</option>
-                    <option value="casa">casa</option>
-                    <option value="bollette">bollette</option>
-                    <option value="figli">scuola / figli</option>
-                    <option value="salute">salute</option>
-                    <option value="urgente">urgente</option>
-                    <option value="altro">altro</option>
+                    <option value="spesa">🛒 spesa</option>
+                    <option value="casa">🏠 casa</option>
+                    <option value="bollette">📄 bollette</option>
+                    <option value="figli">🎒 scuola / figli</option>
+                    <option value="salute">💊 salute</option>
+                    <option value="urgente">🚨 urgente</option>
+                    <option value="altro">📌 altro</option>
+                    <option value="__new__">+ nuova categoria...</option>
                   </select>
                 </div>
 
@@ -129,18 +125,47 @@
                   <span class="meta-label">assegna a:</span>
                   <select id="familyAssigneeSelect" class="wp8-select">
                     <option value="Tutti">chiunque</option>
-                    <!-- Dynamically populated with active family members -->
+                    <!-- Dynamically populated -->
                   </select>
                 </div>
 
-                <button type="button" id="toggleUrgentFamilyBtn" class="wp8-urgent-flag" title="Urgente">
-                  <i class="fa-solid fa-bolt"></i>
-                  <span>urgente</span>
-                </button>
+                <div class="meta-field">
+                  <span class="meta-label">priorità:</span>
+                  <select id="familyPrioritySelect" class="wp8-select">
+                    <option value="normale">🟢 normale</option>
+                    <option value="media">🟡 media</option>
+                    <option value="alta">🔴 alta</option>
+                    <option value="urgente">🚨 urgente</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Meta Options Row 2: Scadenza Giorno, Ora & Avviso (Requirement 7) -->
+              <div class="input-meta-row schedule-row">
+                <div class="meta-field">
+                  <span class="meta-label"><i class="fa-solid fa-calendar-day"></i> giorno:</span>
+                  <input type="date" id="familyDueDateInput" class="wp8-date-input">
+                </div>
+
+                <div class="meta-field">
+                  <span class="meta-label"><i class="fa-solid fa-clock"></i> ora:</span>
+                  <input type="time" id="familyDueTimeInput" class="wp8-time-input">
+                </div>
+
+                <div class="meta-field">
+                  <span class="meta-label"><i class="fa-solid fa-bell"></i> avviso:</span>
+                  <select id="familyReminderSelect" class="wp8-select">
+                    <option value="none">nessun avviso</option>
+                    <option value="exact">all'ora esatta</option>
+                    <option value="15m">15 min prima</option>
+                    <option value="1h">1 ora prima</option>
+                    <option value="1d">1 giorno prima</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            <!-- Category Filter Chips -->
+            <!-- Dynamic Category Filter Chips -->
             <div class="wp8-category-scroller" id="familyCategoryFilterBar">
               <button class="cat-chip active" data-cat="all">tutte</button>
               <button class="cat-chip" data-cat="spesa"><i class="fa-solid fa-cart-shopping"></i> spesa</button>
@@ -149,6 +174,7 @@
               <button class="cat-chip" data-cat="figli"><i class="fa-solid fa-graduation-cap"></i> figli</button>
               <button class="cat-chip" data-cat="salute"><i class="fa-solid fa-kit-medical"></i> salute</button>
               <button class="cat-chip" data-cat="urgente"><i class="fa-solid fa-bolt"></i> urgenti</button>
+              <!-- Custom categories will append here -->
             </div>
 
             <!-- Tasks List -->
@@ -278,12 +304,13 @@
         <section class="carousel-slide" id="slideIdee">
           <div class="slide-content-wrapper">
             
-            <!-- Quick Add Idea ('+' only) -->
+            <!-- 8) Quick Add Idea on a single clean line -->
             <div class="wp8-input-card">
               <input type="text" id="ideaTitleInput" class="wp8-idea-title-input" placeholder="titolo dell'idea o appunto..." autocomplete="off">
               <textarea id="ideaContentInput" class="wp8-idea-text-input" placeholder="dettagli, pensiero o lista..." rows="2"></textarea>
               
-              <div class="idea-action-row">
+              <!-- Single clean horizontal line -->
+              <div class="idea-action-row single-line">
                 <div class="metro-color-dots" id="ideaColorSelector">
                   <button type="button" class="color-picker-dot dot-yellow active" data-color="yellow" title="Giallo"></button>
                   <button type="button" class="color-picker-dot dot-blue" data-color="blue" title="Cobalto"></button>
@@ -294,14 +321,13 @@
                 </div>
 
                 <div class="idea-right-actions">
-                  <button type="button" id="togglePinIdeaBtn" class="wp8-pin-btn" title="Fissa in alto">
+                  <button type="button" id="togglePinIdeaBtn" class="wp8-inline-btn" title="Fissa in alto">
                     <i class="fa-solid fa-thumbtack"></i>
-                    <span>fissa</span>
                   </button>
                   <button id="voiceIdeaBtn" class="wp8-inline-btn" title="Dettatura">
                     <i class="fa-solid fa-microphone"></i>
                   </button>
-                  <button id="addIdeaBtn" class="wp8-btn-plus-only" title="Salva Idea">
+                  <button id="addIdeaBtn" class="wp8-btn-plus-only" title="Salva">
                     <i class="fa-solid fa-plus"></i>
                   </button>
                 </div>
@@ -370,7 +396,6 @@
     <div id="familySettingsModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
-          <span class="sheet-kicker">GESTIONE TRIBÙ</span>
           <h2 class="sheet-title">membri & cloud</h2>
           <button id="closeFamilyModalBtn" class="sheet-close-btn">&times;</button>
         </div>
@@ -392,7 +417,7 @@
               <button id="openAddMemberDialogBtn" class="wp8-inline-add-btn">+ aggiungi</button>
             </div>
             <div class="dynamic-members-list" id="dynamicFamilyMembersList">
-              <!-- Dynamically populated from Firestore -->
+              <!-- Dynamically populated -->
             </div>
           </div>
 
@@ -423,11 +448,10 @@
       </div>
     </div>
 
-    <!-- Quick Add / Invite Member Sub-Modal -->
+    <!-- Quick Add Member Sub-Modal -->
     <div id="addMemberModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
-          <span class="sheet-kicker">NUOVO MEMBRO</span>
           <h2 class="sheet-title">aggiungi alla tribù</h2>
           <button id="closeAddMemberModalBtn" class="sheet-close-btn">&times;</button>
         </div>
@@ -451,16 +475,35 @@
 
         <div class="sheet-footer">
           <button id="cancelAddMemberBtn" class="wp8-btn-outline">annulla</button>
-          <button id="confirmAddMemberBtn" class="wp8-btn-accent">aggiungi alla tribù</button>
+          <button id="confirmAddMemberBtn" class="wp8-btn-accent">aggiungi</button>
         </div>
       </div>
     </div>
 
-    <!-- WP8.1 Full Palette & App Icon Settings Modal -->
+    <!-- Add Custom Category Modal (Requirement 7) -->
+    <div id="customCategoryModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet">
+        <div class="sheet-header">
+          <h2 class="sheet-title">nuova categoria</h2>
+          <button id="closeCustomCategoryModalBtn" class="sheet-close-btn">&times;</button>
+        </div>
+
+        <div class="sheet-body">
+          <label class="sheet-label">nome della categoria:</label>
+          <input type="text" id="newCategoryNameInput" class="wp8-dialog-input" placeholder="es. Giardino, Regali, Macchina, Vacanze..." autocomplete="off">
+        </div>
+
+        <div class="sheet-footer">
+          <button id="cancelCustomCategoryBtn" class="wp8-btn-outline">annulla</button>
+          <button id="confirmCustomCategoryBtn" class="wp8-btn-accent">salva categoria</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5) Theme Modal without kicker -->
     <div id="themeModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
-          <span class="sheet-kicker">PERSONALIZZAZIONE WP8.1</span>
           <h2 class="sheet-title">colori & icona</h2>
           <button id="closeThemeModalBtn" class="sheet-close-btn">&times;</button>
         </div>
@@ -474,11 +517,11 @@
             </div>
             <div class="live-tile-info">
               <strong>Colore Icona & Accento</strong>
-              <small>Scegli tra i 15 celebri colori Nokia Lumia / Windows Phone 8.1</small>
+              <small>Tocca un colore per applicarlo all'app e all'icona</small>
             </div>
           </div>
 
-          <!-- Full WP8.1 Official 15-Color Palette -->
+          <!-- Full WP8.1 15-Color Palette -->
           <div class="sheet-section">
             <label class="sheet-label">palette ufficiale windows phone 8.1</label>
             <div class="wp8-full-palette-grid" id="accentPaletteGrid">
@@ -519,7 +562,7 @@
             <div class="toggles-column">
               <button type="button" class="wp8-theme-btn" id="toggleNotifBtn">
                 <i class="fa-solid fa-bell" id="notifStatusIcon"></i>
-                <span id="notifStatusText">attiva notifiche push</span>
+                <span id="notifStatusText">attiva notifiche push & avvisi</span>
               </button>
               <button type="button" class="wp8-theme-btn" id="toggleSoundBtn">
                 <i class="fa-solid fa-volume-high" id="soundStatusIcon"></i>
@@ -536,11 +579,10 @@
       </div>
     </div>
 
-    <!-- Voice Speech Dictation Modal (Fallback & Interactive Visualizer) -->
+    <!-- Voice Speech Dictation Modal -->
     <div id="voiceModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet text-center">
         <div class="sheet-header">
-          <span class="sheet-kicker">DETTATURA VOCALE</span>
           <h2 class="sheet-title">parla ora</h2>
           <button id="closeVoiceModalBtn" class="sheet-close-btn">&times;</button>
         </div>
@@ -549,7 +591,7 @@
           <div class="voice-mic-wave" id="voiceWaveAnimation">
             <i class="fa-solid fa-microphone"></i>
           </div>
-          <p class="voice-status-text" id="voiceStatusPrompt">In ascolto... Detta la tua attività o spesa</p>
+          <p class="voice-status-text" id="voiceStatusPrompt">In ascolto... Parla ora!</p>
           <div class="voice-transcription-preview" id="voiceTranscriptionResult">"..."</div>
         </div>
 
@@ -564,7 +606,6 @@
     <div id="convertIdeaModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
-          <span class="sheet-kicker">CONVERTI IDEA</span>
           <h2 class="sheet-title">crea to-do</h2>
           <button id="closeConvertModalBtn" class="sheet-close-btn">&times;</button>
         </div>
@@ -591,6 +632,15 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- In-App Floating Notification Banner -->
+    <div id="inAppNotificationBanner" class="in-app-notif-banner hidden">
+      <div class="notif-icon-col"><i class="fa-solid fa-bell"></i></div>
+      <div class="notif-text-col">
+        <strong id="inAppNotifTitle">Notifica Tribù</strong>
+        <span id="inAppNotifBody">Nuovo aggiornamento</span>
       </div>
     </div>
 
