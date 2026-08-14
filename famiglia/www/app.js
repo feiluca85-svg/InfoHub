@@ -1599,8 +1599,15 @@ function renderAllViews() {
 }
 
 // =============================================================================
-// 12. DOM INITIALIZATION & EVENT WIRING
+// 12. DOM INITIALIZATION & EVENT WIRING (NULL-SAFE)
 // =============================================================================
+
+function safeListen(id, event, callback) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener(event, callback);
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   loadLocalState();
@@ -1611,36 +1618,32 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTouchSwipe();
 
   // 1) Brand Home Reset Button
-  const brandHomeBtn = document.getElementById('brandHomeBtn');
-  if (brandHomeBtn) {
-    brandHomeBtn.addEventListener('click', resetToHome);
-  }
+  safeListen('brandHomeBtn', 'click', resetToHome);
 
   // 2) Header Buttons
-  document.getElementById('headerNotifBtn').addEventListener('click', toggleNotifications);
-
-  document.getElementById('themeToggleBtn').addEventListener('click', () => {
-    document.getElementById('themeModal').classList.remove('hidden');
+  safeListen('headerNotifBtn', 'click', toggleNotifications);
+  safeListen('themeToggleBtn', 'click', () => {
+    document.getElementById('themeModal')?.classList.remove('hidden');
   });
-  document.getElementById('closeThemeModalBtn').addEventListener('click', () => {
-    document.getElementById('themeModal').classList.add('hidden');
+  safeListen('closeThemeModalBtn', 'click', () => {
+    document.getElementById('themeModal')?.classList.add('hidden');
   });
-  document.getElementById('closeThemeModalFooterBtn').addEventListener('click', () => {
-    document.getElementById('themeModal').classList.add('hidden');
+  safeListen('closeThemeModalFooterBtn', 'click', () => {
+    document.getElementById('themeModal')?.classList.add('hidden');
   });
 
   // QR Code Share
-  document.getElementById('btnOpenShareQRModal').addEventListener('click', () => {
-    document.getElementById('themeModal').classList.add('hidden');
+  safeListen('btnOpenShareQRModal', 'click', () => {
+    document.getElementById('themeModal')?.classList.add('hidden');
     openShareQRModal();
   });
-  document.getElementById('closeShareQRModalBtn').addEventListener('click', () => {
-    document.getElementById('shareQRModal').classList.add('hidden');
+  safeListen('closeShareQRModalBtn', 'click', () => {
+    document.getElementById('shareQRModal')?.classList.add('hidden');
   });
-  document.getElementById('closeShareQRFooterBtn').addEventListener('click', () => {
-    document.getElementById('shareQRModal').classList.add('hidden');
+  safeListen('closeShareQRFooterBtn', 'click', () => {
+    document.getElementById('shareQRModal')?.classList.add('hidden');
   });
-  document.getElementById('btnCopyShareLink').addEventListener('click', () => {
+  safeListen('btnCopyShareLink', 'click', () => {
     const link = `https://feiluca85-svg.github.io/InfoHub/famiglia/?code=${encodeURIComponent(currentFamilyCode)}`;
     navigator.clipboard.writeText(link).then(() => {
       showToast("link copiato negli appunti!");
@@ -1651,21 +1654,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Family / Multi-Tribe Settings Modal
-  document.getElementById('familySettingsBtn').addEventListener('click', () => {
+  safeListen('familySettingsBtn', 'click', () => {
     renderFamilySettingsModal();
-    document.getElementById('familySettingsModal').classList.remove('hidden');
+    document.getElementById('familySettingsModal')?.classList.remove('hidden');
   });
-  document.getElementById('closeFamilyModalBtn').addEventListener('click', () => {
-    document.getElementById('familySettingsModal').classList.add('hidden');
+  safeListen('closeFamilyModalBtn', 'click', () => {
+    document.getElementById('familySettingsModal')?.classList.add('hidden');
   });
-  document.getElementById('closeFamilyModalFooterBtn').addEventListener('click', () => {
-    document.getElementById('familySettingsModal').classList.add('hidden');
+  safeListen('closeFamilyModalFooterBtn', 'click', () => {
+    document.getElementById('familySettingsModal')?.classList.add('hidden');
   });
 
   // Save Tribe Name
-  document.getElementById('saveTribeNameBtn').addEventListener('click', () => {
+  safeListen('saveTribeNameBtn', 'click', () => {
     const input = document.getElementById('activeTribeNameInput');
-    const val = input.value.trim();
+    const val = input ? input.value.trim() : '';
     if (val) {
       activeTribeName = val;
       const tObj = savedTribes.find(t => t.code === currentFamilyCode);
@@ -1680,34 +1683,36 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Create New Tribe Modal
-  document.getElementById('btnOpenCreateTribeModal').addEventListener('click', () => {
-    document.getElementById('newTribeNameInput').value = '';
-    document.getElementById('newTribeCodeInput').value = 'TRIBU-' + Math.floor(1000 + Math.random()*9000);
-    document.getElementById('createTribeModal').classList.remove('hidden');
-  });
-  document.getElementById('closeCreateTribeModalBtn').addEventListener('click', () => {
-    document.getElementById('createTribeModal').classList.add('hidden');
-  });
-  document.getElementById('cancelCreateTribeBtn').addEventListener('click', () => {
-    document.getElementById('createTribeModal').classList.add('hidden');
-  });
-  document.getElementById('confirmCreateTribeBtn').addEventListener('click', () => {
+  safeListen('btnOpenCreateTribeModal', 'click', () => {
     const nameInput = document.getElementById('newTribeNameInput');
     const codeInput = document.getElementById('newTribeCodeInput');
-    const name = nameInput.value.trim() || 'Nuova Tribù';
-    const code = codeInput.value.trim().toUpperCase() || ('TRIBU-' + Math.floor(1000 + Math.random()*9000));
+    if (nameInput) nameInput.value = '';
+    if (codeInput) codeInput.value = 'TRIBU-' + Math.floor(1000 + Math.random()*9000);
+    document.getElementById('createTribeModal')?.classList.remove('hidden');
+  });
+  safeListen('closeCreateTribeModalBtn', 'click', () => {
+    document.getElementById('createTribeModal')?.classList.add('hidden');
+  });
+  safeListen('cancelCreateTribeBtn', 'click', () => {
+    document.getElementById('createTribeModal')?.classList.add('hidden');
+  });
+  safeListen('confirmCreateTribeBtn', 'click', () => {
+    const nameInput = document.getElementById('newTribeNameInput');
+    const codeInput = document.getElementById('newTribeCodeInput');
+    const name = nameInput ? nameInput.value.trim() || 'Nuova Tribù' : 'Nuova Tribù';
+    const code = codeInput ? codeInput.value.trim().toUpperCase() || ('TRIBU-' + Math.floor(1000 + Math.random()*9000)) : ('TRIBU-' + Math.floor(1000 + Math.random()*9000));
 
     if (!savedTribes.find(t => t.code === code)) {
       savedTribes.push({ name: name, code: code });
     }
-    document.getElementById('createTribeModal').classList.add('hidden');
+    document.getElementById('createTribeModal')?.classList.add('hidden');
     switchActiveTribe(code, name);
   });
 
   // Save User Profile Name
-  document.getElementById('saveMemberNameBtn').addEventListener('click', () => {
+  safeListen('saveMemberNameBtn', 'click', () => {
     const input = document.getElementById('customMemberNameInput');
-    const val = input.value.trim();
+    const val = input ? input.value.trim() : '';
     if (val) {
       userProfile.name = val;
       if (!dynamicFamilyMembers.includes(val)) {
@@ -1725,9 +1730,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Save Cloud Code
-  document.getElementById('saveFamilyCodeBtn').addEventListener('click', () => {
+  safeListen('saveFamilyCodeBtn', 'click', () => {
     const input = document.getElementById('familyCodeInput');
-    const val = input.value.trim().toUpperCase();
+    const val = input ? input.value.trim().toUpperCase() : '';
     if (val) {
       currentFamilyCode = val;
       const found = savedTribes.find(t => t.code === val);
@@ -1745,12 +1750,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Alias Modal
-  document.getElementById('closeMemberAliasModalBtn').addEventListener('click', () => {
-    document.getElementById('memberAliasModal').classList.add('hidden');
+  safeListen('closeMemberAliasModalBtn', 'click', () => {
+    document.getElementById('memberAliasModal')?.classList.add('hidden');
   });
-  document.getElementById('saveMemberAliasBtn').addEventListener('click', () => {
+  safeListen('saveMemberAliasBtn', 'click', () => {
     const input = document.getElementById('memberAliasInput');
-    const val = input.value.trim();
+    const val = input ? input.value.trim() : '';
     if (targetAliasMember) {
       if (val) {
         memberAliases[targetAliasMember] = val;
@@ -1762,12 +1767,12 @@ document.addEventListener('DOMContentLoaded', () => {
       renderFamilyMembersFilterBar();
       renderFamilyTasks();
       renderFamilyMapMarkers();
-      document.getElementById('memberAliasModal').classList.add('hidden');
+      document.getElementById('memberAliasModal')?.classList.add('hidden');
       SoundFX.complete();
       showToast("soprannome privato salvato");
     }
   });
-  document.getElementById('resetMemberAliasBtn').addEventListener('click', () => {
+  safeListen('resetMemberAliasBtn', 'click', () => {
     if (targetAliasMember) {
       delete memberAliases[targetAliasMember];
       saveLocalState();
@@ -1775,21 +1780,21 @@ document.addEventListener('DOMContentLoaded', () => {
       renderFamilyMembersFilterBar();
       renderFamilyTasks();
       renderFamilyMapMarkers();
-      document.getElementById('memberAliasModal').classList.add('hidden');
+      document.getElementById('memberAliasModal')?.classList.add('hidden');
       SoundFX.pop();
     }
   });
 
   // Avatar Picker Modal
-  document.getElementById('btnChangeMyAvatar').addEventListener('click', () => {
+  safeListen('btnChangeMyAvatar', 'click', () => {
     avatarTargetType = 'my';
-    document.getElementById('avatarPickerModal').classList.remove('hidden');
+    document.getElementById('avatarPickerModal')?.classList.remove('hidden');
   });
-  document.getElementById('closeAvatarPickerModalBtn').addEventListener('click', () => {
-    document.getElementById('avatarPickerModal').classList.add('hidden');
+  safeListen('closeAvatarPickerModalBtn', 'click', () => {
+    document.getElementById('avatarPickerModal')?.classList.add('hidden');
   });
-  document.getElementById('cancelAvatarPickerBtn').addEventListener('click', () => {
-    document.getElementById('avatarPickerModal').classList.add('hidden');
+  safeListen('cancelAvatarPickerBtn', 'click', () => {
+    document.getElementById('avatarPickerModal')?.classList.add('hidden');
   });
 
   document.querySelectorAll('#avatarEmojisGrid .avatar-emoji-btn').forEach(btn => {
@@ -1806,111 +1811,114 @@ document.addEventListener('DOMContentLoaded', () => {
       renderFamilySettingsModal();
       renderFamilyMembersFilterBar();
       renderFamilyMapMarkers();
-      document.getElementById('avatarPickerModal').classList.add('hidden');
+      document.getElementById('avatarPickerModal')?.classList.add('hidden');
       SoundFX.complete();
       showToast("avatar aggiornato!");
     });
   });
 
   // Photo Upload Handler (compresses image to thumbnail for lightweight cloud sync)
-  document.getElementById('btnUploadPhotoAvatar').addEventListener('click', () => {
-    document.getElementById('avatarPhotoFileInput').click();
+  safeListen('btnUploadPhotoAvatar', 'click', () => {
+    document.getElementById('avatarPhotoFileInput')?.click();
   });
-  document.getElementById('avatarPhotoFileInput').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const fileInput = document.getElementById('avatarPhotoFileInput');
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxDim = 96;
-        let w = img.width;
-        let h = img.height;
-        if (w > h) {
-          h = Math.round(h * maxDim / w);
-          w = maxDim;
-        } else {
-          w = Math.round(w * maxDim / h);
-          h = maxDim;
-        }
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 96;
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            h = Math.round(h * maxDim / w);
+            w = maxDim;
+          } else {
+            w = Math.round(w * maxDim / h);
+            h = maxDim;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
-        if (avatarTargetType === 'my') {
-          userProfile.avatar = dataUrl;
-          memberAvatars[userProfile.name] = dataUrl;
-        } else {
-          memberAvatars[avatarTargetType] = dataUrl;
-        }
+          if (avatarTargetType === 'my') {
+            userProfile.avatar = dataUrl;
+            memberAvatars[userProfile.name] = dataUrl;
+          } else {
+            memberAvatars[avatarTargetType] = dataUrl;
+          }
 
-        saveLocalState();
-        pushFamilyStateToCloud();
-        renderFamilySettingsModal();
-        renderFamilyMembersFilterBar();
-        renderFamilyMapMarkers();
-        document.getElementById('avatarPickerModal').classList.add('hidden');
-        SoundFX.complete();
-        showToast("foto caricata con successo!");
+          saveLocalState();
+          pushFamilyStateToCloud();
+          renderFamilySettingsModal();
+          renderFamilyMembersFilterBar();
+          renderFamilyMapMarkers();
+          document.getElementById('avatarPickerModal')?.classList.add('hidden');
+          SoundFX.complete();
+          showToast("foto caricata con successo!");
+        };
+        img.src = event.target.result;
       };
-      img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
+      reader.readAsDataURL(file);
+    });
+  }
 
   // Request Location / Ping Modal
-  document.getElementById('closeRequestLocationModalBtn').addEventListener('click', () => {
-    document.getElementById('requestLocationModal').classList.add('hidden');
+  safeListen('closeRequestLocationModalBtn', 'click', () => {
+    document.getElementById('requestLocationModal')?.classList.add('hidden');
   });
-  document.getElementById('closeRequestLocationFooterBtn').addEventListener('click', () => {
-    document.getElementById('requestLocationModal').classList.add('hidden');
+  safeListen('closeRequestLocationFooterBtn', 'click', () => {
+    document.getElementById('requestLocationModal')?.classList.add('hidden');
   });
-  document.getElementById('btnSendCloudPing').addEventListener('click', () => {
+  safeListen('btnSendCloudPing', 'click', () => {
     if (targetRequestMember) {
       if (!pingRequests) pingRequests = {};
       pingRequests[targetRequestMember] = { from: userProfile.name, time: Date.now() };
       if (db && familyDocRef) {
         familyDocRef.set({ pings: pingRequests }, { merge: true });
       }
-      document.getElementById('requestLocationModal').classList.add('hidden');
+      document.getElementById('requestLocationModal')?.classList.add('hidden');
       SoundFX.complete();
       showToast(`notifica inviata a ${getMemberDisplayName(targetRequestMember)}!`);
     }
   });
-  document.getElementById('btnSendWhatsAppReminder').addEventListener('click', () => {
+  safeListen('btnSendWhatsAppReminder', 'click', () => {
     if (targetRequestMember) {
       const dispName = getMemberDisplayName(targetRequestMember);
       const appUrl = `https://feiluca85-svg.github.io/InfoHub/famiglia/?code=${encodeURIComponent(currentFamilyCode)}`;
       const msg = `Ciao ${dispName}! Apri Tribù per aggiornare la tua posizione sulla mappa di famiglia: ${appUrl}`;
       const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
       window.open(waUrl, '_blank');
-      document.getElementById('requestLocationModal').classList.add('hidden');
+      document.getElementById('requestLocationModal')?.classList.add('hidden');
       SoundFX.complete();
     }
   });
 
   // Quick Add Member
-  document.getElementById('openAddMemberDialogBtn')?.addEventListener('click', () => {
-    document.getElementById('addMemberModal').classList.remove('hidden');
-    document.getElementById('newMemberNameInput').focus();
+  safeListen('openAddMemberDialogBtn', 'click', () => {
+    document.getElementById('addMemberModal')?.classList.remove('hidden');
+    document.getElementById('newMemberNameInput')?.focus();
   });
-  document.getElementById('addMemberFilterBtn')?.addEventListener('click', () => {
-    document.getElementById('addMemberModal').classList.remove('hidden');
-    document.getElementById('newMemberNameInput').focus();
+  safeListen('addMemberFilterBtn', 'click', () => {
+    document.getElementById('addMemberModal')?.classList.remove('hidden');
+    document.getElementById('newMemberNameInput')?.focus();
   });
-  document.getElementById('closeAddMemberModalBtn').addEventListener('click', () => {
-    document.getElementById('addMemberModal').classList.add('hidden');
+  safeListen('closeAddMemberModalBtn', 'click', () => {
+    document.getElementById('addMemberModal')?.classList.add('hidden');
   });
-  document.getElementById('cancelAddMemberBtn').addEventListener('click', () => {
-    document.getElementById('addMemberModal').classList.add('hidden');
+  safeListen('cancelAddMemberBtn', 'click', () => {
+    document.getElementById('addMemberModal')?.classList.add('hidden');
   });
-  document.getElementById('confirmAddMemberBtn').addEventListener('click', () => {
+  safeListen('confirmAddMemberBtn', 'click', () => {
     const input = document.getElementById('newMemberNameInput');
-    const val = input.value.trim();
+    const val = input ? input.value.trim() : '';
     if (val) {
       if (!dynamicFamilyMembers.includes(val)) {
         dynamicFamilyMembers.push(val);
@@ -1921,8 +1929,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderFamilySettingsModal();
         renderFamilyMapMarkers();
       }
-      input.value = '';
-      document.getElementById('addMemberModal').classList.add('hidden');
+      if (input) input.value = '';
+      document.getElementById('addMemberModal')?.classList.add('hidden');
       SoundFX.complete();
       showToast(`${val} aggiunto alla tribù`);
     }
@@ -1930,7 +1938,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('#quickRoleChips .role-chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.getElementById('newMemberNameInput').value = chip.getAttribute('data-role');
+      const input = document.getElementById('newMemberNameInput');
+      if (input) input.value = chip.getAttribute('data-role');
     });
   });
 
@@ -1943,26 +1952,32 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Application Bar 2 Centered Buttons
-  document.getElementById('appbarAddBtn').addEventListener('click', () => {
+  safeListen('appbarAddBtn', 'click', () => {
     if (activeTabSlide === 0) {
       const card = document.getElementById('familyInputCard');
-      card.classList.toggle('hidden');
-      if (!card.classList.contains('hidden')) document.getElementById('familyTaskInput').focus();
+      if (card) {
+        card.classList.toggle('hidden');
+        if (!card.classList.contains('hidden')) document.getElementById('familyTaskInput')?.focus();
+      }
     } else if (activeTabSlide === 1) {
       const card = document.getElementById('personalInputCard');
-      card.classList.toggle('hidden');
-      if (!card.classList.contains('hidden')) document.getElementById('personalTaskInput').focus();
+      if (card) {
+        card.classList.toggle('hidden');
+        if (!card.classList.contains('hidden')) document.getElementById('personalTaskInput')?.focus();
+      }
     } else if (activeTabSlide === 2) {
       const card = document.getElementById('ideasInputCard');
-      card.classList.toggle('hidden');
-      if (!card.classList.contains('hidden')) document.getElementById('ideaTitleInput').focus();
+      if (card) {
+        card.classList.toggle('hidden');
+        if (!card.classList.contains('hidden')) document.getElementById('ideaTitleInput')?.focus();
+      }
     } else if (activeTabSlide === 3) {
       updateMyGPSLocation();
     }
     SoundFX.click();
   });
 
-  document.getElementById('appbarSyncBtn').addEventListener('click', () => {
+  safeListen('appbarSyncBtn', 'click', () => {
     SoundFX.pop();
     showToast("sincronizzazione in corso...");
     initFirebaseSync();
@@ -1972,21 +1987,27 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Form Submissions
-  document.getElementById('addFamilyTaskBtn').addEventListener('click', addFamilyTaskFromForm);
-  document.getElementById('cancelFamilyTaskBtn').addEventListener('click', () => {
-    document.getElementById('familyInputCard').classList.add('hidden');
+  safeListen('addFamilyTaskBtn', 'click', addFamilyTaskFromForm);
+  safeListen('cancelFamilyTaskBtn', 'click', () => {
+    document.getElementById('familyInputCard')?.classList.add('hidden');
   });
-  document.getElementById('familyTaskInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addFamilyTaskFromForm();
-  });
+  const fTaskInp = document.getElementById('familyTaskInput');
+  if (fTaskInp) {
+    fTaskInp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addFamilyTaskFromForm();
+    });
+  }
 
-  document.getElementById('addPersonalTaskBtn').addEventListener('click', addPersonalTaskFromForm);
-  document.getElementById('cancelPersonalTaskBtn').addEventListener('click', () => {
-    document.getElementById('personalInputCard').classList.add('hidden');
+  safeListen('addPersonalTaskBtn', 'click', addPersonalTaskFromForm);
+  safeListen('cancelPersonalTaskBtn', 'click', () => {
+    document.getElementById('personalInputCard')?.classList.add('hidden');
   });
-  document.getElementById('personalTaskInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addPersonalTaskFromForm();
-  });
+  const pTaskInp = document.getElementById('personalTaskInput');
+  if (pTaskInp) {
+    pTaskInp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addPersonalTaskFromForm();
+    });
+  }
 
   // Personal Filter Links
   document.querySelectorAll('#personalFilterBar .filter-link').forEach(btn => {
@@ -2000,15 +2021,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Ideas Form & Actions
-  document.getElementById('toggleIdeasAddBoxBtn').addEventListener('click', () => {
+  safeListen('toggleIdeasAddBoxBtn', 'click', () => {
     const card = document.getElementById('ideasInputCard');
-    card.classList.toggle('hidden');
-    if (!card.classList.contains('hidden')) document.getElementById('ideaTitleInput').focus();
+    if (card) {
+      card.classList.toggle('hidden');
+      if (!card.classList.contains('hidden')) document.getElementById('ideaTitleInput')?.focus();
+    }
     SoundFX.click();
   });
-  document.getElementById('addIdeaBtn').addEventListener('click', addIdeaFromForm);
-  document.getElementById('cancelIdeaBtn').addEventListener('click', () => {
-    document.getElementById('ideasInputCard').classList.add('hidden');
+  safeListen('addIdeaBtn', 'click', addIdeaFromForm);
+  safeListen('cancelIdeaBtn', 'click', () => {
+    document.getElementById('ideasInputCard')?.classList.add('hidden');
   });
 
   document.querySelectorAll('#ideaColorSelector .color-picker-dot').forEach(dot => {
@@ -2019,8 +2042,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  document.getElementById('togglePinIdeaBtn').addEventListener('click', (e) => {
-    e.currentTarget.classList.toggle('active');
+  safeListen('togglePinIdeaBtn', 'click', (e) => {
+    e.currentTarget?.classList.toggle('active');
     SoundFX.click();
   });
 
@@ -2035,22 +2058,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // GPS Map Buttons
-  document.getElementById('btnUpdateMyGPS').addEventListener('click', () => updateMyGPSLocation(false));
+  safeListen('btnUpdateMyGPS', 'click', () => updateMyGPSLocation(false));
 
   // Convert Idea Modal
-  document.getElementById('closeConvertModalBtn').addEventListener('click', () => {
-    document.getElementById('convertIdeaModal').classList.add('hidden');
+  safeListen('closeConvertModalBtn', 'click', () => {
+    document.getElementById('convertIdeaModal')?.classList.add('hidden');
   });
-  document.getElementById('convertDestFamilyBtn').addEventListener('click', () => convertIdeaToTask('family'));
-  document.getElementById('convertDestPersonalBtn').addEventListener('click', () => convertIdeaToTask('personal'));
+  safeListen('convertDestFamilyBtn', 'click', () => convertIdeaToTask('family'));
+  safeListen('convertDestPersonalBtn', 'click', () => convertIdeaToTask('personal'));
 
   // Toggle Completed
-  document.getElementById('toggleFamilyCompleted').addEventListener('click', (e) => {
+  safeListen('toggleFamilyCompleted', 'click', (e) => {
     if (e.target.closest('#clearFamilyCompletedBtn')) return;
-    document.getElementById('familyCompletedList').classList.toggle('hidden');
+    document.getElementById('familyCompletedList')?.classList.toggle('hidden');
     SoundFX.click();
   });
-  document.getElementById('clearFamilyCompletedBtn').addEventListener('click', () => {
+  safeListen('clearFamilyCompletedBtn', 'click', () => {
     familyTasks = familyTasks.filter(x => !x.completed);
     saveLocalState();
     pushFamilyStateToCloud();
@@ -2058,12 +2081,12 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast("completate eliminate");
   });
 
-  document.getElementById('togglePersonalCompleted').addEventListener('click', (e) => {
+  safeListen('togglePersonalCompleted', 'click', (e) => {
     if (e.target.closest('#clearPersonalCompletedBtn')) return;
-    document.getElementById('personalCompletedList').classList.toggle('hidden');
+    document.getElementById('personalCompletedList')?.classList.toggle('hidden');
     SoundFX.click();
   });
-  document.getElementById('clearPersonalCompletedBtn').addEventListener('click', () => {
+  safeListen('clearPersonalCompletedBtn', 'click', () => {
     personalTasks = personalTasks.filter(x => !x.completed);
     saveLocalState();
     renderPersonalTasks();
@@ -2082,19 +2105,19 @@ document.addEventListener('DOMContentLoaded', () => {
         renderFamilyTasks();
         renderPersonalCategoriesBar();
         renderPersonalTasks();
-        document.getElementById('categoryColorModal').classList.add('hidden');
+        document.getElementById('categoryColorModal')?.classList.add('hidden');
         SoundFX.complete();
         showToast(`colore salvato`);
       }
     });
   });
-  document.getElementById('closeCategoryColorModalBtn').addEventListener('click', () => {
-    document.getElementById('categoryColorModal').classList.add('hidden');
+  safeListen('closeCategoryColorModalBtn', 'click', () => {
+    document.getElementById('categoryColorModal')?.classList.add('hidden');
   });
-  document.getElementById('closeCategoryColorModalFooterBtn').addEventListener('click', () => {
-    document.getElementById('categoryColorModal').classList.add('hidden');
+  safeListen('closeCategoryColorModalFooterBtn', 'click', () => {
+    document.getElementById('categoryColorModal')?.classList.add('hidden');
   });
-  document.getElementById('resetCategoryColorBtn').addEventListener('click', () => {
+  safeListen('resetCategoryColorBtn', 'click', () => {
     if (customizingCatName) {
       delete categoryColors[customizingCatName];
       saveLocalState();
@@ -2103,7 +2126,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderFamilyTasks();
       renderPersonalCategoriesBar();
       renderPersonalTasks();
-      document.getElementById('categoryColorModal').classList.add('hidden');
+      document.getElementById('categoryColorModal')?.classList.add('hidden');
       SoundFX.pop();
     }
   });
@@ -2120,18 +2143,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  document.getElementById('btnDarkMode').addEventListener('click', () => {
+  safeListen('btnDarkMode', 'click', () => {
     themeSettings.mode = 'dark';
     saveLocalState();
     applyTheme();
     SoundFX.click();
   });
-  document.getElementById('btnLightMode').addEventListener('click', () => {
+  safeListen('btnLightMode', 'click', () => {
     themeSettings.mode = 'light';
     saveLocalState();
     applyTheme();
     SoundFX.click();
   });
-  document.getElementById('toggleNotifBtn').addEventListener('click', toggleNotifications);
-  document.getElementById('toggleSoundBtn').addEventListener('click', toggleSound);
+  safeListen('toggleNotifBtn', 'click', toggleNotifications);
+  safeListen('toggleSoundBtn', 'click', toggleSound);
 });
+
