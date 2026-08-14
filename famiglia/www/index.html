@@ -17,12 +17,12 @@
 
   <!-- Icons -->
   <link rel="apple-touch-icon" href="icon.jpg">
-  <link rel="icon" href="icon_silhouette.svg" type="image/svg+xml">
+  <link rel="icon" href="icon.jpg" type="image/jpeg">
 
-  <!-- Google Fonts: Inter (Precision Segoe UI match) & JetBrains Mono -->
+  <!-- Google Fonts: Outfit (ultra-clean Segoe UI feel), JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   
   <!-- FontAwesome for Authentic Flat Metro Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -42,28 +42,28 @@
     <header class="metro-header">
       <!-- Top Row: 'tribù' (Home Button) + 3 Action Icons -->
       <div class="header-top-row">
-        <!-- 'tribù' works as Home button to reset and go to start of app -->
+        <!-- 7) 'tribù' works as Home button to reset and go to start of app -->
         <button id="brandHomeBtn" class="brand-home-btn" title="Torna all'inizio (Home)">
           <span class="app-kicker">tribù</span>
         </button>
         
         <div class="header-right-actions">
-          <!-- Bell Toggle (Active / Crossed out) -->
+          <!-- 1) Bell Toggle (Active / Crossed out) -->
           <button id="headerNotifBtn" class="metro-header-icon-btn" title="Attiva/Disattiva Notifiche" aria-label="Notifiche">
             <i class="fa-solid fa-bell" id="headerNotifIcon"></i>
           </button>
-          <!-- Gear Icon for Settings & Color Customizer -->
+          <!-- 2) Gear Icon for Settings & Color Customizer -->
           <button id="themeToggleBtn" class="metro-header-icon-btn" title="Impostazioni, Icona & Colori" aria-label="Impostazioni">
             <i class="fa-solid fa-gear"></i>
           </button>
-          <!-- Family Members Management -->
+          <!-- 3) Family Members Management -->
           <button id="familySettingsBtn" class="metro-header-icon-btn" title="Gestisci Membri Tribù" aria-label="Membri">
             <i class="fa-solid fa-users"></i>
           </button>
         </div>
       </div>
 
-      <!-- Giant WP8 Pivot Tab Titles -->
+      <!-- 5) Giant WP8 Pivot Tab Titles (Enlarged) -->
       <div class="pivot-titles-scroller" id="pivotTitlesScroller">
         <div class="pivot-titles-track" id="pivotTitlesTrack">
           <button class="pivot-title-btn active" data-index="0">famiglia</button>
@@ -105,7 +105,7 @@
               <!-- Dynamic Category chips -->
             </div>
 
-            <!-- Expandable Add Box with Flawlessly Symmetrical Grid and Bottom-Right 'Salva' Button -->
+            <!-- 3 & 6) Expandable Add Box with Flawlessly Symmetrical Grid and Bottom-Right 'Salva' Button -->
             <div class="wp8-input-card hidden" id="familyInputCard">
               <div class="input-line-row">
                 <input type="text" id="familyTaskInput" placeholder="cosa c'è da fare per la famiglia..." autocomplete="off">
@@ -114,7 +114,7 @@
                 </button>
               </div>
 
-              <!-- Perfectly Symmetrical 3-Column Grid for Dropdowns & Inputs -->
+              <!-- 6) Perfectly Symmetrical 3-Column Grid for Dropdowns & Inputs -->
               <div class="symmetric-fields-grid">
                 <div class="grid-form-field">
                   <label class="field-top-label">categoria</label>
@@ -162,7 +162,7 @@
                 </div>
               </div>
 
-              <!-- Bottom Right Actions with Prominent 'Salva' Button -->
+              <!-- 3) Bottom Right Actions with Prominent 'Salva' Button -->
               <div class="submenu-bottom-actions">
                 <button type="button" id="cancelFamilyTaskBtn" class="wp8-btn-outline">annulla</button>
                 <button type="button" id="addFamilyTaskBtn" class="wp8-btn-accent">salva</button>
@@ -383,6 +383,7 @@
     <!-- ============================================== -->
     <!-- 3. WP8 ICONIC BOTTOM APPLICATION BAR           -->
     <!-- ============================================== -->
+    <!-- 2) Exactly 3 Centered Buttons (Removed 3-dots button) -->
     <footer class="wp8-app-bar" id="wp8AppBar">
       <div class="appbar-icons-row centered-three">
         <!-- 1) Add Activity Button -->
@@ -548,7 +549,7 @@
       </div>
     </div>
 
-    <!-- Theme & Custom App Icon Modal (Removed 'palette ufficiale windows phone 8.1' label) -->
+    <!-- 1) Theme & Custom App Icon Modal -->
     <div id="themeModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
@@ -558,19 +559,20 @@
 
         <div class="sheet-body">
           
-          <!-- Live Icon Preview with Dynamic Color Swatch -->
+          <!-- 1) Live Icon Preview with Dynamic Color Swatch -->
           <div class="icon-preview-box">
             <div class="live-tile-preview" id="liveTilePreview">
-              <img src="icon_silhouette.svg" alt="Icona Tribù" id="liveTileIconImg">
+              <img src="icon.jpg" alt="Icona Tribù" id="liveTileIconImg">
             </div>
             <div class="live-tile-info">
-              <strong>Colore Icona & App</strong>
-              <small>Tocca un colore per cambiare lo sfondo dell'icona e dell'app</small>
+              <strong>Personalizza Colore Icona & App</strong>
+              <small>Scegli il tuo colore Lumia preferito per l'icona e per tutta l'interfaccia</small>
             </div>
           </div>
 
-          <!-- Full WP8.1 15-Color Palette without extra label -->
+          <!-- Full WP8.1 15-Color Palette -->
           <div class="sheet-section">
+            <label class="sheet-label">palette ufficiale windows phone 8.1</label>
             <div class="wp8-full-palette-grid" id="accentPaletteGrid">
               <button type="button" class="palette-tile active" data-accent="#0050ef" style="background:#0050ef;">cobalto</button>
               <button type="button" class="palette-tile" data-accent="#008a00" style="background:#008a00;">smeraldo</button>
@@ -626,7 +628,7 @@
       </div>
     </div>
 
-    <!-- Enhanced Voice Speech Dictation Modal with Audio Meter -->
+    <!-- 4) Enhanced Voice Speech Dictation Modal with Audio Meter -->
     <div id="voiceModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet text-center">
         <div class="sheet-header">
