@@ -47,11 +47,11 @@
     <!-- 1. WP8 METRO PANORAMA PIVOT HEADER             -->
     <!-- ============================================== -->
     <header class="metro-header">
-      <!-- Top Row: 'tribù' (Home Button) + 3 Action Icons -->
+      <!-- Top Row: 'tribù' (or Custom Tribe Name) + 3 Action Icons -->
       <div class="header-top-row">
-        <!-- 'tribù' works as Home button to reset and go to start of app -->
+        <!-- Brand Name works as Home button to reset and go to start of app -->
         <button id="brandHomeBtn" class="brand-home-btn" title="Torna all'inizio (Home)">
-          <span class="app-kicker">tribù</span>
+          <span class="app-kicker" id="appBrandKicker">tribù</span>
         </button>
         
         <div class="header-right-actions">
@@ -63,8 +63,8 @@
           <button id="themeToggleBtn" class="metro-header-icon-btn" title="Impostazioni & Colori" aria-label="Impostazioni">
             <i class="fa-solid fa-gear"></i>
           </button>
-          <!-- Family Members Management -->
-          <button id="familySettingsBtn" class="metro-header-icon-btn" title="Gestisci Membri Tribù" aria-label="Membri">
+          <!-- Family & Multi-Tribe Management -->
+          <button id="familySettingsBtn" class="metro-header-icon-btn" title="Gestisci Tribù & Membri" aria-label="Membri">
             <i class="fa-solid fa-users"></i>
           </button>
         </div>
@@ -93,7 +93,7 @@
         <section class="carousel-slide" id="slideFamiglia">
           <div class="slide-content-wrapper">
             
-            <!-- Member Filter Ribbon with unified '+' button -->
+            <!-- Member Filter Ribbon with Avatar & Aliases -->
             <div class="wp8-sub-filter-row">
               <span class="sub-filter-label">membro:</span>
               <div class="sub-filter-buttons" id="familyMemberFilterBar">
@@ -113,7 +113,7 @@
               <!-- Dynamic Category chips -->
             </div>
 
-            <!-- Expandable Add Box with Flawlessly Symmetrical Grid and Bottom-Right 'Salva' Button -->
+            <!-- Expandable Add Box with Flawlessly Symmetrical Grid -->
             <div class="wp8-input-card hidden" id="familyInputCard">
               <div class="input-line-row">
                 <input type="text" id="familyTaskInput" placeholder="cosa c'è da fare per la famiglia..." autocomplete="off">
@@ -398,11 +398,11 @@
               <div id="familyLeafletMap" class="leaflet-map-view"></div>
             </div>
 
-            <!-- Family Members Location Status Cards -->
+            <!-- Family Members Location Status Cards with Ping/Remind Action -->
             <div class="map-members-section">
               <div class="section-title-with-btn">
                 <span class="sub-filter-label">posizioni della tribù</span>
-                <small style="color:var(--text-dim); font-size:0.8rem;">(tocca un membro per vederlo)</small>
+                <small style="color:var(--text-dim); font-size:0.8rem;">(tocca per vedere o richiedere posizione)</small>
               </div>
               <div class="map-members-list" id="mapFamilyMembersList">
                 <!-- Dynamically populated -->
@@ -424,7 +424,6 @@
     <!-- ============================================== -->
     <!-- 3. WP8 ICONIC BOTTOM APPLICATION BAR           -->
     <!-- ============================================== -->
-    <!-- 2 Centered Buttons (No microphone) -->
     <footer class="wp8-app-bar" id="wp8AppBar">
       <div class="appbar-icons-row centered-two">
         <!-- 1) Add Activity Button -->
@@ -442,64 +441,55 @@
     <!-- 4. MODALS & DIALOGS                            -->
     <!-- ============================================== -->
 
-    <!-- Category Color Customizer Modal -->
-    <div id="categoryColorModal" class="wp8-modal-overlay hidden">
-      <div class="wp8-modal-sheet">
-        <div class="sheet-header">
-          <h2 class="sheet-title">colore categoria</h2>
-          <button id="closeCategoryColorModalBtn" class="sheet-close-btn">&times;</button>
-        </div>
-
-        <div class="sheet-body">
-          <p class="sheet-help">Personalizza il colore del contorno per la categoria <strong id="customizingCategoryName">spesa</strong>:</p>
-          <div class="wp8-full-palette-grid" id="categoryColorPaletteGrid">
-            <button type="button" class="palette-tile" data-catcolor="#0050ef" style="background:#0050ef;">cobalto</button>
-            <button type="button" class="palette-tile" data-catcolor="#008a00" style="background:#008a00;">smeraldo</button>
-            <button type="button" class="palette-tile" data-catcolor="#f09609" style="background:#f09609;">mango</button>
-            <button type="button" class="palette-tile" data-catcolor="#a20025" style="background:#a20025;">crimson</button>
-            <button type="button" class="palette-tile" data-catcolor="#d80073" style="background:#d80073;">magenta</button>
-            <button type="button" class="palette-tile" data-catcolor="#1ba1e2" style="background:#1ba1e2;">ciano</button>
-            <button type="button" class="palette-tile" data-catcolor="#a4c400" style="background:#a4c400;">lime</button>
-            <button type="button" class="palette-tile" data-catcolor="#6a00ff" style="background:#6a00ff;">viola</button>
-            <button type="button" class="palette-tile" data-catcolor="#f0a30a" style="background:#f0a30a;">ambra</button>
-            <button type="button" class="palette-tile" data-catcolor="#4390df" style="background:#4390df;">acciaio</button>
-            <button type="button" class="palette-tile" data-catcolor="#fa6800" style="background:#fa6800;">mandarino</button>
-            <button type="button" class="palette-tile" data-catcolor="#e671b8" style="background:#e671b8;">rosa</button>
-            <button type="button" class="palette-tile" data-catcolor="#6b69d6" style="background:#6b69d6;">indaco</button>
-            <button type="button" class="palette-tile" data-catcolor="#6d8764" style="background:#6d8764;">oliva</button>
-            <button type="button" class="palette-tile" data-catcolor="#825a2c" style="background:#825a2c;">talpa</button>
-          </div>
-        </div>
-
-        <div class="sheet-footer">
-          <button id="resetCategoryColorBtn" class="wp8-btn-outline">predefinito</button>
-          <button id="closeCategoryColorModalFooterBtn" class="wp8-btn-accent">fatto</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Dynamic Family & Member Management Modal -->
+    <!-- Multi-Tribe & Family Management Modal -->
     <div id="familySettingsModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
-          <h2 class="sheet-title">membri & cloud</h2>
+          <h2 class="sheet-title">tribù & membri</h2>
           <button id="closeFamilyModalBtn" class="sheet-close-btn">&times;</button>
         </div>
 
         <div class="sheet-body">
-          <!-- Your Profile Identity -->
+          
+          <!-- 1) Multi-Tribe Selector & Creator -->
+          <div class="sheet-section multi-tribe-box">
+            <div class="section-title-with-btn">
+              <label class="sheet-label">le tue tribù</label>
+              <button id="btnOpenCreateTribeModal" class="wp8-inline-add-btn">+ nuova tribù</button>
+            </div>
+            <div class="tribes-saved-list" id="savedTribesList">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- 2) Active Tribe Name Customization -->
           <div class="sheet-section">
-            <label class="sheet-label">il tuo nome in famiglia</label>
+            <label class="sheet-label">nome tribù attiva (appare in alto)</label>
             <div class="name-edit-row">
-              <input type="text" id="customMemberNameInput" class="wp8-dialog-input" placeholder="Il tuo nome (es. Papà, Mamma, Chiara)...">
+              <input type="text" id="activeTribeNameInput" class="wp8-dialog-input" placeholder="es. Famiglia Rossi, Casa Mare..." autocomplete="off">
+              <button id="saveTribeNameBtn" class="wp8-btn-accent">salva</button>
+            </div>
+          </div>
+
+          <!-- 3) Your Profile Identity & Avatar -->
+          <div class="sheet-section">
+            <label class="sheet-label">il tuo profilo in questa tribù</label>
+            <div class="profile-card-edit">
+              <div class="profile-avatar-box" id="myProfileAvatarPreview">
+                <span id="myAvatarDisplay">👨‍🦱</span>
+              </div>
+              <div class="profile-name-col">
+                <input type="text" id="customMemberNameInput" class="wp8-dialog-input" placeholder="Il tuo nome...">
+                <button id="btnChangeMyAvatar" class="wp8-link-btn" style="text-align:left;">cambia foto / avatar</button>
+              </div>
               <button id="saveMemberNameBtn" class="wp8-btn-accent">salva</button>
             </div>
           </div>
 
-          <!-- Dynamic Active Family Members List -->
+          <!-- 4) Dynamic Active Family Members List with Aliases & Avatars -->
           <div class="sheet-section">
             <div class="section-title-with-btn">
-              <label class="sheet-label">membri attivi della tribù</label>
+              <label class="sheet-label">membri della tribù</label>
               <button id="openAddMemberDialogBtn" class="wp8-inline-add-btn">+ aggiungi</button>
             </div>
             <div class="dynamic-members-list" id="dynamicFamilyMembersList">
@@ -507,29 +497,107 @@
             </div>
           </div>
 
-          <!-- Family Cloud Code -->
+          <!-- 5) Family Cloud Code -->
           <div class="sheet-section">
-            <label class="sheet-label">codice sincronizzazione (cloud)</label>
-            <p class="sheet-help">Chiunque inserisca questo codice sul proprio telefono si aggrega istantaneamente alla tribù:</p>
+            <label class="sheet-label">codice cloud di questa tribù</label>
             <div class="code-action-row">
               <input type="text" id="familyCodeInput" class="wp8-dialog-input code-font" value="FAM-TITO" autocomplete="off" autocapitalize="characters">
               <button id="saveFamilyCodeBtn" class="wp8-btn-accent">collega</button>
-            </div>
-            <div class="code-presets-row">
-              <button type="button" class="wp8-link-btn code-preset-btn" data-code="FAM-TITO">predefinito (#FAM-TITO)</button>
-              <button type="button" class="wp8-link-btn" id="generateRandomCodeBtn">genera codice casuale</button>
             </div>
           </div>
 
           <!-- Server connection status -->
           <div class="wp8-server-note">
             <i class="fa-solid fa-cloud"></i>
-            <span>Server AppTito: sincronizzazione istantanea bidirezionale</span>
+            <span>Cloud AppTito: sincronizzazione istantanea gratuita e illimitata</span>
           </div>
         </div>
 
         <div class="sheet-footer">
           <button id="closeFamilyModalFooterBtn" class="wp8-btn-outline">chiudi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create New Tribe Sub-Modal -->
+    <div id="createTribeModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet">
+        <div class="sheet-header">
+          <h2 class="sheet-title">crea nuova tribù</h2>
+          <button id="closeCreateTribeModalBtn" class="sheet-close-btn">&times;</button>
+        </div>
+        <div class="sheet-body">
+          <label class="sheet-label">nome della nuova tribù:</label>
+          <input type="text" id="newTribeNameInput" class="wp8-dialog-input" placeholder="es. Casa Vacanze, Lavoro, Calcetto..." autocomplete="off">
+          
+          <label class="sheet-label" style="margin-top:10px;">codice cloud personalizzato (o casuale):</label>
+          <input type="text" id="newTribeCodeInput" class="wp8-dialog-input code-font" placeholder="es. VAC-MARE" autocomplete="off" autocapitalize="characters">
+        </div>
+        <div class="sheet-footer">
+          <button id="cancelCreateTribeBtn" class="wp8-btn-outline">annulla</button>
+          <button id="confirmCreateTribeBtn" class="wp8-btn-accent">crea & passa a questa tribù</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member Custom Alias (Private Nickname) Modal -->
+    <div id="memberAliasModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet">
+        <div class="sheet-header">
+          <h2 class="sheet-title">soprannome privato</h2>
+          <button id="closeMemberAliasModalBtn" class="sheet-close-btn">&times;</button>
+        </div>
+        <div class="sheet-body">
+          <p class="sheet-help">Personalizza il nome di <strong id="aliasTargetCloudName">Membro</strong> visibile <strong>solo sul tuo smartphone</strong>:</p>
+          <input type="text" id="memberAliasInput" class="wp8-dialog-input" placeholder="es. Amore, Papino, Piccola mia..." autocomplete="off">
+        </div>
+        <div class="sheet-footer">
+          <button id="resetMemberAliasBtn" class="wp8-btn-outline">usa nome reale</button>
+          <button id="saveMemberAliasBtn" class="wp8-btn-accent">salva</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Avatar Picker & Photo Upload Modal -->
+    <div id="avatarPickerModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet">
+        <div class="sheet-header">
+          <h2 class="sheet-title">scegli avatar</h2>
+          <button id="closeAvatarPickerModalBtn" class="sheet-close-btn">&times;</button>
+        </div>
+        <div class="sheet-body">
+          
+          <!-- Photo Upload Option -->
+          <div class="sheet-section">
+            <label class="sheet-label">carica una foto:</label>
+            <input type="file" id="avatarPhotoFileInput" accept="image/*" class="hidden">
+            <button type="button" class="wp8-btn-outline" id="btnUploadPhotoAvatar" style="width:100%;">
+              <i class="fa-solid fa-camera"></i> scatta foto o scegli da galleria
+            </button>
+          </div>
+
+          <!-- Preset Metro Emoji Avatars -->
+          <div class="sheet-section">
+            <label class="sheet-label">oppure scegli un avatar metro:</label>
+            <div class="avatar-emojis-grid" id="avatarEmojisGrid">
+              <button type="button" class="avatar-emoji-btn" data-avatar="👨‍🦱">👨‍🦱</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="👩‍🦰">👩‍🦰</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="👧">👧</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="👦">👦</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="👶">👶</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="👴">👴</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="👵">👵</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="🐶">🐶</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="🐱">🐱</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="🌟">🌟</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="⚽">⚽</button>
+              <button type="button" class="avatar-emoji-btn" data-avatar="👑">👑</button>
+            </div>
+          </div>
+
+        </div>
+        <div class="sheet-footer">
+          <button id="cancelAvatarPickerBtn" class="wp8-btn-outline">annulla</button>
         </div>
       </div>
     </div>
@@ -566,27 +634,64 @@
       </div>
     </div>
 
-    <!-- Add Custom Category Modal -->
-    <div id="customCategoryModal" class="wp8-modal-overlay hidden">
+    <!-- Request Member Location / WhatsApp Ping Modal -->
+    <div id="requestLocationModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
-          <h2 class="sheet-title">nuova categoria</h2>
-          <button id="closeCustomCategoryModalBtn" class="sheet-close-btn">&times;</button>
+          <h2 class="sheet-title">richiedi posizione</h2>
+          <button id="closeRequestLocationModalBtn" class="sheet-close-btn">&times;</button>
         </div>
-
         <div class="sheet-body">
-          <label class="sheet-label">nome della categoria:</label>
-          <input type="text" id="newCategoryNameInput" class="wp8-dialog-input" placeholder="es. Giardino, Regali, Macchina, Vacanze..." autocomplete="off">
+          <p class="sheet-help">Vuoi richiedere la posizione attuale a <strong id="requestLocMemberName">Membro</strong>?</p>
+          <p class="sheet-help" style="font-size:0.82rem; color:var(--text-dim);">Poiché il GPS non può essere forzato a distanza quando il telefono è spento, puoi inviargli una notifica cloud o un promemoria rapido su WhatsApp per farlo aggiornare subito:</p>
+          
+          <div class="share-actions-col">
+            <button type="button" id="btnSendCloudPing" class="wp8-btn-accent" style="width:100%;">
+              <i class="fa-solid fa-bell"></i> invia notifica cloud su tribù
+            </button>
+            <button type="button" id="btnSendWhatsAppReminder" class="wp8-btn-outline" style="width:100%; border-color:#25D366; color:#25D366;">
+              <i class="fa-brands fa-whatsapp"></i> invia promemoria su whatsapp
+            </button>
+          </div>
         </div>
-
         <div class="sheet-footer">
-          <button id="cancelCustomCategoryBtn" class="wp8-btn-outline">annulla</button>
-          <button id="confirmCustomCategoryBtn" class="wp8-btn-accent">salva categoria</button>
+          <button id="closeRequestLocationFooterBtn" class="wp8-btn-outline">chiudi</button>
         </div>
       </div>
     </div>
 
-    <!-- Theme & Custom App Icon Modal -->
+    <!-- QR Code Share Modal -->
+    <div id="shareQRModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet text-center">
+        <div class="sheet-header">
+          <h2 class="sheet-title">condividi tribù</h2>
+          <button id="closeShareQRModalBtn" class="sheet-close-btn">&times;</button>
+        </div>
+
+        <div class="sheet-body" style="align-items:center;">
+          <p class="sheet-help">Inquadra questo QR code con la fotocamera di un altro smartphone per collegarlo subito a questa tribù:</p>
+          
+          <div class="qr-code-box" id="qrCodeContainer">
+            <img id="qrCodeImage" src="" alt="QR Code Condivisione Tribù">
+          </div>
+
+          <div class="qr-info-meta">
+            <span>Tribù: <strong id="qrTribeName">Tribù</strong></span>
+            <span>Codice: <strong class="code-font" id="qrTribeCode">FAM-TITO</strong></span>
+          </div>
+
+          <button type="button" id="btnCopyShareLink" class="wp8-btn-outline" style="width:100%;">
+            <i class="fa-regular fa-copy"></i> copia link web
+          </button>
+        </div>
+
+        <div class="sheet-footer">
+          <button id="closeShareQRFooterBtn" class="wp8-btn-accent">fatto</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme & Custom App Options Modal -->
     <div id="themeModal" class="wp8-modal-overlay hidden">
       <div class="wp8-modal-sheet">
         <div class="sheet-header">
@@ -596,22 +701,29 @@
 
         <div class="sheet-body">
           
-          <!-- Live Icon Preview with Dynamic Color Swatch -->
+          <!-- Live Icon Preview with Smeraldo Background -->
           <div class="icon-preview-box">
             <div class="live-tile-preview" id="liveTilePreview">
               <img src="icon.jpg" alt="Icona Tribù" id="liveTileIconImg">
             </div>
             <div class="live-tile-info">
-              <strong>Colore Icona & App</strong>
-              <small>Scegli il tuo colore preferito per l'interfaccia</small>
+              <strong>Colore & Sfondo Icona</strong>
+              <small>Icona con sfondo Smeraldo Lumia ufficiale</small>
             </div>
+          </div>
+
+          <!-- Share with QR Code Button -->
+          <div class="sheet-section">
+            <button type="button" class="wp8-btn-accent update-btn-full" id="btnOpenShareQRModal">
+              <i class="fa-solid fa-qrcode"></i> mostra QR code per condividere
+            </button>
           </div>
 
           <!-- Full WP8.1 15-Color Palette -->
           <div class="sheet-section">
             <div class="wp8-full-palette-grid" id="accentPaletteGrid">
-              <button type="button" class="palette-tile active" data-accent="#0050ef" style="background:#0050ef;">cobalto</button>
-              <button type="button" class="palette-tile" data-accent="#008a00" style="background:#008a00;">smeraldo</button>
+              <button type="button" class="palette-tile" data-accent="#0050ef" style="background:#0050ef;">cobalto</button>
+              <button type="button" class="palette-tile active" data-accent="#008a00" style="background:#008a00;">smeraldo</button>
               <button type="button" class="palette-tile" data-accent="#f09609" style="background:#f09609;">mango</button>
               <button type="button" class="palette-tile" data-accent="#a20025" style="background:#a20025;">crimson</button>
               <button type="button" class="palette-tile" data-accent="#d80073" style="background:#d80073;">magenta</button>
@@ -656,21 +768,54 @@
             </div>
           </div>
 
-          <!-- Version Info & App Update Button (Numbers Only) -->
+          <!-- Version Info (Numerical only, No button) -->
           <div class="sheet-section version-update-box">
             <div class="version-row-meta">
               <span class="sheet-label">versione:</span>
               <strong id="appVersionCodeLabel" class="version-badge">1.2.0</strong>
             </div>
-            <button type="button" class="wp8-btn-accent update-btn-full" id="btnCheckAppUpdate">
-              <i class="fa-solid fa-arrows-rotate"></i> controlla aggiornamenti
-            </button>
           </div>
 
         </div>
 
         <div class="sheet-footer">
           <button id="closeThemeModalFooterBtn" class="wp8-btn-accent">fatto</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Color Customizer Modal -->
+    <div id="categoryColorModal" class="wp8-modal-overlay hidden">
+      <div class="wp8-modal-sheet">
+        <div class="sheet-header">
+          <h2 class="sheet-title">colore categoria</h2>
+          <button id="closeCategoryColorModalBtn" class="sheet-close-btn">&times;</button>
+        </div>
+
+        <div class="sheet-body">
+          <p class="sheet-help">Personalizza il colore del contorno per la categoria <strong id="customizingCategoryName">spesa</strong>:</p>
+          <div class="wp8-full-palette-grid" id="categoryColorPaletteGrid">
+            <button type="button" class="palette-tile" data-catcolor="#0050ef" style="background:#0050ef;">cobalto</button>
+            <button type="button" class="palette-tile" data-catcolor="#008a00" style="background:#008a00;">smeraldo</button>
+            <button type="button" class="palette-tile" data-catcolor="#f09609" style="background:#f09609;">mango</button>
+            <button type="button" class="palette-tile" data-catcolor="#a20025" style="background:#a20025;">crimson</button>
+            <button type="button" class="palette-tile" data-catcolor="#d80073" style="background:#d80073;">magenta</button>
+            <button type="button" class="palette-tile" data-catcolor="#1ba1e2" style="background:#1ba1e2;">ciano</button>
+            <button type="button" class="palette-tile" data-catcolor="#a4c400" style="background:#a4c400;">lime</button>
+            <button type="button" class="palette-tile" data-catcolor="#6a00ff" style="background:#6a00ff;">viola</button>
+            <button type="button" class="palette-tile" data-catcolor="#f0a30a" style="background:#f0a30a;">ambra</button>
+            <button type="button" class="palette-tile" data-catcolor="#4390df" style="background:#4390df;">acciaio</button>
+            <button type="button" class="palette-tile" data-catcolor="#fa6800" style="background:#fa6800;">mandarino</button>
+            <button type="button" class="palette-tile" data-catcolor="#e671b8" style="background:#e671b8;">rosa</button>
+            <button type="button" class="palette-tile" data-catcolor="#6b69d6" style="background:#6b69d6;">indaco</button>
+            <button type="button" class="palette-tile" data-catcolor="#6d8764" style="background:#6d8764;">oliva</button>
+            <button type="button" class="palette-tile" data-catcolor="#825a2c" style="background:#825a2c;">talpa</button>
+          </div>
+        </div>
+
+        <div class="sheet-footer">
+          <button id="resetCategoryColorBtn" class="wp8-btn-outline">predefinito</button>
+          <button id="closeCategoryColorModalFooterBtn" class="wp8-btn-accent">fatto</button>
         </div>
       </div>
     </div>
@@ -705,15 +850,6 @@
             </button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- In-App Floating Notification Banner -->
-    <div id="inAppNotificationBanner" class="in-app-notif-banner hidden">
-      <div class="notif-icon-col"><i class="fa-solid fa-bell"></i></div>
-      <div class="notif-text-col">
-        <strong id="inAppNotifTitle">Notifica Tribù</strong>
-        <span id="inAppNotifBody">Nuovo aggiornamento</span>
       </div>
     </div>
 

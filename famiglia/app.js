@@ -1,12 +1,12 @@
 /**
  * Tribù - Authentic Windows Phone 8.1 Metro UI Engine
  * Features:
- * - Brand 'tribù' Home Reset Button
- * - 2 Centered Application Bar Buttons ([+] & [🔄])
- * - 4 Horizontal Pivot Panorama Slides: [famiglia], [personale], [idee & note], [mappa]
- * - Privacy-First On-Demand GPS Location Sharing (Zero Background Battery Drain)
- * - Symmetrical Form Grid & Custom Category Border Colors
- * - Real-Time AppTito Cloud Backend & Multi-Device Sync
+ * - Multi-Tribe Switcher & Dynamic Home Brand Name
+ * - QR Code Instant Family Sharing (Camera Scan)
+ * - Private Member Aliases (Local Device-Only Nicknames)
+ * - Custom Photo Uploads & Metro Emoji Avatars
+ * - On-Demand Location Sharing with WhatsApp Ping & Cloud Request
+ * - Pitch Black OLED & Official Lumia Smeraldo Accent
  */
 
 // =============================================================================
@@ -44,19 +44,27 @@ try {
 const APP_VERSION = "1.2.0";
 
 let userProfile = {
-  name: 'Papà'
+  name: 'Papà',
+  avatar: '👨‍🦱'
 };
 
 let themeSettings = {
   mode: 'dark',
-  accent: '#0050ef', // Official Lumia Cobalt
+  accent: '#008a00', // Default Lumia Smeraldo
   sound: true,
   notifications: true
 };
 
 let currentFamilyCode = 'FAM-TITO';
-let activeFamilyName = 'Tribù';
+let activeTribeName = 'tribù';
+
+let savedTribes = [
+  { name: 'Tribù Principale', code: 'FAM-TITO' }
+];
+
 let dynamicFamilyMembers = ['Papà'];
+let memberAliases = {}; // Private nicknames on this smartphone
+let memberAvatars = { 'Papà': '👨‍🦱' }; // Cloud avatars
 
 let customCategories = ['spesa', 'casa', 'bollette', 'figli', 'salute', 'urgente', 'altro'];
 
@@ -146,6 +154,7 @@ let ideasList = [
 ];
 
 let familyLocations = {};
+let pingRequests = {};
 
 // Filter States
 let activeFamilyCategory = 'all';
@@ -155,6 +164,8 @@ let activePersonalFilter = 'all';
 let activeIdeaColorFilter = 'all';
 let activeTabSlide = 0; // 0: Famiglia, 1: Personale, 2: Idee, 3: Mappa
 let customizingCatName = null;
+let targetAliasMember = null;
+let avatarTargetType = 'my'; // 'my' or specific member
 
 // Audio Synthesizer for Authentic Metro Clicks & Chimes
 const SoundFX = {
@@ -223,7 +234,7 @@ const SoundFX = {
 };
 
 // =============================================================================
-// 3. STORAGE ENGINE (Local & Cloud Sync)
+// 3. STORAGE & ALIAS ENGINE
 // =============================================================================
 
 function loadLocalState() {
@@ -236,6 +247,18 @@ function loadLocalState() {
 
     const savedCode = localStorage.getItem('tribu_family_code');
     if (savedCode) currentFamilyCode = savedCode;
+
+    const savedTribeName = localStorage.getItem('tribu_active_name');
+    if (savedTribeName) activeTribeName = savedTribeName;
+
+    const savedTribesList = localStorage.getItem('tribu_saved_tribes_list');
+    if (savedTribesList) savedTribes = JSON.parse(savedTribesList);
+
+    const savedAliases = localStorage.getItem('tribu_member_aliases');
+    if (savedAliases) memberAliases = JSON.parse(savedAliases);
+
+    const savedAvatars = localStorage.getItem('tribu_member_avatars');
+    if (savedAvatars) memberAvatars = JSON.parse(savedAvatars);
 
     const savedMembers = localStorage.getItem('tribu_dynamic_members');
     if (savedMembers) dynamicFamilyMembers = JSON.parse(savedMembers);
@@ -267,6 +290,10 @@ function saveLocalState() {
     localStorage.setItem('tribu_user_profile', JSON.stringify(userProfile));
     localStorage.setItem('tribu_theme_settings', JSON.stringify(themeSettings));
     localStorage.setItem('tribu_family_code', currentFamilyCode);
+    localStorage.setItem('tribu_active_name', activeTribeName);
+    localStorage.setItem('tribu_saved_tribes_list', JSON.stringify(savedTribes));
+    localStorage.setItem('tribu_member_aliases', JSON.stringify(memberAliases));
+    localStorage.setItem('tribu_member_avatars', JSON.stringify(memberAvatars));
     localStorage.setItem('tribu_dynamic_members', JSON.stringify(dynamicFamilyMembers));
     localStorage.setItem('tribu_category_colors', JSON.stringify(categoryColors));
     localStorage.setItem('tribu_custom_categories', JSON.stringify(customCategories));
@@ -279,9 +306,37 @@ function saveLocalState() {
   }
 }
 
+function getMemberDisplayName(rawName) {
+  if (!rawName) return '';
+  return memberAliases[rawName] || rawName;
+}
+
+function getMemberAvatarHtml(memberName, size = 32) {
+  const avatar = memberAvatars[memberName] || (memberName === userProfile.name ? userProfile.avatar : null) || '👤';
+  if (avatar && avatar.startsWith('data:image')) {
+    return `<div class="member-avatar-badge" style="width:${size}px; height:${size}px;"><img src="${avatar}" alt="${memberName}"></div>`;
+  }
+  return `<div class="member-avatar-badge" style="width:${size}px; height:${size}px;">${avatar || memberName.charAt(0).toUpperCase()}</div>`;
+}
+
 // =============================================================================
-// 4. FIREBASE CLOUD SYNC (AppTito Backend)
+// 4. FIREBASE CLOUD SYNC & MULTI-TRIBE ENGINE
 // =============================================================================
+
+function checkUrlParamsForCode() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  if (code) {
+    const cleanCode = code.toUpperCase().trim();
+    currentFamilyCode = cleanCode;
+    activeTribeName = 'tribù ' + cleanCode;
+    if (!savedTribes.find(t => t.code === cleanCode)) {
+      savedTribes.push({ name: activeTribeName, code: cleanCode });
+    }
+    saveLocalState();
+    showToast(`Connesso alla tribù ${cleanCode}!`);
+  }
+}
 
 function initFirebaseSync() {
   if (!db) {
@@ -299,11 +354,17 @@ function initFirebaseSync() {
   unsubscribeFamilyListener = familyDocRef.onSnapshot(docSnap => {
     if (docSnap.exists) {
       const data = docSnap.data();
+      if (data.tribeName && (!activeTribeName || activeTribeName === 'tribù')) {
+        activeTribeName = data.tribeName;
+      }
       if (data.tasks) {
         familyTasks = data.tasks;
       }
       if (data.members && Array.isArray(data.members)) {
         dynamicFamilyMembers = data.members;
+      }
+      if (data.avatars) {
+        memberAvatars = Object.assign({}, memberAvatars, data.avatars);
       }
       if (data.categories && Array.isArray(data.categories)) {
         customCategories = data.categories;
@@ -313,6 +374,12 @@ function initFirebaseSync() {
       }
       if (data.locations) {
         familyLocations = Object.assign({}, familyLocations, data.locations);
+      }
+      if (data.pings && data.pings[userProfile.name]) {
+        const lastPing = data.pings[userProfile.name];
+        if (Date.now() - lastPing.time < 300000) { // If pinged in last 5 mins
+          updateMyGPSLocation(true);
+        }
       }
       saveLocalState();
       renderAllViews();
@@ -328,10 +395,12 @@ function pushFamilyStateToCloud() {
   if (!db || !familyDocRef) return;
   familyDocRef.set({
     familyCode: currentFamilyCode,
+    tribeName: activeTribeName,
     updatedAt: Date.now(),
     updatedBy: userProfile.name,
     tasks: familyTasks,
     members: dynamicFamilyMembers,
+    avatars: memberAvatars,
     categories: customCategories,
     categoryColors: categoryColors,
     locations: familyLocations
@@ -341,12 +410,17 @@ function pushFamilyStateToCloud() {
 }
 
 // =============================================================================
-// 5. THEME & PALETTE SYSTEM
+// 5. THEME & HEADER BRAND
 // =============================================================================
 
 function applyTheme() {
   document.body.className = themeSettings.mode === 'light' ? 'theme-light' : 'theme-dark';
   document.documentElement.style.setProperty('--accent-color', themeSettings.accent);
+
+  const brandEl = document.getElementById('appBrandKicker');
+  if (brandEl) {
+    brandEl.textContent = activeTribeName || 'tribù';
+  }
 
   document.querySelectorAll('#accentPaletteGrid .palette-tile').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-accent') === themeSettings.accent);
@@ -380,7 +454,7 @@ function applyTheme() {
 }
 
 // =============================================================================
-// 6. GIANT WP8 PIVOT ENGINE & TOUCH SWIPE (4 Slides)
+// 6. GIANT WP8 PIVOT ENGINE (4 Slides)
 // =============================================================================
 
 function goToSlide(index) {
@@ -422,7 +496,6 @@ function setupTouchSwipe() {
   let isSwiping = false;
 
   viewport.addEventListener('touchstart', (e) => {
-    // If touching inside map container, don't trigger carousel swipe
     if (e.target.closest('#wp8MapContainer')) return;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
@@ -447,7 +520,7 @@ function setupTouchSwipe() {
 }
 
 // =============================================================================
-// 7. TAB 1: FAMIGLIA (Rendering & CRUD)
+// 7. TAB 1: FAMIGLIA (Rendering & CRUD with Aliases)
 // =============================================================================
 
 function renderFamilyMembersFilterBar() {
@@ -456,7 +529,14 @@ function renderFamilyMembersFilterBar() {
 
   let html = `<button class="filter-link ${activeFamilyMember === 'all' ? 'active' : ''}" data-member="all">tutti</button>`;
   dynamicFamilyMembers.forEach(mem => {
-    html += `<button class="filter-link ${activeFamilyMember === mem ? 'active' : ''}" data-member="${mem}">${mem.toLowerCase()}</button>`;
+    const dispName = getMemberDisplayName(mem);
+    const avatarHtml = getMemberAvatarHtml(mem, 20);
+    html += `
+      <button class="filter-link ${activeFamilyMember === mem ? 'active' : ''}" data-member="${mem}">
+        ${avatarHtml}
+        ${dispName.toLowerCase()}
+      </button>
+    `;
   });
   container.innerHTML = html;
 
@@ -473,7 +553,8 @@ function renderFamilyMembersFilterBar() {
   if (select) {
     let selectHtml = `<option value="Tutti">chiunque</option>`;
     dynamicFamilyMembers.forEach(mem => {
-      selectHtml += `<option value="${mem}">${mem}</option>`;
+      const dispName = getMemberDisplayName(mem);
+      selectHtml += `<option value="${mem}">${dispName}</option>`;
     });
     select.innerHTML = selectHtml;
   }
@@ -597,7 +678,8 @@ function buildTaskItemHTML(task, type) {
 
   let assigneeBadge = '';
   if (type === 'family' && task.assignee) {
-    assigneeBadge = `<span class="meta-tag tag-member"><i class="fa-regular fa-user"></i> ${task.assignee}</span>`;
+    const dispName = getMemberDisplayName(task.assignee);
+    assigneeBadge = `<span class="meta-tag tag-member"><i class="fa-regular fa-user"></i> ${dispName}</span>`;
   }
 
   return `
@@ -741,11 +823,11 @@ function addFamilyTaskFromForm() {
   document.getElementById('familyInputCard').classList.add('hidden');
   renderFamilyTasks();
   SoundFX.complete();
-  showToast("attività salvata per la tribù");
+  showToast("attività salvata");
 }
 
 // =============================================================================
-// 8. TAB 2: PERSONALE (Rendering & CRUD)
+// 8. TAB 2: PERSONALE & TAB 3: IDEE
 // =============================================================================
 
 function renderPersonalCategoriesBar() {
@@ -904,10 +986,6 @@ function sharePersonalTaskToFamily(taskId) {
   SoundFX.complete();
   showToast("condivisa con la tribù!");
 }
-
-// =============================================================================
-// 9. TAB 3: IDEE & NOTE (Rendering & CRUD)
-// =============================================================================
 
 function renderIdeas() {
   const grid = document.getElementById('ideasListGrid');
@@ -1086,7 +1164,7 @@ function convertIdeaToTask(target) {
 }
 
 // =============================================================================
-// 10. TAB 4: MAPPA & PRIVACY-FIRST ON-DEMAND GPS SHARING
+// 9. TAB 4: MAPPA & LOCATION REQUEST / WHATSAPP PING
 // =============================================================================
 
 let familyLeafletMap = null;
@@ -1101,7 +1179,6 @@ function initLeafletMapIfNeeded() {
   const mapContainer = document.getElementById('familyLeafletMap');
   if (!mapContainer || typeof L === 'undefined') return;
 
-  // Center on Italy or default coordinates
   familyLeafletMap = L.map('familyLeafletMap', {
     zoomControl: true,
     attributionControl: false
@@ -1114,15 +1191,16 @@ function initLeafletMapIfNeeded() {
   renderFamilyMapMarkers();
 }
 
-function updateMyGPSLocation() {
+function updateMyGPSLocation(silent = false) {
   const statusLabel = document.getElementById('myLocationStatusLabel');
-  if (statusLabel) statusLabel.textContent = "rilevamento GPS in corso...";
-  showToast("rilevamento posizione GPS...");
-  SoundFX.click();
+  if (!silent) {
+    if (statusLabel) statusLabel.textContent = "rilevamento GPS...";
+    showToast("rilevamento posizione GPS...");
+    SoundFX.click();
+  }
 
   if (!navigator.geolocation) {
     if (statusLabel) statusLabel.textContent = "GPS non supportato";
-    showToast("Geolocalizzazione non supportata su questo browser");
     return;
   }
 
@@ -1155,16 +1233,26 @@ function updateMyGPSLocation() {
         familyLeafletMap.flyTo([lat, lng], 15, { duration: 1.2 });
       }
 
-      SoundFX.complete();
-      showToast("posizione aggiornata e condivisa!");
+      if (!silent) {
+        SoundFX.complete();
+        showToast("posizione aggiornata e condivisa!");
+      }
     },
     (error) => {
       console.warn("GPS Error:", error);
       if (statusLabel) statusLabel.textContent = "impossibile rilevare";
-      showToast("Attiva il GPS e autorizza la posizione per condividere dove sei");
+      if (!silent) showToast("Attiva il GPS per condividere dove sei");
     },
     { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
   );
+}
+
+let targetRequestMember = null;
+function openRequestLocationModal(member) {
+  targetRequestMember = member;
+  const dispName = getMemberDisplayName(member);
+  document.getElementById('requestLocMemberName').textContent = dispName;
+  document.getElementById('requestLocationModal').classList.remove('hidden');
 }
 
 function renderFamilyMapMarkers() {
@@ -1177,7 +1265,8 @@ function renderFamilyMapMarkers() {
   dynamicFamilyMembers.forEach(member => {
     const loc = familyLocations[member];
     const isMe = (member === userProfile.name);
-    const initial = member.charAt(0).toUpperCase();
+    const dispName = getMemberDisplayName(member);
+    const avatarHtml = getMemberAvatarHtml(member, 38);
 
     if (loc && loc.lat && loc.lng) {
       const timeStr = formatTimeAgo(loc.updatedAt);
@@ -1186,14 +1275,19 @@ function renderFamilyMapMarkers() {
       membersHtml += `
         <div class="map-member-card" data-member="${member}" data-lat="${loc.lat}" data-lng="${loc.lng}">
           <div class="map-member-left">
-            <div class="map-member-avatar">${initial}</div>
+            ${avatarHtml}
             <div class="map-member-info">
-              <span class="map-member-name">${member} ${isMe ? '(tu)' : ''}</span>
+              <span class="map-member-name">${dispName} ${isMe ? '(tu)' : ''}</span>
               <span class="map-member-loc"><i class="fa-solid fa-location-dot"></i> ${coordsStr}</span>
               <span class="map-member-time">ultimo agg: ${timeStr}</span>
             </div>
           </div>
           <div class="map-member-right">
+            ${!isMe ? `
+              <button type="button" class="btn-request-loc-pill request-ping-btn" data-member="${member}">
+                richiedi
+              </button>
+            ` : ''}
             <i class="fa-solid fa-crosshairs"></i>
           </div>
         </div>
@@ -1205,16 +1299,16 @@ function renderFamilyMapMarkers() {
       if (familyLeafletMap && typeof L !== 'undefined') {
         const customIcon = L.divIcon({
           className: 'wp8-leaflet-marker',
-          html: `<div style="background:var(--accent-color); color:#fff; width:34px; height:34px; border:2px solid #fff; display:flex; align-items:center; justify-content:center; font-weight:700; box-shadow:0 3px 10px rgba(0,0,0,0.6);">${initial}</div>`,
-          iconSize: [34, 34],
-          iconAnchor: [17, 17]
+          html: `<div style="background:var(--accent-color); color:#fff; width:36px; height:36px; border:2px solid #fff; display:flex; align-items:center; justify-content:center; font-size:1.2rem; box-shadow:0 3px 10px rgba(0,0,0,0.6);">${memberAvatars[member] || dispName.charAt(0).toUpperCase()}</div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
         });
 
         if (mapMarkers[member]) {
           mapMarkers[member].setLatLng([loc.lat, loc.lng]);
         } else {
           const marker = L.marker([loc.lat, loc.lng], { icon: customIcon }).addTo(familyLeafletMap);
-          marker.bindPopup(`<strong>${member}</strong><br><small>Ultimo agg: ${timeStr}</small>`);
+          marker.bindPopup(`<strong>${dispName}</strong><br><small>Ultimo agg: ${timeStr}</small>`);
           mapMarkers[member] = marker;
         }
       }
@@ -1222,11 +1316,18 @@ function renderFamilyMapMarkers() {
       membersHtml += `
         <div class="map-member-card" data-member="${member}">
           <div class="map-member-left">
-            <div class="map-member-avatar" style="background:#555;">${initial}</div>
+            ${avatarHtml}
             <div class="map-member-info">
-              <span class="map-member-name">${member} ${isMe ? '(tu)' : ''}</span>
+              <span class="map-member-name">${dispName} ${isMe ? '(tu)' : ''}</span>
               <span class="map-member-loc" style="color:var(--text-dim);">posizione non ancora aggiornata</span>
             </div>
+          </div>
+          <div class="map-member-right">
+            ${!isMe ? `
+              <button type="button" class="btn-request-loc-pill request-ping-btn" data-member="${member}">
+                richiedi
+              </button>
+            ` : ''}
           </div>
         </div>
       `;
@@ -1234,6 +1335,14 @@ function renderFamilyMapMarkers() {
   });
 
   membersListContainer.innerHTML = membersHtml;
+
+  membersListContainer.querySelectorAll('.request-ping-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const target = btn.getAttribute('data-member');
+      openRequestLocationModal(target);
+    });
+  });
 
   membersListContainer.querySelectorAll('.map-member-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -1260,38 +1369,107 @@ function renderFamilyMapMarkers() {
 }
 
 // =============================================================================
-// 11. DYNAMIC MEMBERS & CLOUD CODE
+// 10. MULTI-TRIBE & MEMBER PROFILE MANAGEMENT
 // =============================================================================
 
 function renderFamilySettingsModal() {
   const container = document.getElementById('dynamicFamilyMembersList');
   const codeInput = document.getElementById('familyCodeInput');
   const nameInput = document.getElementById('customMemberNameInput');
+  const activeTribeInput = document.getElementById('activeTribeNameInput');
+  const myAvatarDisplay = document.getElementById('myAvatarDisplay');
+  const tribesListContainer = document.getElementById('savedTribesList');
   if (!container) return;
 
   if (codeInput) codeInput.value = currentFamilyCode;
   if (nameInput) nameInput.value = userProfile.name;
+  if (activeTribeInput) activeTribeInput.value = activeTribeName;
 
-  container.innerHTML = dynamicFamilyMembers.map(m => `
-    <div class="member-row-item">
-      <div class="member-row-left">
-        <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
-        <span>${m} ${m === userProfile.name ? '<strong>(tu)</strong>' : ''}</span>
+  if (myAvatarDisplay) {
+    const av = userProfile.avatar || '👨‍🦱';
+    if (av.startsWith('data:image')) {
+      myAvatarDisplay.innerHTML = `<img src="${av}" style="width:100%;height:100%;object-fit:cover;">`;
+    } else {
+      myAvatarDisplay.textContent = av;
+    }
+  }
+
+  // Render Saved Tribes List
+  if (tribesListContainer) {
+    tribesListContainer.innerHTML = savedTribes.map(tr => `
+      <div class="tribe-item-card ${tr.code === currentFamilyCode ? 'is-active' : ''}" data-code="${tr.code}">
+        <div>
+          <span class="tribe-item-name">${tr.name}</span>
+          <span class="tribe-item-code">(${tr.code})</span>
+        </div>
+        ${tr.code === currentFamilyCode ? '<span style="color:var(--accent-color);font-weight:700;">● attiva</span>' : '<button type="button" class="wp8-link-btn switch-tribe-btn" data-code="'+tr.code+'" data-name="'+tr.name+'">passa qui</button>'}
       </div>
-      <div class="member-row-actions">
-        ${dynamicFamilyMembers.length > 1 ? `
-          <button type="button" class="wp8-icon-action remove-dyn-member-btn" data-name="${m}" title="Rimuovi">
-            <i class="fa-solid fa-xmark"></i>
+    `).join('');
+
+    tribesListContainer.querySelectorAll('.switch-tribe-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const code = btn.getAttribute('data-code');
+        const name = btn.getAttribute('data-name');
+        switchActiveTribe(code, name);
+      });
+    });
+  }
+
+  // Render Members List
+  container.innerHTML = dynamicFamilyMembers.map(m => {
+    const isMe = (m === userProfile.name);
+    const alias = memberAliases[m];
+    const avatarHtml = getMemberAvatarHtml(m, 28);
+
+    return `
+      <div class="member-row-item">
+        <div class="member-row-left">
+          ${avatarHtml}
+          <div>
+            <span>${m} ${isMe ? '<strong>(tu)</strong>' : ''}</span>
+            ${alias ? `<div class="member-alias-tag">Soprannome tuo: "${alias}"</div>` : ''}
+          </div>
+        </div>
+        <div class="member-row-actions">
+          <button type="button" class="wp8-icon-action edit-alias-btn" data-name="${m}" title="Personalizza nome per te">
+            <i class="fa-solid fa-pen"></i>
           </button>
-        ` : ''}
+          <button type="button" class="wp8-icon-action change-member-avatar-btn" data-name="${m}" title="Cambia avatar/foto">
+            <i class="fa-solid fa-face-smile"></i>
+          </button>
+          ${dynamicFamilyMembers.length > 1 && !isMe ? `
+            <button type="button" class="wp8-icon-action remove-dyn-member-btn" data-name="${m}" title="Rimuovi">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          ` : ''}
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
+
+  container.querySelectorAll('.edit-alias-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      targetAliasMember = btn.getAttribute('data-name');
+      document.getElementById('aliasTargetCloudName').textContent = targetAliasMember;
+      document.getElementById('memberAliasInput').value = memberAliases[targetAliasMember] || '';
+      document.getElementById('memberAliasModal').classList.remove('hidden');
+    });
+  });
+
+  container.querySelectorAll('.change-member-avatar-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      avatarTargetType = btn.getAttribute('data-name');
+      document.getElementById('avatarPickerModal').classList.remove('hidden');
+    });
+  });
 
   container.querySelectorAll('.remove-dyn-member-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.getAttribute('data-name');
       dynamicFamilyMembers = dynamicFamilyMembers.filter(x => x !== target);
+      delete memberAvatars[target];
+      delete memberAliases[target];
       saveLocalState();
       pushFamilyStateToCloud();
       renderFamilySettingsModal();
@@ -1300,6 +1478,18 @@ function renderFamilySettingsModal() {
       SoundFX.pop();
     });
   });
+}
+
+function switchActiveTribe(code, name) {
+  currentFamilyCode = code;
+  activeTribeName = name;
+  saveLocalState();
+  applyTheme();
+  initFirebaseSync();
+  renderFamilySettingsModal();
+  renderAllViews();
+  SoundFX.complete();
+  showToast(`Passato a: ${name}`);
 }
 
 function openCategoryColorModal(cat) {
@@ -1314,8 +1504,25 @@ function openCategoryColorModal(cat) {
   document.getElementById('categoryColorModal').classList.remove('hidden');
 }
 
+function openShareQRModal() {
+  const qrImg = document.getElementById('qrCodeImage');
+  const qrName = document.getElementById('qrTribeName');
+  const qrCode = document.getElementById('qrTribeCode');
+
+  if (qrName) qrName.textContent = activeTribeName;
+  if (qrCode) qrCode.textContent = currentFamilyCode;
+
+  const appShareUrl = `https://feiluca85-svg.github.io/InfoHub/famiglia/?code=${encodeURIComponent(currentFamilyCode)}`;
+  if (qrImg) {
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(appShareUrl)}`;
+  }
+
+  document.getElementById('shareQRModal').classList.remove('hidden');
+  SoundFX.click();
+}
+
 // =============================================================================
-// 12. GENERAL HELPERS & NOTIFICATIONS
+// 11. GENERAL HELPERS & TOASTS
 // =============================================================================
 
 function showToast(msg) {
@@ -1392,23 +1599,24 @@ function renderAllViews() {
 }
 
 // =============================================================================
-// 13. DOM INITIALIZATION & EVENT WIRING
+// 12. DOM INITIALIZATION & EVENT WIRING
 // =============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
   loadLocalState();
+  checkUrlParamsForCode();
   applyTheme();
   initFirebaseSync();
   renderAllViews();
   setupTouchSwipe();
 
-  // 1) 'tribù' Home Reset Button
+  // 1) Brand Home Reset Button
   const brandHomeBtn = document.getElementById('brandHomeBtn');
   if (brandHomeBtn) {
     brandHomeBtn.addEventListener('click', resetToHome);
   }
 
-  // 2) Header Action Buttons
+  // 2) Header Buttons
   document.getElementById('headerNotifBtn').addEventListener('click', toggleNotifications);
 
   document.getElementById('themeToggleBtn').addEventListener('click', () => {
@@ -1421,25 +1629,28 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('themeModal').classList.add('hidden');
   });
 
-  // Check App Updates Button
-  const updateBtn = document.getElementById('btnCheckAppUpdate');
-  if (updateBtn) {
-    updateBtn.addEventListener('click', () => {
-      SoundFX.pop();
-      showToast("verifica aggiornamenti...");
-      if ('caches' in window) {
-        caches.keys().then(names => {
-          names.forEach(name => caches.delete(name));
-        });
-      }
-      initFirebaseSync();
-      setTimeout(() => {
-        showToast(`Tribù v${APP_VERSION} - Versione più recente attiva!`);
-      }, 900);
+  // QR Code Share
+  document.getElementById('btnOpenShareQRModal').addEventListener('click', () => {
+    document.getElementById('themeModal').classList.add('hidden');
+    openShareQRModal();
+  });
+  document.getElementById('closeShareQRModalBtn').addEventListener('click', () => {
+    document.getElementById('shareQRModal').classList.add('hidden');
+  });
+  document.getElementById('closeShareQRFooterBtn').addEventListener('click', () => {
+    document.getElementById('shareQRModal').classList.add('hidden');
+  });
+  document.getElementById('btnCopyShareLink').addEventListener('click', () => {
+    const link = `https://feiluca85-svg.github.io/InfoHub/famiglia/?code=${encodeURIComponent(currentFamilyCode)}`;
+    navigator.clipboard.writeText(link).then(() => {
+      showToast("link copiato negli appunti!");
+      SoundFX.complete();
+    }).catch(() => {
+      showToast(link);
     });
-  }
+  });
 
-  // Family Members Modal
+  // Family / Multi-Tribe Settings Modal
   document.getElementById('familySettingsBtn').addEventListener('click', () => {
     renderFamilySettingsModal();
     document.getElementById('familySettingsModal').classList.remove('hidden');
@@ -1451,7 +1662,49 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('familySettingsModal').classList.add('hidden');
   });
 
-  // Save profile name
+  // Save Tribe Name
+  document.getElementById('saveTribeNameBtn').addEventListener('click', () => {
+    const input = document.getElementById('activeTribeNameInput');
+    const val = input.value.trim();
+    if (val) {
+      activeTribeName = val;
+      const tObj = savedTribes.find(t => t.code === currentFamilyCode);
+      if (tObj) tObj.name = val;
+      saveLocalState();
+      pushFamilyStateToCloud();
+      applyTheme();
+      renderFamilySettingsModal();
+      SoundFX.complete();
+      showToast(`nome tribù aggiornato in: ${val}`);
+    }
+  });
+
+  // Create New Tribe Modal
+  document.getElementById('btnOpenCreateTribeModal').addEventListener('click', () => {
+    document.getElementById('newTribeNameInput').value = '';
+    document.getElementById('newTribeCodeInput').value = 'TRIBU-' + Math.floor(1000 + Math.random()*9000);
+    document.getElementById('createTribeModal').classList.remove('hidden');
+  });
+  document.getElementById('closeCreateTribeModalBtn').addEventListener('click', () => {
+    document.getElementById('createTribeModal').classList.add('hidden');
+  });
+  document.getElementById('cancelCreateTribeBtn').addEventListener('click', () => {
+    document.getElementById('createTribeModal').classList.add('hidden');
+  });
+  document.getElementById('confirmCreateTribeBtn').addEventListener('click', () => {
+    const nameInput = document.getElementById('newTribeNameInput');
+    const codeInput = document.getElementById('newTribeCodeInput');
+    const name = nameInput.value.trim() || 'Nuova Tribù';
+    const code = codeInput.value.trim().toUpperCase() || ('TRIBU-' + Math.floor(1000 + Math.random()*9000));
+
+    if (!savedTribes.find(t => t.code === code)) {
+      savedTribes.push({ name: name, code: code });
+    }
+    document.getElementById('createTribeModal').classList.add('hidden');
+    switchActiveTribe(code, name);
+  });
+
+  // Save User Profile Name
   document.getElementById('saveMemberNameBtn').addEventListener('click', () => {
     const input = document.getElementById('customMemberNameInput');
     const val = input.value.trim();
@@ -1460,6 +1713,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!dynamicFamilyMembers.includes(val)) {
         dynamicFamilyMembers.push(val);
       }
+      memberAvatars[val] = userProfile.avatar || '👨‍🦱';
       saveLocalState();
       pushFamilyStateToCloud();
       renderFamilySettingsModal();
@@ -1476,36 +1730,170 @@ document.addEventListener('DOMContentLoaded', () => {
     const val = input.value.trim().toUpperCase();
     if (val) {
       currentFamilyCode = val;
+      const found = savedTribes.find(t => t.code === val);
+      if (!found) {
+        savedTribes.push({ name: 'Tribù ' + val, code: val });
+        activeTribeName = 'tribù ' + val;
+      }
       saveLocalState();
+      applyTheme();
       initFirebaseSync();
+      renderFamilySettingsModal();
       SoundFX.complete();
-      showToast(`connesso al cloud: ${val}`);
+      showToast(`collegato al codice: ${val}`);
     }
   });
 
-  document.querySelectorAll('.code-preset-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const code = btn.getAttribute('data-code');
-      document.getElementById('familyCodeInput').value = code;
-      currentFamilyCode = code;
+  // Alias Modal
+  document.getElementById('closeMemberAliasModalBtn').addEventListener('click', () => {
+    document.getElementById('memberAliasModal').classList.add('hidden');
+  });
+  document.getElementById('saveMemberAliasBtn').addEventListener('click', () => {
+    const input = document.getElementById('memberAliasInput');
+    const val = input.value.trim();
+    if (targetAliasMember) {
+      if (val) {
+        memberAliases[targetAliasMember] = val;
+      } else {
+        delete memberAliases[targetAliasMember];
+      }
       saveLocalState();
-      initFirebaseSync();
+      renderFamilySettingsModal();
+      renderFamilyMembersFilterBar();
+      renderFamilyTasks();
+      renderFamilyMapMarkers();
+      document.getElementById('memberAliasModal').classList.add('hidden');
       SoundFX.complete();
-      showToast(`codice impostato: ${code}`);
+      showToast("soprannome privato salvato");
+    }
+  });
+  document.getElementById('resetMemberAliasBtn').addEventListener('click', () => {
+    if (targetAliasMember) {
+      delete memberAliases[targetAliasMember];
+      saveLocalState();
+      renderFamilySettingsModal();
+      renderFamilyMembersFilterBar();
+      renderFamilyTasks();
+      renderFamilyMapMarkers();
+      document.getElementById('memberAliasModal').classList.add('hidden');
+      SoundFX.pop();
+    }
+  });
+
+  // Avatar Picker Modal
+  document.getElementById('btnChangeMyAvatar').addEventListener('click', () => {
+    avatarTargetType = 'my';
+    document.getElementById('avatarPickerModal').classList.remove('hidden');
+  });
+  document.getElementById('closeAvatarPickerModalBtn').addEventListener('click', () => {
+    document.getElementById('avatarPickerModal').classList.add('hidden');
+  });
+  document.getElementById('cancelAvatarPickerBtn').addEventListener('click', () => {
+    document.getElementById('avatarPickerModal').classList.add('hidden');
+  });
+
+  document.querySelectorAll('#avatarEmojisGrid .avatar-emoji-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const emoji = btn.getAttribute('data-avatar');
+      if (avatarTargetType === 'my') {
+        userProfile.avatar = emoji;
+        memberAvatars[userProfile.name] = emoji;
+      } else {
+        memberAvatars[avatarTargetType] = emoji;
+      }
+      saveLocalState();
+      pushFamilyStateToCloud();
+      renderFamilySettingsModal();
+      renderFamilyMembersFilterBar();
+      renderFamilyMapMarkers();
+      document.getElementById('avatarPickerModal').classList.add('hidden');
+      SoundFX.complete();
+      showToast("avatar aggiornato!");
     });
   });
 
-  document.getElementById('generateRandomCodeBtn').addEventListener('click', () => {
-    const randomCode = 'TRIBU-' + Math.floor(1000 + Math.random() * 9000);
-    document.getElementById('familyCodeInput').value = randomCode;
-    currentFamilyCode = randomCode;
-    saveLocalState();
-    initFirebaseSync();
-    SoundFX.complete();
-    showToast(`nuovo codice: ${randomCode}`);
+  // Photo Upload Handler (compresses image to thumbnail for lightweight cloud sync)
+  document.getElementById('btnUploadPhotoAvatar').addEventListener('click', () => {
+    document.getElementById('avatarPhotoFileInput').click();
+  });
+  document.getElementById('avatarPhotoFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 96;
+        let w = img.width;
+        let h = img.height;
+        if (w > h) {
+          h = Math.round(h * maxDim / w);
+          w = maxDim;
+        } else {
+          w = Math.round(w * maxDim / h);
+          h = maxDim;
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+        if (avatarTargetType === 'my') {
+          userProfile.avatar = dataUrl;
+          memberAvatars[userProfile.name] = dataUrl;
+        } else {
+          memberAvatars[avatarTargetType] = dataUrl;
+        }
+
+        saveLocalState();
+        pushFamilyStateToCloud();
+        renderFamilySettingsModal();
+        renderFamilyMembersFilterBar();
+        renderFamilyMapMarkers();
+        document.getElementById('avatarPickerModal').classList.add('hidden');
+        SoundFX.complete();
+        showToast("foto caricata con successo!");
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
   });
 
-  // Quick Add Member Modal
+  // Request Location / Ping Modal
+  document.getElementById('closeRequestLocationModalBtn').addEventListener('click', () => {
+    document.getElementById('requestLocationModal').classList.add('hidden');
+  });
+  document.getElementById('closeRequestLocationFooterBtn').addEventListener('click', () => {
+    document.getElementById('requestLocationModal').classList.add('hidden');
+  });
+  document.getElementById('btnSendCloudPing').addEventListener('click', () => {
+    if (targetRequestMember) {
+      if (!pingRequests) pingRequests = {};
+      pingRequests[targetRequestMember] = { from: userProfile.name, time: Date.now() };
+      if (db && familyDocRef) {
+        familyDocRef.set({ pings: pingRequests }, { merge: true });
+      }
+      document.getElementById('requestLocationModal').classList.add('hidden');
+      SoundFX.complete();
+      showToast(`notifica inviata a ${getMemberDisplayName(targetRequestMember)}!`);
+    }
+  });
+  document.getElementById('btnSendWhatsAppReminder').addEventListener('click', () => {
+    if (targetRequestMember) {
+      const dispName = getMemberDisplayName(targetRequestMember);
+      const appUrl = `https://feiluca85-svg.github.io/InfoHub/famiglia/?code=${encodeURIComponent(currentFamilyCode)}`;
+      const msg = `Ciao ${dispName}! Apri Tribù per aggiornare la tua posizione sulla mappa di famiglia: ${appUrl}`;
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+      window.open(waUrl, '_blank');
+      document.getElementById('requestLocationModal').classList.add('hidden');
+      SoundFX.complete();
+    }
+  });
+
+  // Quick Add Member
   document.getElementById('openAddMemberDialogBtn')?.addEventListener('click', () => {
     document.getElementById('addMemberModal').classList.remove('hidden');
     document.getElementById('newMemberNameInput').focus();
@@ -1526,6 +1914,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (val) {
       if (!dynamicFamilyMembers.includes(val)) {
         dynamicFamilyMembers.push(val);
+        memberAvatars[val] = '👤';
         saveLocalState();
         pushFamilyStateToCloud();
         renderFamilyMembersFilterBar();
@@ -1582,7 +1971,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Family Tasks Add & Cancel
+  // Form Submissions
   document.getElementById('addFamilyTaskBtn').addEventListener('click', addFamilyTaskFromForm);
   document.getElementById('cancelFamilyTaskBtn').addEventListener('click', () => {
     document.getElementById('familyInputCard').classList.add('hidden');
@@ -1591,7 +1980,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') addFamilyTaskFromForm();
   });
 
-  // Personal Tasks Add & Cancel
   document.getElementById('addPersonalTaskBtn').addEventListener('click', addPersonalTaskFromForm);
   document.getElementById('cancelPersonalTaskBtn').addEventListener('click', () => {
     document.getElementById('personalInputCard').classList.add('hidden');
@@ -1611,7 +1999,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Ideas Add & Cancel
+  // Ideas Form & Actions
   document.getElementById('toggleIdeasAddBoxBtn').addEventListener('click', () => {
     const card = document.getElementById('ideasInputCard');
     card.classList.toggle('hidden');
@@ -1647,16 +2035,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // GPS Map Buttons
-  document.getElementById('btnUpdateMyGPS').addEventListener('click', updateMyGPSLocation);
+  document.getElementById('btnUpdateMyGPS').addEventListener('click', () => updateMyGPSLocation(false));
 
-  // Convert Idea Modal Listeners
+  // Convert Idea Modal
   document.getElementById('closeConvertModalBtn').addEventListener('click', () => {
     document.getElementById('convertIdeaModal').classList.add('hidden');
   });
   document.getElementById('convertDestFamilyBtn').addEventListener('click', () => convertIdeaToTask('family'));
   document.getElementById('convertDestPersonalBtn').addEventListener('click', () => convertIdeaToTask('personal'));
 
-  // Toggle Completed Sections
+  // Toggle Completed
   document.getElementById('toggleFamilyCompleted').addEventListener('click', (e) => {
     if (e.target.closest('#clearFamilyCompletedBtn')) return;
     document.getElementById('familyCompletedList').classList.toggle('hidden');
@@ -1682,7 +2070,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast("completate personali eliminate");
   });
 
-  // Category Color Modal
+  // Category Colors
   document.querySelectorAll('#categoryColorPaletteGrid .palette-tile').forEach(tile => {
     tile.addEventListener('click', () => {
       const color = tile.getAttribute('data-catcolor');
@@ -1696,7 +2084,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPersonalTasks();
         document.getElementById('categoryColorModal').classList.add('hidden');
         SoundFX.complete();
-        showToast(`colore aggiornato per ${customizingCatName}`);
+        showToast(`colore salvato`);
       }
     });
   });
@@ -1720,7 +2108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Theme Colors
+  // Theme Accent Swatches
   document.querySelectorAll('#accentPaletteGrid .palette-tile').forEach(tile => {
     tile.addEventListener('click', () => {
       themeSettings.accent = tile.getAttribute('data-accent');
